@@ -1,32 +1,61 @@
-import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React from "react";
 import { Searchbar } from "react-native-paper";
-import { StatusBar, StyleSheet, Text, View, Platform } from "react-native";
+import { StatusBar, StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AlbumInfo } from "../components/album-info.components";
+import styled from "styled-components/native";
 
+import { AlbumInfoCard } from "../components/album-info-card.components";
+
+const SafeArea = styled(SafeAreaView)`
+  flex: 1;
+  margin-top: ${StatusBar.currentHeight}px;
+`;
+
+const SearchContainer = styled.View`
+  padding: 16px;
+`;
+
+const AlbumListContainer = styled.View`
+  flex: 1;
+  padding: 16px;
+  background-color: blue;
+`;
+
+export const PodcastScreen = () => (
+  <SafeArea>
+    <SearchContainer>
+      <Searchbar />
+    </SearchContainer>
+    <AlbumListContainer>
+      <AlbumInfoCard />
+    </AlbumListContainer>
+  </SafeArea>
+);
+
+/*
 export const AlbumScreen = () => (
   <SafeAreaView style={styles.container}>
     <View style={styles.search}>
       <Searchbar />
     </View>
     <View style={styles.list}>
-      <AlbumInfo />
+      <AlbumInfoCard />
     </View>
   </SafeAreaView>
 );
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     marginTop: StatusBar.currentHeight,
+    flex: 1,
   },
   search: {
-    padding: 16,
+    padding: 10,
   },
   list: {
     flex: 1,
     padding: 16,
     backgroundColor: "blue",
   },
-});
+}); 
+*/
