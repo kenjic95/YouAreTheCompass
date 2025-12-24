@@ -3,15 +3,15 @@ import React from "react";
 import { Searchbar } from "react-native-paper";
 import { StatusBar, StyleSheet, Text, View, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PodcastInfo } from "../components/podcasts-info.components";
+import { AlbumInfo } from "../components/album-info.components";
 
-export const PodcastsScreen = () => (
+export const AlbumScreen = () => (
   <SafeAreaView style={styles.container}>
     <View style={styles.search}>
       <Searchbar />
     </View>
     <View style={styles.list}>
-      <PodcastInfo />
+      <AlbumInfo />
     </View>
   </SafeAreaView>
 );
