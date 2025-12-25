@@ -12,13 +12,12 @@ const SafeArea = styled(SafeAreaView)`
 `;
 
 const SearchContainer = styled.View`
-  padding: 16px;
+  padding: ${(props) => props.theme.space[3]};
 `;
 
 const AlbumListContainer = styled.View`
   flex: 1;
-  padding: 16px;
-  background-color: blue;
+  padding: ${(props) => props.theme.space[3]};
 `;
 
 export const PodcastScreen = () => (
@@ -31,31 +30,3 @@ export const PodcastScreen = () => (
     </AlbumListContainer>
   </SafeArea>
 );
-
-/*
-export const AlbumScreen = () => (
-  <SafeAreaView style={styles.container}>
-    <View style={styles.search}>
-      <Searchbar />
-    </View>
-    <View style={styles.list}>
-      <AlbumInfoCard />
-    </View>
-  </SafeAreaView>
-);
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: StatusBar.currentHeight,
-    flex: 1,
-  },
-  search: {
-    padding: 10,
-  },
-  list: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "blue",
-  },
-}); 
-*/
