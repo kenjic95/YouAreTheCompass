@@ -5,8 +5,8 @@ import { PodcastScreen } from "./src/features/podcasts/screens/podcasts.screen";
 export default function App() {
   return (
     <>
-      <ExpoStatusBar style="auto" />
       <PodcastScreen />
+      <ExpoStatusBar style="auto" />
     </>
   );
 }
