@@ -2,6 +2,8 @@ import React from "react";
 import styled from "styled-components/native";
 import { Text, StyleSheet } from "react-native";
 import { Card } from "react-native-paper";
+import { SvgXml } from "react-native-svg";
+import lock from "../../../../assets/lock";
 
 const AlbumCard = styled(Card)`
   background-color: ${(props) => props.theme.colors.bg.secondary};
@@ -10,6 +12,14 @@ const AlbumCard = styled(Card)`
 const AlbumCardCover = styled(Card.Cover)`
   padding: ${(props) => props.theme.space[3]};
   background-color: ${(props) => props.theme.colors.bg.secondary};
+`;
+const CoverContainer = styled.View`
+  position: relative;
+`;
+const LockIcon = styled.View`
+  position: absolute;
+  top: ${(props) => props.theme.space[2]};
+  right: ${(props) => props.theme.space[2]};
 `;
 const Info = styled.View`
   padding: ${(props) => props.theme.space[3]};
@@ -37,7 +47,15 @@ export const AlbumInfoCard = ({ album = {} }) => {
 
   return (
     <AlbumCard elevation={5}>
-      <AlbumCardCover key={albumName} source={{ uri: photos[0] }} />
+      <CoverContainer>
+        <AlbumCardCover key={albumName} source={{ uri: photos[0] }} />
+        {premiumIcon ? (
+          <LockIcon>
+            <SvgXml xml={lock} width={35} height={35} />
+          </LockIcon>
+        ) : null}
+      </CoverContainer>
+
       <Info>
         <Title>{albumName}</Title>
         <Description>{description}</Description>
