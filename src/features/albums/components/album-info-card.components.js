@@ -11,12 +11,18 @@ const AlbumCardCover = styled(Card.Cover)`
   padding: ${(props) => props.theme.space[3]};
   background-color: ${(props) => props.theme.colors.bg.secondary};
 `;
-
-const Title = styled(Text)`
-  font-family: ${(props) => props.theme.fonts.body};
+const Info = styled.View`
   padding: ${(props) => props.theme.space[3]};
+`;
+const Title = styled(Text)`
+  font-family: ${(props) => props.theme.fonts.title};
+  font-size: ${(props) => props.theme.fontSizes.title};
+  font-weight: ${(props) => props.theme.fontWeights.bold};
   color: ${(props) => props.theme.colors.ui.primary};
-  fontweights: ${(props) => props.theme.colors.ui.bold};
+`;
+const Description = styled(Text)`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.caption};
 `;
 
 export const AlbumInfoCard = ({ album = {} }) => {
@@ -32,8 +38,10 @@ export const AlbumInfoCard = ({ album = {} }) => {
   return (
     <AlbumCard elevation={5}>
       <AlbumCardCover key={albumName} source={{ uri: photos[0] }} />
-      <Title>{albumName}</Title>
-      <Title>{description}</Title>
+      <Info>
+        <Title>{albumName}</Title>
+        <Description>{description}</Description>
+      </Info>
     </AlbumCard>
   );
 };

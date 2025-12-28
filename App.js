@@ -8,7 +8,7 @@ import {
 import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
 import { useFonts } from "expo-font";
 import { theme } from "./src/infrastracture/theme";
-import { PodcastScreen } from "./src/features/podcasts/screens/podcasts.screen";
+import { AlbumScreen } from "./src/features/albums/screens/album.screen";
 
 export default function App() {
   const [oswaldLoaded] = useOswald({
@@ -31,7 +31,7 @@ export default function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <PodcastScreen />
+        <AlbumScreen />
       </ThemeProvider>
       <ExpoStatusBar style="auto" />
     </>

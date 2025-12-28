@@ -1,8 +1,8 @@
 export const fonts = {
-  body: "Oswald_400Regular",
-  heading: "Lato_400Regular",
   title: "Avenir_Heavy",
-  monospace: "Avenir_Regular",
+  heading: "Avenir_Regular",
+  body: "Oswald_400Regular",
+  monospace: "Lato_400Regular",
 };
 
 export const fontWeights = {

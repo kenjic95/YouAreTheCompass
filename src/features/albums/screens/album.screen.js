@@ -20,7 +20,7 @@ const AlbumListContainer = styled.View`
   padding: ${(props) => props.theme.space[3]};
 `;
 
-export const PodcastScreen = () => (
+export const AlbumScreen = () => (
   <SafeArea>
     <SearchContainer>
       <Searchbar />
