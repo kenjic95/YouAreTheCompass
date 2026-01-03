@@ -1,41 +1,16 @@
 import React from "react";
-import styled from "styled-components/native";
-import { Text } from "react-native";
-import { Card } from "react-native-paper";
+import { Text } from "../../../components/typography/text.component";
 import { SvgXml } from "react-native-svg";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import lock from "../../../../assets/lock";
-
-const AlbumCard = styled(Card)`
-  background-color: ${(props) => props.theme.colors.bg.secondary};
-`;
-
-const AlbumCardCover = styled(Card.Cover)`
-  padding: ${(props) => props.theme.space[3]};
-  background-color: ${(props) => props.theme.colors.bg.secondary};
-`;
-const CoverContainer = styled.View`
-  position: relative;
-`;
-const LockIcon = styled.View`
-  position: absolute;
-  top: ${(props) => props.theme.space[2]};
-  right: ${(props) => props.theme.space[2]};
-  padding-right: ${(props) => props.theme.space[1]};
-`;
-const Info = styled.View`
-  padding: ${(props) => props.theme.space[3]};
-`;
-const Title = styled(Text)`
-  font-family: ${(props) => props.theme.fonts.title};
-  font-size: ${(props) => props.theme.fontSizes.title};
-  font-weight: ${(props) => props.theme.fontWeights.bold};
-  color: ${(props) => props.theme.colors.ui.primary};
-`;
-const Description = styled(Text)`
-  font-family: ${(props) => props.theme.fonts.body};
-  font-size: ${(props) => props.theme.fontSizes.caption};
-`;
+import {
+  AlbumCard,
+  AlbumCardCover,
+  CoverContainer,
+  LockIcon,
+  Info,
+  Description,
+} from "./album-info-card.styles";
 
 export const AlbumInfoCard = ({ album = {} }) => {
   const {
@@ -61,7 +36,7 @@ export const AlbumInfoCard = ({ album = {} }) => {
       </CoverContainer>
 
       <Info>
-        <Title>{albumName}</Title>
+        <Text variant="label">{albumName}</Text>
         <Description>{description}</Description>
       </Info>
     </AlbumCard>
