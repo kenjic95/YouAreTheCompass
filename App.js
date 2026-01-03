@@ -30,10 +30,10 @@ export default function App() {
   }
   return (
     <>
+      <ExpoStatusBar style="auto" />
       <ThemeProvider theme={theme}>
         <AlbumScreen />
       </ThemeProvider>
-      <ExpoStatusBar style="auto" />
     </>
   );
 }

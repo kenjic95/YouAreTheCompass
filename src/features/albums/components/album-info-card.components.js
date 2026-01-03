@@ -1,8 +1,9 @@
 import React from "react";
 import styled from "styled-components/native";
-import { Text, StyleSheet } from "react-native";
+import { Text } from "react-native";
 import { Card } from "react-native-paper";
 import { SvgXml } from "react-native-svg";
+import { Spacer } from "../../../components/spacer/spacer.component";
 import lock from "../../../../assets/lock";
 
 const AlbumCard = styled(Card)`
@@ -20,6 +21,7 @@ const LockIcon = styled.View`
   position: absolute;
   top: ${(props) => props.theme.space[2]};
   right: ${(props) => props.theme.space[2]};
+  padding-right: ${(props) => props.theme.space[1]};
 `;
 const Info = styled.View`
   padding: ${(props) => props.theme.space[3]};
@@ -51,7 +53,9 @@ export const AlbumInfoCard = ({ album = {} }) => {
         <AlbumCardCover key={albumName} source={{ uri: photos[0] }} />
         {premiumIcon ? (
           <LockIcon>
-            <SvgXml xml={lock} width={35} height={35} />
+            <Spacer position="top" size="medium">
+              <SvgXml xml={lock} width={35} height={35} />
+            </Spacer>
           </LockIcon>
         ) : null}
       </CoverContainer>
