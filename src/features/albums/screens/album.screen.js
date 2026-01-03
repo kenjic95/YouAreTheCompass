@@ -16,12 +16,18 @@ const SearchContainer = styled.View`
   padding: ${(props) => props.theme.space[3]};
 `;
 
+const AlbumList = styled(FlatList).attrs({
+  contentContainerStyle: {
+    padding: 16,
+  },
+})``;
+
 export const AlbumScreen = () => (
   <SafeArea>
     <SearchContainer>
       <Searchbar />
     </SearchContainer>
-    <FlatList
+    <AlbumList
       data={[
         { name: 1 },
         { name: 2 },
@@ -44,7 +50,6 @@ export const AlbumScreen = () => (
         </Spacer>
       )}
       keyExtractor={(item) => item.name}
-      contentContainerStyle={{ padding: 16 }}
     />
   </SafeArea>
 );
