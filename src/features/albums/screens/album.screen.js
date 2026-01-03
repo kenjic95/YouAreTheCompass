@@ -1,19 +1,16 @@
 import React from "react";
 import { Searchbar } from "react-native-paper";
-import { StatusBar, FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { FlatList } from "react-native";
 import styled from "styled-components/native";
-
+import { SafeArea } from "../../../components/utility/safe-area.component";
 import { AlbumInfoCard } from "../components/album-info-card.components";
 import { Spacer } from "../../../components/spacer/spacer.component";
 
-const SafeArea = styled(SafeAreaView)`
-  flex: 1;
-  ${StatusBar.currentHeight && `margin-top: ${StatusBar.currentHeight}px`};
-`;
-
 const SearchContainer = styled.View`
-  padding: ${(props) => props.theme.space[3]};
+  padding-top: ${(props) => props.theme.space[0]};
+  padding-bottom: ${(props) => props.theme.space[2]};
+  padding-right: ${(props) => props.theme.space[3]};
+  padding-left: ${(props) => props.theme.space[3]};
 `;
 
 const AlbumList = styled(FlatList).attrs({
