@@ -4,6 +4,7 @@ import { Text } from "react-native";
 import { ThemeProvider } from "styled-components/native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 import {
   useFonts as useOswald,
   Oswald_400Regular,
@@ -13,13 +14,16 @@ import { useFonts } from "expo-font";
 import { theme } from "./src/infrastracture/theme";
 import { AlbumScreen } from "./src/features/albums/screens/album.screen";
 import { SafeArea } from "./src/components/utility/safe-area.component";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const Tab = createBottomTabNavigator();
 
 const Home = () => (
-  <SafeArea>
-    <Text>Home</Text>
-  </SafeArea>
+  <SafeAreaProvider>
+    <SafeArea>
+      <Text>Home</Text>
+    </SafeArea>
+  </SafeAreaProvider>
 );
 
 const Learning = () => (
@@ -62,7 +66,32 @@ export default function App() {
       <ExpoStatusBar style="auto" />
       <ThemeProvider theme={theme}>
         <NavigationContainer>
-          <Tab.Navigator>
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              // eslint-disable-next-line react/no-unstable-nested-components
+              tabBarIcon: ({ color, size }) => {
+                let iconName = "ellipse";
+
+                if (route.name === "Home") {
+                  iconName = "home";
+                } else if (route.name === "Podcast") {
+                  iconName = "headset";
+                } else if (route.name === "Learning") {
+                  iconName = "bulb";
+                } else if (route.name === "Travel Logs") {
+                  iconName = "map";
+                } else if (route.name === "Settings") {
+                  iconName = "ellipsis-horizontal";
+                }
+
+                return <Ionicons name={iconName} size={size} color={color} />;
+              },
+            })}
+            tabBarOptions={{
+              activeTintColor: "tomato",
+              inactiveTintColor: "gray",
+            }}
+          >
             <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="Podcast" component={AlbumScreen} />
             <Tab.Screen name="Learning" component={Learning} />
