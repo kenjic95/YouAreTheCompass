@@ -18,6 +18,14 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const Tab = createBottomTabNavigator();
 
+const TAB_ICON = {
+  Home: "home",
+  Podcast: "headset",
+  Learning: "bulb",
+  "Travel Logs": "map",
+  Settings: "ellipsis-horizontal",
+};
+
 const Home = () => (
   <SafeAreaProvider>
     <SafeArea>
@@ -42,6 +50,14 @@ const Settings = () => (
     <Text>Settings</Text>
   </SafeArea>
 );
+const createScreenOptions = ({ route }) => {
+  const iconName = TAB_ICON[route.name];
+  return {
+    tabBarIcon: ({ size, color }) => (
+      <Ionicons name={iconName} size={size} color={color} />
+    ),
+  };
+};
 
 export default function App() {
   const [oswaldLoaded] = useOswald({
@@ -67,26 +83,7 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <NavigationContainer>
           <Tab.Navigator
-            screenOptions={({ route }) => ({
-              // eslint-disable-next-line react/no-unstable-nested-components
-              tabBarIcon: ({ color, size }) => {
-                let iconName = "ellipse";
-
-                if (route.name === "Home") {
-                  iconName = "home";
-                } else if (route.name === "Podcast") {
-                  iconName = "headset";
-                } else if (route.name === "Learning") {
-                  iconName = "bulb";
-                } else if (route.name === "Travel Logs") {
-                  iconName = "map";
-                } else if (route.name === "Settings") {
-                  iconName = "ellipsis-horizontal";
-                }
-
-                return <Ionicons name={iconName} size={size} color={color} />;
-              },
-            })}
+            screenOptions={createScreenOptions}
             tabBarOptions={{
               activeTintColor: "tomato",
               inactiveTintColor: "gray",
