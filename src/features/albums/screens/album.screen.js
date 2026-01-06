@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Searchbar } from "react-native-paper";
-import { FlatList } from "react-native";
+import { FlatList, ActivityIndicator } from "react-native";
 import styled from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { AlbumInfoCard } from "../components/album-info-card.components";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+
+const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";
+const YOUTUBE_CHANNEL_ID = "YOUR_CHANNEL_ID";
 
 const SearchContainer = styled.View`
   padding-top: ${(props) => props.theme.space[2]};
@@ -20,36 +23,87 @@ const AlbumList = styled(FlatList).attrs({
   },
 })``;
 
-export const AlbumScreen = () => (
-  <SafeAreaProvider>
-    <SafeArea>
-      <SearchContainer>
-        <Searchbar />
-      </SearchContainer>
-      <AlbumList
-        data={[
-          { name: 1 },
-          { name: 2 },
-          { name: 3 },
-          { name: 4 },
-          { name: 5 },
-          { name: 6 },
-          { name: 7 },
-          { name: 8 },
-          { name: 9 },
-          { name: 10 },
-          { name: 11 },
-          { name: 12 },
-          { name: 13 },
-          { name: 14 },
-        ]}
-        renderItem={() => (
-          <Spacer position="bottom" size="large">
-            <AlbumInfoCard />
-          </Spacer>
+const mapVideoToAlbum = (video) => {
+  const thumbnails = video.snippet?.thumbnails || {};
+  const bestThumb =
+    thumbnails.high?.url ||
+    thumbnails.medium?.url ||
+    thumbnails.default?.url ||
+    "";
+
+  return {
+    albumName: video.snippet?.title || "Untitled",
+    description: video.snippet?.description || "",
+    photos: bestThumb ? [bestThumb] : undefined,
+    premiumIcon: false,
+    id: video.id?.videoId || video.id,
+  };
+};
+
+export const AlbumScreen = () => {
+  const [albums, setAlbums] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadVideos = async () => {
+      try {
+        const url =
+          "https://www.googleapis.com/youtube/v3/search" +
+          `?part=snippet&channelId=${YOUTUBE_CHANNEL_ID}` +
+          "&maxResults=20&order=date&type=video" +
+          `&key=${YOUTUBE_API_KEY}`;
+        const response = await fetch(url);
+        const json = await response.json();
+
+        if (!response.ok) {
+          throw new Error(json?.error?.message || "Failed to fetch videos.");
+        }
+
+        setAlbums((json.items || []).map(mapVideoToAlbum));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVideos();
+  }, []);
+
+  const listData = useMemo(() => albums, [albums]);
+
+  return (
+    <SafeAreaProvider>
+      <SafeArea>
+        <SearchContainer>
+          <Searchbar />
+        </SearchContainer>
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <AlbumList
+            data={listData}
+            renderItem={({ item }) => (
+              <Spacer position="bottom" size="large">
+                <AlbumInfoCard album={item} />
+              </Spacer>
+            )}
+            keyExtractor={(item) => item.id}
+          />
         )}
-        keyExtractor={(item) => item.name}
-      />
-    </SafeArea>
-  </SafeAreaProvider>
-);
+        {error ? (
+          <Spacer position="top" size="large">
+            <AlbumInfoCard
+              album={{
+                albumName: "Error",
+                description: error,
+                premiumIcon: false,
+              }}
+            />
+          </Spacer>
+        ) : null}
+      </SafeArea>
+    </SafeAreaProvider>
+  );
+};
