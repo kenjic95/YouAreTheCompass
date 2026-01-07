@@ -12,6 +12,7 @@ import {
 import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
 import { useFonts } from "expo-font";
 import { theme } from "./src/infrastracture/theme";
+import { HomeScreen } from "./src/features/home/screens/home.screen";
 import { AlbumScreen } from "./src/features/albums/screens/album.screen";
 import { SafeArea } from "./src/components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -25,14 +26,6 @@ const TAB_ICON = {
   "Travel Logs": "map",
   Settings: "ellipsis-horizontal",
 };
-
-const Home = () => (
-  <SafeAreaProvider>
-    <SafeArea>
-      <Text>Home</Text>
-    </SafeArea>
-  </SafeAreaProvider>
-);
 
 const Learning = () => (
   <SafeArea>
@@ -89,7 +82,7 @@ export default function App() {
               inactiveTintColor: "gray",
             }}
           >
-            <Tab.Screen name="Home" component={Home} />
+            <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Podcast" component={AlbumScreen} />
             <Tab.Screen name="Learning" component={Learning} />
             <Tab.Screen name="Travel Logs" component={TravelLogs} />
