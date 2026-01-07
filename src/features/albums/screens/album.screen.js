@@ -7,8 +7,8 @@ import { AlbumInfoCard } from "../components/album-info-card.components";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";
-const YOUTUBE_CHANNEL_ID = "YOUR_CHANNEL_ID";
+const YOUTUBE_API_KEY = "AIzaSyBT6ezFl09PhwP-j9s4HrWJuqUZi9huzpI";
+const YOUTUBE_CHANNEL_ID = "UCsPwjVSECkpEgVCkPH8NRkQ";
 
 const SearchContainer = styled.View`
   padding-top: ${(props) => props.theme.space[2]};
