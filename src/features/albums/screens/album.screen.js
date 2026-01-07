@@ -6,9 +6,10 @@ import { SafeArea } from "../../../components/utility/safe-area.component";
 import { AlbumInfoCard } from "../components/album-info-card.components";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Constants from "expo-constants";
 
-const YOUTUBE_API_KEY = "AIzaSyBT6ezFl09PhwP-j9s4HrWJuqUZi9huzpI";
-const YOUTUBE_CHANNEL_ID = "UCsPwjVSECkpEgVCkPH8NRkQ";
+const YOUTUBE_API_KEY = Constants.expoConfig?.extra?.youtubeApiKey || "";
+const YOUTUBE_CHANNEL_ID = Constants.expoConfig?.extra?.youtubeChannelId || "";
 
 const SearchContainer = styled.View`
   padding-top: ${(props) => props.theme.space[2]};
@@ -35,7 +36,7 @@ const mapVideoToAlbum = (video) => {
     albumName: video.snippet?.title || "Untitled",
     description: video.snippet?.description || "",
     photos: bestThumb ? [bestThumb] : undefined,
-    premiumIcon: false,
+    premiumIcon: true,
     id: video.id?.videoId || video.id,
   };
 };
@@ -48,6 +49,10 @@ export const AlbumScreen = () => {
   useEffect(() => {
     const loadVideos = async () => {
       try {
+        if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
+          throw new Error("Missing YouTube API config.");
+        }
+
         const url =
           "https://www.googleapis.com/youtube/v3/search" +
           `?part=snippet&channelId=${YOUTUBE_CHANNEL_ID}` +
@@ -96,9 +101,9 @@ export const AlbumScreen = () => {
           <Spacer position="top" size="large">
             <AlbumInfoCard
               album={{
-                albumName: "Error",
+                albumName: "sample",
                 description: error,
-                premiumIcon: false,
+                premiumIcon: true,
               }}
             />
           </Spacer>
