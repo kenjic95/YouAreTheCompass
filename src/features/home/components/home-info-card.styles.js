@@ -2,12 +2,12 @@ import styled from "styled-components/native";
 import { Card } from "react-native-paper";
 
 export const HomeCard = styled(Card)`
-  background-color: ${(props) => props.theme.colors.bg.primary};
+  background-color: ${(props) => props.theme.colors.bg.secondary};
 `;
 
 export const HomeCardCover = styled(Card.Cover)`
   padding: ${(props) => props.theme.space[3]};
-  background-color: ${(props) => props.theme.colors.bg.primary};
+  background-color: ${(props) => props.theme.colors.bg.secondary};
 `;
 
 export const Description = styled.Text`
@@ -16,5 +16,8 @@ export const Description = styled.Text`
 `;
 
 export const Info = styled.View`
-  padding: ${(props) => props.theme.space[3]};
+  padding-top: ${(props) => props.theme.space[0]};
+  padding-right: ${(props) => props.theme.space[3]};
+  padding-bottom: ${(props) => props.theme.space[3]};
+  padding-left: ${(props) => props.theme.space[3]};
 `;

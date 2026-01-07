@@ -25,7 +25,10 @@ export const Title = styled.Text`
   color: ${(props) => props.theme.colors.ui.primary};
 `;
 export const Info = styled.View`
-  padding: ${(props) => props.theme.space[3]};
+  padding-top: ${(props) => props.theme.space[0]};
+  padding-right: ${(props) => props.theme.space[3]};
+  padding-bottom: ${(props) => props.theme.space[3]};
+  padding-left: ${(props) => props.theme.space[3]};
 `;
 
 export const Description = styled.Text`
