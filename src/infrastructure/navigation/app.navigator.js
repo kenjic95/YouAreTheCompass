@@ -5,7 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text } from "react-native";
 
 import { HomeNavigator } from "./home.navigator";
-import { AlbumScreen } from "../../features/podcast/screens/podcast.screen";
+import { PodcastNavigator } from "./podcast.navigator";
+
 import { SafeArea } from "../../components/utility/safe-area.component";
 
 const Tab = createBottomTabNavigator();
@@ -57,7 +58,11 @@ export const AppNavigator = () => (
         component={HomeNavigator}
         options={{ headerShown: false }}
       />
-      <Tab.Screen name="Podcast" component={AlbumScreen} />
+      <Tab.Screen
+        name="Podcast"
+        component={PodcastNavigator}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen name="Learning" component={Learning} />
       <Tab.Screen name="Travel Logs" component={TravelLogs} />
       <Tab.Screen name="Settings" component={Settings} />
