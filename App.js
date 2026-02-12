@@ -13,7 +13,7 @@ import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
 import { useFonts } from "expo-font";
 import { theme } from "./src/infrastracture/theme";
 import { HomeScreen } from "./src/features/home/screens/home.screen";
-import { AlbumScreen } from "./src/features/albums/screens/album.screen";
+import { AlbumScreen } from "./src/features/podcast/screens/podcast.screen";
 import { SafeArea } from "./src/components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
