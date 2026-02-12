@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { Text } from "react-native";
 
-import { HomeScreen } from "../../features/home/screens/home.screen";
+import { HomeNavigator } from "./home.navigator";
 import { AlbumScreen } from "../../features/podcast/screens/podcast.screen";
 import { SafeArea } from "../../components/utility/safe-area.component";
 
@@ -52,7 +52,11 @@ export const AppNavigator = () => (
         inactiveTintColor: "gray",
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen
+        name="Home"
+        component={HomeNavigator}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen name="Podcast" component={AlbumScreen} />
       <Tab.Screen name="Learning" component={Learning} />
       <Tab.Screen name="Travel Logs" component={TravelLogs} />
