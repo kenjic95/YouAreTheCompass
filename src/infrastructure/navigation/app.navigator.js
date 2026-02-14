@@ -6,6 +6,7 @@ import { Text } from "react-native";
 
 import { HomeNavigator } from "./home.navigator";
 import { PodcastNavigator } from "./podcast.navigator";
+import { colors } from "../theme/colors";
 
 import { SafeArea } from "../../components/utility/safe-area.component";
 
@@ -41,6 +42,8 @@ const createScreenOptions = ({ route }) => {
     tabBarIcon: ({ size, color }) => (
       <Ionicons name={iconName} size={size} color={color} />
     ),
+    tabBarActiveTintColor: colors.brand.primary,
+    tabBarInactiveTintColor: colors.ui.secondary,
   };
 };
 
@@ -48,10 +51,6 @@ export const AppNavigator = () => (
   <NavigationContainer>
     <Tab.Navigator
       screenOptions={createScreenOptions}
-      tabBarOptions={{
-        activeTintColor: "tomato",
-        inactiveTintColor: "gray",
-      }}
     >
       <Tab.Screen
         name="Home"
