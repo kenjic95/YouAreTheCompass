@@ -57,9 +57,7 @@ const createScreenOptions = ({ route }) => {
 
 export const AppNavigator = () => (
   <NavigationContainer theme={navigationTheme}>
-    <Tab.Navigator
-      screenOptions={createScreenOptions}
-    >
+    <Tab.Navigator screenOptions={createScreenOptions}>
       <Tab.Screen
         name="Home"
         component={HomeNavigator}

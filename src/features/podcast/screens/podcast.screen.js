@@ -1,22 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Searchbar } from "react-native-paper";
 import { FlatList, ActivityIndicator } from "react-native";
 import styled from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
-import { AlbumInfoCard } from "../components/album-info-card.components";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 
+import { Search } from "../components/search.component";
+import { AlbumInfoCard } from "../components/album-info-card.components";
+
 const YOUTUBE_API_KEY = Constants.expoConfig?.extra?.youtubeApiKey || "";
 const YOUTUBE_CHANNEL_ID = Constants.expoConfig?.extra?.youtubeChannelId || "";
-
-const SearchContainer = styled.View`
-  padding-top: ${(props) => props.theme.space[2]};
-  padding-bottom: ${(props) => props.theme.space[2]};
-  padding-right: ${(props) => props.theme.space[3]};
-  padding-left: ${(props) => props.theme.space[3]};
-`;
 
 const AlbumList = styled(FlatList).attrs({
   contentContainerStyle: {
@@ -43,6 +37,8 @@ const mapVideoToAlbum = (video) => {
 
 export const AlbumScreen = () => {
   const [albums, setAlbums] = useState([]);
+  const [keyword, setKeyword] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -76,14 +72,25 @@ export const AlbumScreen = () => {
     loadVideos();
   }, []);
 
-  const listData = useMemo(() => albums, [albums]);
+  const listData = useMemo(() => {
+    const term = submittedKeyword.trim().toLowerCase();
+    if (!term) {
+      return albums;
+    }
+
+    return albums.filter((album) =>
+      (album.albumName || "").toLowerCase().includes(term)
+    );
+  }, [albums, submittedKeyword]);
 
   return (
     <SafeAreaProvider>
       <SafeArea>
-        <SearchContainer>
-          <Searchbar />
-        </SearchContainer>
+        <Search
+          keyword={keyword}
+          onChangeKeyword={setKeyword}
+          onSubmit={(value) => setSubmittedKeyword(value)}
+        />
         {isLoading ? (
           <ActivityIndicator />
         ) : (
