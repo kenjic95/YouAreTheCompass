@@ -40,10 +40,10 @@ export default function SettingsScreen({ navigation }) {
             </UserInfo>
           </ProfileLeft>
 
-          <PremiumButton onPress={() => console.log("Upgrade to Premium")}>
+          <PremiumButton onPress={() => navigation.navigate("Premium")}>
             <PremiumButtonText>
-              Upgrade to{"\n"}Premium
-            </PremiumButtonText>
+               Upgrade to{"\n"}Premium
+             </PremiumButtonText>
           </PremiumButton>
         </ProfileSection>
 
