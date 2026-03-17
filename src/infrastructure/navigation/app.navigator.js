@@ -8,6 +8,8 @@ import { HomeNavigator } from "./home.navigator";
 import { PodcastNavigator } from "./podcast.navigator";
 import { LearningsNavigator } from "./learnings.navigator";
 import SettingsScreen from "../../features/settings/screens/settings.screen";
+import { TripLogsScreen } from "../../features/triplogs/screens/triplogs.screen";
+
 
 import { colors } from "../theme/colors";
 
@@ -31,11 +33,7 @@ const TAB_ICON = {
   Settings: "ellipsis-horizontal",
 };
 
-const TravelLogs = () => (
-  <SafeArea>
-    <Text>Travel Logs</Text>
-  </SafeArea>
-);
+
 
 const Settings = () => (
   <SafeArea>
@@ -72,7 +70,16 @@ export const AppNavigator = () => (
         options={{ headerShown: false }}
       />
 
-      <Tab.Screen name="Travel Logs" component={TravelLogs} />
+      <Tab.Screen
+        name="Trip Logs"
+        component={TripLogsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="map" size={size} color={color} />
+          ),
+        }}
+      />
+
       <Tab.Screen name="Settings" 
       component={SettingsScreen}
       option={createScreenOptions} />

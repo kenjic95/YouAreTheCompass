@@ -26,9 +26,7 @@ export default function SettingsScreen({ navigation }) {
   return (
     <Container>
       <ScrollContainer showsVerticalScrollIndicator={false}>
-        <HeaderArea>
-          <HeaderTitle>General Settings</HeaderTitle>
-        </HeaderArea>
+
 
         <ProfileSection>
           <ProfileLeft>
