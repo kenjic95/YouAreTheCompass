@@ -8,7 +8,7 @@ const LearningsStack = createStackNavigator();
 export const LearningsNavigator = () => {
   return (
     <LearningsStack.Navigator headerMode="none">
-      <LearningsStack.Screen name="LearningsHome" component={LearningsScreen} />
+      <LearningsStack.Screen name="Learning" component={LearningsScreen} />
     </LearningsStack.Navigator>
   );
 };
