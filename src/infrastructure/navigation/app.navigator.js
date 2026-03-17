@@ -2,18 +2,14 @@ import React from "react";
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { Text } from "react-native";
 
 import { HomeNavigator } from "./home.navigator";
 import { PodcastNavigator } from "./podcast.navigator";
 import { LearningsNavigator } from "./learnings.navigator";
+import { TripLogsNavigator } from "./triplogs.navigator";
 import { SettingsNavigator } from "./settings.navigator";
-import { TripLogsScreen } from "../../features/triplogs/screens/triplogs.screen";
-
 
 import { colors } from "../theme/colors";
-
-import { SafeArea } from "../../components/utility/safe-area.component";
 
 const Tab = createBottomTabNavigator();
 
@@ -29,17 +25,10 @@ const TAB_ICON = {
   Home: "home",
   Podcast: "headset",
   Learning: "bulb",
-  "Travel Logs": "map",
+  "Trip Logs": "map",
   Settings: "ellipsis-horizontal",
 };
 
-
-
-const Settings = () => (
-  <SafeArea>
-    <Text>Settings</Text>
-  </SafeArea>
-);
 const createScreenOptions = ({ route }) => {
   const iconName = TAB_ICON[route.name];
   return {
@@ -72,19 +61,15 @@ export const AppNavigator = () => (
 
       <Tab.Screen
         name="Trip Logs"
-        component={TripLogsScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map" size={size} color={color} />
-          ),
-        }}
+        component={TripLogsNavigator}
+        options={{ headerShown: false }}
       />
 
-<Tab.Screen
-  name="Settings"
-  component={SettingsNavigator}
-  options={{ headerShown: false }}
-/>
+      <Tab.Screen
+        name="Settings"
+        component={SettingsNavigator}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   </NavigationContainer>
 );

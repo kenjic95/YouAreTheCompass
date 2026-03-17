@@ -38,20 +38,18 @@ export default function PremiumScreen({ navigation }) {
         Upgrade to Premium
       </Text>
 
-      
-      {/* Logo */}
-      {/*
-      <Image
-        source={require("../../../assets/logo.jpeg")}
-        style={{
-          width: 220,
-          height: 220,
-          marginBottom: 30,
-        }}
-        resizeMode="contain"
-      />
-      */}
-      
+      {/*Logo}
+      {
+        <Image
+          source={require("../../../assets/logo.jpeg")}
+          style={{
+            width: 220,
+            height: 220,
+            marginBottom: 30,
+          }}
+          resizeMode="contain"
+        />
+      }
 
       {/* Subtitle */}
       <Text
