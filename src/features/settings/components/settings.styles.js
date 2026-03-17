@@ -87,7 +87,7 @@ export const MenuCard = styled.TouchableOpacity`
   background-color: #dfeaf2;
   margin: 10px 20px;
   border-radius: 24px;
-  min-height: 74px;
+  min-height: 50px;
   padding-horizontal: 20px;
   flex-direction: row;
   align-items: center;

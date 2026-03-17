@@ -64,7 +64,7 @@ const journals = [
   { id: "1", title: "Hiking in Blue Mountains" },
   { id: "2", title: "Scuba Diving in Cairns" },
   { id: "3", title: "Camping in Cokatoo Island" },
-  { id: "4", title: "Coastal Walk in coogee", light: true },
+  { id: "4", title: "Coastal Walk in coogee" },
 ];
 
 export const TripLogsScreen = () => {

@@ -26,8 +26,6 @@ export default function SettingsScreen({ navigation }) {
   return (
     <Container>
       <ScrollContainer showsVerticalScrollIndicator={false}>
-
-
         <ProfileSection>
           <ProfileLeft>
             <AvatarCircle>
@@ -41,9 +39,7 @@ export default function SettingsScreen({ navigation }) {
           </ProfileLeft>
 
           <PremiumButton onPress={() => navigation.navigate("Premium")}>
-            <PremiumButtonText>
-               Upgrade to{"\n"}Premium
-             </PremiumButtonText>
+            <PremiumButtonText>Upgrade to{"\n"}Premium</PremiumButtonText>
           </PremiumButton>
         </ProfileSection>
 
@@ -67,7 +63,11 @@ export default function SettingsScreen({ navigation }) {
 
         <MenuCard onPress={() => console.log("About")}>
           <MenuLeft>
-            <Ionicons name="information-circle-outline" size={24} color="#222" />
+            <Ionicons
+              name="information-circle-outline"
+              size={24}
+              color="#222"
+            />
             <MenuText>About</MenuText>
           </MenuLeft>
           <Feather name="chevron-right" size={24} color="#222" />
@@ -85,7 +85,11 @@ export default function SettingsScreen({ navigation }) {
 
         <MenuCard onPress={() => console.log("Feedback")}>
           <MenuLeft>
-            <MaterialCommunityIcons name="message-text-outline" size={24} color="#222" />
+            <MaterialCommunityIcons
+              name="message-text-outline"
+              size={24}
+              color="#222"
+            />
             <MenuText>Feedback</MenuText>
           </MenuLeft>
           <Feather name="chevron-right" size={24} color="#222" />
