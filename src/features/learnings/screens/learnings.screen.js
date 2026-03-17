@@ -1,17 +1,20 @@
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeArea } from "../../../components/utility/safe-area.component";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Searchbar } from "react-native-paper";
 import { StatusBar, StyleSheet, Text, View } from "react-native";
 
 export const LearningsScreen = () => (
-  <SafeAreaView style={styles.container}>
-    <View style={styles.search}>
-      <Searchbar />
-    </View>
-    <View style={styles.list}>
-      <Text>List</Text>
-    </View>
-  </SafeAreaView>
+  <SafeAreaProvider>
+    <SafeArea>
+      <View style={styles.search}>
+        <Searchbar />
+      </View>
+      <View style={styles.list}>
+        <Text>List</Text>
+      </View>
+    </SafeArea>
+  </SafeAreaProvider>
 );
 
 const styles = StyleSheet.create({
