@@ -6,6 +6,8 @@ import { Text } from "react-native";
 
 import { HomeNavigator } from "./home.navigator";
 import { PodcastNavigator } from "./podcast.navigator";
+import { LearningsNavigator } from "./learnings.navigator";
+
 import { colors } from "../theme/colors";
 
 import { SafeArea } from "../../components/utility/safe-area.component";
@@ -28,11 +30,6 @@ const TAB_ICON = {
   Settings: "ellipsis-horizontal",
 };
 
-const Learning = () => (
-  <SafeArea>
-    <Text>Learning</Text>
-  </SafeArea>
-);
 const TravelLogs = () => (
   <SafeArea>
     <Text>Travel Logs</Text>
@@ -68,7 +65,12 @@ export const AppNavigator = () => (
         component={PodcastNavigator}
         options={{ headerShown: false }}
       />
-      <Tab.Screen name="Learning" component={Learning} />
+      <Tab.Screen
+        name="Learning"
+        component={LearningsNavigator}
+        options={{ headerShown: false }}
+      />
+
       <Tab.Screen name="Travel Logs" component={TravelLogs} />
       <Tab.Screen name="Settings" component={Settings} />
     </Tab.Navigator>
