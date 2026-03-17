@@ -7,6 +7,7 @@ import { Text } from "react-native";
 import { HomeNavigator } from "./home.navigator";
 import { PodcastNavigator } from "./podcast.navigator";
 import { LearningsNavigator } from "./learnings.navigator";
+import SettingsScreen from "../../features/settings/screens/settings.screen";
 
 import { colors } from "../theme/colors";
 
@@ -72,7 +73,9 @@ export const AppNavigator = () => (
       />
 
       <Tab.Screen name="Travel Logs" component={TravelLogs} />
-      <Tab.Screen name="Settings" component={Settings} />
+      <Tab.Screen name="Settings" 
+      component={SettingsScreen}
+      option={createScreenOptions} />
     </Tab.Navigator>
   </NavigationContainer>
 );
