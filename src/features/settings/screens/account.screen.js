@@ -6,118 +6,127 @@ export default function AccountScreen({ navigation }) {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingBottom: 40,
+      }}
       style={{
         flex: 1,
         backgroundColor: "#69AEE6",
       }}
     >
+      {/* Back button */}
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={{
           position: "absolute",
-          top: 60,
-          left: 20,
+          top: 58,
+          left: 22,
           zIndex: 10,
         }}
       >
-        <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
+        <Ionicons name="arrow-back" size={30} color="#6B6B6B" />
       </TouchableOpacity>
 
+      {/* Top Card */}
       <View
         style={{
-          paddingTop: 90,
-          paddingHorizontal: 20,
-          paddingBottom: 48,
+          backgroundColor: "#DCEBF7",
+          borderBottomLeftRadius: 48,
+          borderBottomRightRadius: 48,
+          paddingTop: 95,
+          paddingHorizontal: 30,
+          paddingBottom: 38,
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.16,
+          shadowRadius: 8,
+          elevation: 8,
         }}
       >
-        <View
+        <Text
           style={{
-            backgroundColor: "#DCEBF7",
-            borderRadius: 42,
-            paddingTop: 28,
-            paddingHorizontal: 24,
-            paddingBottom: 34,
-            alignItems: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.18,
-            shadowRadius: 10,
-            elevation: 8,
+            fontSize: 20,
+            fontWeight: "700",
+            color: "#5A5A5A",
+            marginBottom: 20,
           }}
         >
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "700",
-              color: "#565656",
-              marginBottom: 22,
-            }}
-          >
-            Account Settings
-          </Text>
+          Account Settings
+        </Text>
 
+        {/* Avatar outer circle */}
+        <View
+          style={{
+            width: 220,
+            height: 220,
+            borderRadius: 110,
+            backgroundColor: "#F4F4F4",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 34,
+          }}
+        >
+          {/* Avatar inner circle */}
           <View
             style={{
-              width: 250,
-              height: 250,
-              borderRadius: 125,
-              backgroundColor: "#FFFFFF",
+              width: 150,
+              height: 150,
+              borderRadius: 75,
+              backgroundColor: "#8A8A8A",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 34,
             }}
           >
-            <View
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: 90,
-                backgroundColor: "#8C8C8C",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Feather name="user" size={110} color="#FFFFFF" />
-            </View>
-          </View>
-
-          <View style={{ width: "100%", paddingHorizontal: 12 }}>
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "800",
-                color: "#222222",
-                marginBottom: 10,
-              }}
-            >
-              Account Details
-            </Text>
-
-            <Text
-              style={{
-                fontSize: 22,
-                fontWeight: "600",
-                color: "#5A5A5A",
-                marginBottom: 10,
-              }}
-            >
-              User Full Name
-            </Text>
-
-            <Text
-              style={{
-                fontSize: 22,
-                fontWeight: "600",
-                color: "#5A5A5A",
-              }}
-            >
-              user@email.com
-            </Text>
+            <Feather name="user" size={90} color="#FFFFFF" />
           </View>
         </View>
 
+        {/* Account info */}
+        <View style={{ width: "100%" }}>
+          <Text
+            style={{
+              fontSize: 22,
+              fontWeight: "800",
+              color: "#1F1F1F",
+              marginBottom: 10,
+            }}
+          >
+            Account Details
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "700",
+              color: "#5F5F5F",
+              marginBottom: 8,
+            }}
+          >
+            User Full Name
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "700",
+              color: "#5F5F5F",
+            }}
+          >
+            user@email.com
+          </Text>
+        </View>
+      </View>
+
+      {/* Buttons */}
+      <View
+        style={{
+          paddingHorizontal: 28,
+          paddingTop: 24,
+        }}
+      >
         <ActionCard
-          icon={<Feather name="edit-2" size={28} color="#222222" />}
+          icon={<Feather name="edit-2" size={24} color="#1A1A1A" />}
           label="Edit Account Details"
           onPress={() => {}}
         />
@@ -126,8 +135,8 @@ export default function AccountScreen({ navigation }) {
           icon={
             <MaterialCommunityIcons
               name="trash-can-outline"
-              size={30}
-              color="#222222"
+              size={26}
+              color="#1A1A1A"
             />
           }
           label="Request Account Deletion"
@@ -143,21 +152,22 @@ function ActionCard({ icon, label, onPress }) {
     <TouchableOpacity
       onPress={onPress}
       style={{
-        backgroundColor: "#EAF3FB",
+        backgroundColor: "#DCEBF7",
         borderRadius: 30,
-        minHeight: 72,
-        marginTop: 28,
-        paddingHorizontal: 24,
+        height: 58,
+        marginBottom: 22,
+        paddingHorizontal: 28,
         flexDirection: "row",
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.18,
-        shadowRadius: 6,
+        shadowOpacity: 0.16,
+        shadowRadius: 5,
         elevation: 5,
       }}
     >
-      <View style={{ width: 40, alignItems: "center" }}>{icon}</View>
+      <View style={{ width: 28, alignItems: "center" }}>{icon}</View>
+
       <Text
         style={{
           marginLeft: 18,
