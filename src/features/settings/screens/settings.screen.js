@@ -39,7 +39,9 @@ export default function SettingsScreen({ navigation }) {
           </ProfileLeft>
 
           <PremiumButton onPress={() => navigation.navigate("Premium")}>
-            <PremiumButtonText>Upgrade to{"\n"}Premium</PremiumButtonText>
+            <PremiumButtonText>
+              Upgrade to{"\n"}Premium
+            </PremiumButtonText>
           </PremiumButton>
         </ProfileSection>
 
