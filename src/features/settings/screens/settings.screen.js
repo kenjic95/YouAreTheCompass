@@ -47,62 +47,52 @@ export default function SettingsScreen({ navigation }) {
 
         <SectionTitle>General</SectionTitle>
 
-        <MenuCard onPress={() => console.log("Account")}>
-          <MenuLeft>
-            <Feather name="user" size={24} color="#222" />
-            <MenuText>Account</MenuText>
-          </MenuLeft>
-          <Feather name="chevron-right" size={24} color="#222" />
-        </MenuCard>
+        <MenuCard onPress={() => navigation.navigate("Account")}>
+  <MenuLeft>
+    <Feather name="user" size={24} color="#222" />
+    <MenuText>Account</MenuText>
+  </MenuLeft>
+  <Feather name="chevron-right" size={24} color="#222" />
+</MenuCard>
 
-        <MenuCard onPress={() => console.log("Settings")}>
-          <MenuLeft>
-            <Ionicons name="settings-outline" size={24} color="#222" />
-            <MenuText>Settings</MenuText>
-          </MenuLeft>
-          <Feather name="chevron-right" size={24} color="#222" />
-        </MenuCard>
+<MenuCard onPress={() => navigation.navigate("SettingsDetail")}>
+  <MenuLeft>
+    <Ionicons name="settings-outline" size={24} color="#222" />
+    <MenuText>Settings</MenuText>
+  </MenuLeft>
+  <Feather name="chevron-right" size={24} color="#222" />
+</MenuCard>
 
-        <MenuCard onPress={() => console.log("About")}>
-          <MenuLeft>
-            <Ionicons
-              name="information-circle-outline"
-              size={24}
-              color="#222"
-            />
-            <MenuText>About</MenuText>
-          </MenuLeft>
-          <Feather name="chevron-right" size={24} color="#222" />
-        </MenuCard>
+<MenuCard onPress={() => navigation.navigate("About")}>
+  <MenuLeft>
+    <Ionicons name="information-circle-outline" size={24} color="#222" />
+    <MenuText>About</MenuText>
+  </MenuLeft>
+  <Feather name="chevron-right" size={24} color="#222" />
+</MenuCard>
 
-        <SectionTitle>Support</SectionTitle>
+<MenuCard onPress={() => navigation.navigate("HelpSupport")}>
+  <MenuLeft>
+    <Ionicons name="help-circle-outline" size={24} color="#222" />
+    <MenuText>Help & Support</MenuText>
+  </MenuLeft>
+  <Feather name="chevron-right" size={24} color="#222" />
+</MenuCard>
 
-        <MenuCard onPress={() => console.log("Help & Support")}>
-          <MenuLeft>
-            <Ionicons name="help-circle-outline" size={24} color="#222" />
-            <MenuText>Help & Support</MenuText>
-          </MenuLeft>
-          <Feather name="chevron-right" size={24} color="#222" />
-        </MenuCard>
+<MenuCard onPress={() => navigation.navigate("Feedback")}>
+  <MenuLeft>
+    <MaterialCommunityIcons name="message-text-outline" size={24} color="#222" />
+    <MenuText>Feedback</MenuText>
+  </MenuLeft>
+  <Feather name="chevron-right" size={24} color="#222" />
+</MenuCard>
 
-        <MenuCard onPress={() => console.log("Feedback")}>
-          <MenuLeft>
-            <MaterialCommunityIcons
-              name="message-text-outline"
-              size={24}
-              color="#222"
-            />
-            <MenuText>Feedback</MenuText>
-          </MenuLeft>
-          <Feather name="chevron-right" size={24} color="#222" />
-        </MenuCard>
-
-        <MenuCard onPress={() => console.log("Logout")}>
-          <MenuLeft>
-            <MaterialCommunityIcons name="logout" size={24} color="#222" />
-            <LogoutText>Logout</LogoutText>
-          </MenuLeft>
-        </MenuCard>
+<MenuCard onPress={() => navigation.navigate("Logout")}>
+  <MenuLeft>
+    <MaterialCommunityIcons name="logout" size={24} color="#222" />
+    <LogoutText>Logout</LogoutText>
+  </MenuLeft>
+</MenuCard>
 
         <BottomSpace />
       </ScrollContainer>
