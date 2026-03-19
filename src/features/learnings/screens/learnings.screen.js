@@ -3,6 +3,7 @@ import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Searchbar } from "react-native-paper";
 import { StatusBar, StyleSheet, Text, View } from "react-native";
+import { CategoryInfo } from "../components/category-card.components";
 
 export const LearningsScreen = () => (
   <SafeAreaProvider>
@@ -11,7 +12,7 @@ export const LearningsScreen = () => (
         <Searchbar />
       </View>
       <View style={styles.list}>
-        <Text>List</Text>
+        <CategoryInfo />
       </View>
     </SafeArea>
   </SafeAreaProvider>

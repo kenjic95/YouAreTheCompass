@@ -1650,7 +1650,7 @@
 
 "@react-navigation/native-stack@^7.14.5":
   version "7.14.5"
-  resolved "https://registry.npmjs.org/@react-navigation/native-stack/-/native-stack-7.14.5.tgz"
+  resolved "https://registry.yarnpkg.com/@react-navigation/native-stack/-/native-stack-7.14.5.tgz#330819064b4f2bb6e9161adc6d966d26c43105d1"
   integrity sha512-NuyMf21kKk3jODvYgpcDA+HwyWr/KEj72ciqquyEupZlsmQ3WNUGgdaixEB3A19+iPOvHLQzDLcoTrrqZk8Leg==
   dependencies:
     "@react-navigation/elements" "^2.9.10"

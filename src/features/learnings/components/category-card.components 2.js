@@ -13,6 +13,7 @@ export const CategoryInfo = ({ category } = {}) => {
   const coverPhoto = Array.isArray(categoryPhoto)
     ? categoryPhoto[0]
     : categoryPhoto;
+
   return (
     <Card elevation={5} style={styles.card}>
       <Card.Cover
@@ -21,6 +22,7 @@ export const CategoryInfo = ({ category } = {}) => {
         source={{ uri: coverPhoto }}
       />
       <Text>{categoryTitle}</Text>
+      <Text>{noOfCourses}</Text>
     </Card>
   );
 };
