@@ -8,7 +8,7 @@ import {
   Title,
 } from "./category-card.styles";
 
-export const CategoryInfo = ({ category } = {}) => {
+export const CategoryInfo = ({ category, onPress } = {}) => {
   const {
     categoryTitle = "Health & Wellness",
     noOfCourses = "17 Courses",
@@ -22,7 +22,7 @@ export const CategoryInfo = ({ category } = {}) => {
     : categoryPhoto;
 
   return (
-    <CategoryCard elevation={5}>
+    <CategoryCard elevation={5} onPress={onPress}>
       <CategoryCardCover source={{ uri: coverPhoto }} resizeMode="contain" />
       <CardOverlay>
         <Title>{categoryTitle}</Title>

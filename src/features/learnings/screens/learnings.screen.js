@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { Searchbar } from "react-native-paper";
 import { FlatList, StyleSheet, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
@@ -50,28 +51,39 @@ const categories = [
   },
 ];
 
-export const LearningsScreen = () => (
-  <SafeAreaProvider>
-    <SafeArea>
-      <View style={styles.search}>
-        <Searchbar />
-      </View>
+export const LearningsScreen = () => {
+  const navigation = useNavigation();
 
-      <FlatList
-        data={categories}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.cardWrapper}>
-            <CategoryInfo category={item} />
-          </View>
-        )}
-      />
-    </SafeArea>
-  </SafeAreaProvider>
-);
+  return (
+    <SafeAreaProvider>
+      <SafeArea>
+        <View style={styles.search}>
+          <Searchbar />
+        </View>
+
+        <FlatList
+          data={categories}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <CategoryInfo
+                category={item}
+                onPress={() =>
+                  navigation.navigate("Courses", {
+                    category: item,
+                  })
+                }
+              />
+            </View>
+          )}
+        />
+      </SafeArea>
+    </SafeAreaProvider>
+  );
+};
 
 const styles = StyleSheet.create({
   search: {

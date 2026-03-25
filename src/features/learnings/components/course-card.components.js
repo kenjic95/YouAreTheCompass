@@ -1,11 +1,10 @@
 import React from "react";
 
 import {
-  CardOverlay,
-  CategoryCard,
-  CategoryCardCover,
-  CourseText,
-  Title,
+  CourseCard,
+  Description,
+  HomeCardCover,
+  Info,
 } from "./course-card.styles";
 
 export const CourseInfo = ({ course } = {}) => {
@@ -24,16 +23,16 @@ export const CourseInfo = ({ course } = {}) => {
   const coverPhoto = Array.isArray(coursePhoto) ? coursePhoto[0] : coursePhoto;
 
   return (
-    <CategoryCard elevation={5}>
-      <CategoryCardCover source={{ uri: coverPhoto }} resizeMode="contain" />
-      <CardOverlay>
-        <Title>{courseTitle}</Title>
-        <author>{author}</author>
-        <duration>{courseDuration}</duration>
-        <price>{price}</price>
-        <watchers>{watchers}</watchers>
-        <rating>{rating}</rating>
-      </CardOverlay>
-    </CategoryCard>
+    <CourseCard elevation={5}>
+      <HomeCardCover source={{ uri: coverPhoto }} />
+      <Info>
+        <Description>{courseTitle}</Description>
+        <Description>{author}</Description>
+        <Description>{courseDuration}</Description>
+        <Description>{price}</Description>
+        <Description>{watchers}</Description>
+        <Description>{rating}</Description>
+      </Info>
+    </CourseCard>
   );
 };
