@@ -67,10 +67,10 @@ const journals = [
   { id: "4", title: "Coastal Walk in coogee" },
 ];
 
-export const TripLogsScreen = () => {
+export const TripLogsScreen = ({ navigation }) => {
   return (
     <ScreenContainer>
-      <CreateButton>
+       <CreateButton onPress={() => navigation.navigate("CreateJournal")}>
         <Ionicons name="add-circle-outline" size={38} color="#3a6e97" />
         <CreateButtonText>Create a journal</CreateButtonText>
       </CreateButton>
