@@ -21,6 +21,7 @@ export const CategoryInfo = ({ category } = {}) => {
         source={{ uri: coverPhoto }}
       />
       <Text>{categoryTitle}</Text>
+      <Text>{noOfCourses}</Text>
     </Card>
   );
 };
