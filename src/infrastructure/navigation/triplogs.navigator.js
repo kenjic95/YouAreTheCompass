@@ -8,7 +8,11 @@ const TripLogsStack = createStackNavigator();
 
 export const TripLogsNavigator = () => {
   return (
-    <TripLogsStack.Navigator headerMode="none">
+    <TripLogsStack.Navigator
+      screenOptions={{
+        headerShown: false, 
+      }}
+    >
       <TripLogsStack.Screen name="TripLogsMain" component={TripLogsScreen} />
       <TripLogsStack.Screen
         name="CreateJournal"

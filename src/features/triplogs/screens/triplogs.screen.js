@@ -1,5 +1,6 @@
 import React from "react";
 import { FlatList } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -60,6 +61,7 @@ const JournalText = styled.Text`
   color: #3a6e97;
 `;
 
+
 const journals = [
   { id: "1", title: "Hiking in Blue Mountains" },
   { id: "2", title: "Scuba Diving in Cairns" },
@@ -69,6 +71,7 @@ const journals = [
 
 export const TripLogsScreen = ({ navigation }) => {
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ddd9d9" }}>
     <ScreenContainer>
        <CreateButton onPress={() => navigation.navigate("CreateJournal")}>
         <Ionicons name="add-circle-outline" size={38} color="#3a6e97" />
@@ -89,5 +92,6 @@ export const TripLogsScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       />
     </ScreenContainer>
+    </SafeAreaView>
   );
 };
