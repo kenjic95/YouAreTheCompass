@@ -32,6 +32,7 @@ export const Title = styled.Text`
   font-family: ${(props) => props.theme.fonts.heading};
   font-weight: ${(props) => props.theme.fontWeights.bold};
   font-size: ${(props) => props.theme.fontSizes.body};
+  line-height: 19px;
 `;
 
 export const CourseText = styled.Text`
