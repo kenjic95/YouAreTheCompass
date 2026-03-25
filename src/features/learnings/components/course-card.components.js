@@ -2,8 +2,8 @@ import React from "react";
 
 import {
   CourseCard,
+  CourseCardCover,
   Description,
-  HomeCardCover,
   Info,
 } from "./course-card.styles";
 
@@ -24,7 +24,7 @@ export const CourseInfo = ({ course } = {}) => {
 
   return (
     <CourseCard elevation={5}>
-      <HomeCardCover source={{ uri: coverPhoto }} />
+      <CourseCardCover source={{ uri: coverPhoto }} />
       <Info>
         <Description>{courseTitle}</Description>
         <Description>{author}</Description>
