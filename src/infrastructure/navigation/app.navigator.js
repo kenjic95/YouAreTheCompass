@@ -24,7 +24,7 @@ const navigationTheme = {
 const TAB_ICON = {
   Home: "home",
   Podcast: "headset",
-  Learning: "bulb",
+  Create: "bulb",
   "Trip Logs": "map",
   Settings: "ellipsis-horizontal",
 };
@@ -54,7 +54,7 @@ export const AppNavigator = () => (
         options={{ headerShown: false }}
       />
       <Tab.Screen
-        name="Learning"
+        name="Create"
         component={LearningsNavigator}
         options={{ headerShown: false }}
       />
