@@ -21,3 +21,22 @@ export const Info = styled.View`
   padding-bottom: ${(props) => props.theme.space[3]};
   padding-left: ${(props) => props.theme.space[3]};
 `;
+
+export const StatsRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-top: ${(props) => props.theme.space[1]};
+`;
+
+export const StatItem = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-right: ${(props) => props.theme.space[3]};
+`;
+
+export const StatText = styled.Text`
+  margin-left: ${(props) => props.theme.space[1]};
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.caption};
+  color: ${(props) => props.theme.colors.text.primary};
+`;

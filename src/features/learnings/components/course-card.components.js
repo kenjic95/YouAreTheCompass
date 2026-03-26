@@ -1,13 +1,20 @@
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "styled-components/native";
 
 import {
   CourseCard,
   CourseCardCover,
   Description,
   Info,
+  StatItem,
+  StatText,
+  StatsRow,
 } from "./course-card.styles";
 
 export const CourseInfo = ({ course } = {}) => {
+  const theme = useTheme();
+
   const {
     courseTitle = "Mindfulness and Meditation",
     author = "John Doe",
@@ -27,11 +34,27 @@ export const CourseInfo = ({ course } = {}) => {
       <CourseCardCover source={{ uri: coverPhoto }} />
       <Info>
         <Description>{courseTitle}</Description>
-        <Description>{author}</Description>
-        <Description>{courseDuration}</Description>
+        <Description>By: {author}</Description>
+        <Description>Class Duration: {courseDuration}</Description>
         <Description>{price}</Description>
-        <Description>{watchers}</Description>
-        <Description>{rating}</Description>
+        <StatsRow>
+          <StatItem>
+            <Ionicons
+              name="people"
+              size={14}
+              color={theme.colors.text.primary}
+            />
+            <StatText>{watchers}</StatText>
+          </StatItem>
+          <StatItem>
+            <Ionicons
+              name="star"
+              size={14}
+              color={theme.colors.text.primary}
+            />
+            <StatText>{rating}</StatText>
+          </StatItem>
+        </StatsRow>
       </Info>
     </CourseCard>
   );
