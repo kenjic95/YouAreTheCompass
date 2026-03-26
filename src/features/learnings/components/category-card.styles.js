@@ -31,12 +31,12 @@ export const Title = styled.Text`
   color: ${(props) => props.theme.colors.text.primary};
   font-family: ${(props) => props.theme.fonts.heading};
   font-weight: ${(props) => props.theme.fontWeights.bold};
-  font-size: ${(props) => props.theme.fontSizes.body};
+  font-size: ${(props) => props.theme.fontSizes.button};
   line-height: 19px;
 `;
 
 export const CourseText = styled.Text`
   color: ${(props) => props.theme.colors.text.disabled};
   font-family: ${(props) => props.theme.fonts.body};
-  font-size: ${(props) => props.theme.fontSizes.button};
+  font-size: ${(props) => props.theme.fontSizes.caption};
 `;
