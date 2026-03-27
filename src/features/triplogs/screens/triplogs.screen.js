@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import { Alert, FlatList, Image, Modal } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+=======
+import React from "react";
+import { FlatList } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+>>>>>>> 94a222ea677ec4066b1f6e09be4fd5b98f0a8c14
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -63,6 +69,7 @@ const JournalText = styled.Text`
   color: #3a6e97;
 `;
 
+<<<<<<< HEAD
 const MediaPreview = styled.View`
   margin-top: 12px;
   border-radius: 20px;
@@ -125,12 +132,17 @@ const ModalButtonText = styled.Text`
 `;
 
 const initialJournals = [
+=======
+
+const journals = [
+>>>>>>> 94a222ea677ec4066b1f6e09be4fd5b98f0a8c14
   { id: "1", title: "Hiking in Blue Mountains" },
   { id: "2", title: "Scuba Diving in Cairns" },
   { id: "3", title: "Camping in Cokatoo Island" },
   { id: "4", title: "Coastal Walk in coogee" },
 ];
 
+<<<<<<< HEAD
 const STORAGE_KEY = "@triplogs_journals";
 
 export const TripLogsScreen = () => {
@@ -271,9 +283,17 @@ export const TripLogsScreen = () => {
     );
   };
 
+=======
+export const TripLogsScreen = ({ navigation }) => {
+>>>>>>> 94a222ea677ec4066b1f6e09be4fd5b98f0a8c14
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ddd9d9" }}>
     <ScreenContainer>
+<<<<<<< HEAD
       <CreateButton onPress={openCreateModal}>
+=======
+       <CreateButton onPress={() => navigation.navigate("CreateJournal")}>
+>>>>>>> 94a222ea677ec4066b1f6e09be4fd5b98f0a8c14
         <Ionicons name="add-circle-outline" size={38} color="#3a6e97" />
         <CreateButtonText>Create a journal</CreateButtonText>
       </CreateButton>
@@ -343,5 +363,6 @@ export const TripLogsScreen = () => {
         </ModalBackground>
       </Modal>
     </ScreenContainer>
+    </SafeAreaView>
   );
 };
