@@ -11,34 +11,13 @@ export const CoursePreviewScreen = ({ route }) => {
   const theme = useTheme();
   const course = route?.params?.course;
   const [screenHeight, setScreenHeight] = useState(0);
-  const [isExpanded, setIsExpanded] = useState(false);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
-
-  const animatePanelTo = (toValue, expandedState) => {
-    Animated.timing(panelTop, {
-      toValue,
-      duration: 220,
-      useNativeDriver: false,
-    }).start(() => {
-      setIsExpanded(expandedState);
-    });
-  };
-
-  const expandPanel = () => {
-    if (isExpanded || screenHeight === 0) return;
-    animatePanelTo(0, true);
-  };
-
-  const collapsePanel = () => {
-    if (!isExpanded || screenHeight === 0) return;
-    animatePanelTo(collapsedTop, false);
-  };
 
   const handleLayout = ({ nativeEvent }) => {
     const nextHeight = nativeEvent.layout.height;
     setScreenHeight(nextHeight);
-    panelTop.setValue(isExpanded ? 0 : Math.max(0, nextHeight / 3));
+    panelTop.setValue(Math.max(0, nextHeight / 3));
   };
 
   return (
@@ -51,9 +30,6 @@ export const CoursePreviewScreen = ({ route }) => {
             <CoursePreviewBottomSheet
               panelTop={panelTop}
               backgroundColor={theme.colors.brand.secondary}
-              isExpanded={isExpanded}
-              onExpand={expandPanel}
-              onCollapse={collapsePanel}
               screenHeight={screenHeight}
               collapsedTop={collapsedTop}
             />

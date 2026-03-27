@@ -1,40 +1,111 @@
-import React, { useRef } from "react";
-import { Animated, FlatList, Platform, Text, View } from "react-native";
+import React, { useRef, useState } from "react";
+import { Animated, FlatList, PanResponder, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./course-preview.styles";
 
 const MOCK_COURSE_CONTENT = [
-  { id: "1", contentNumber: 1, contentDuration: "5:35 min", contentTitle: "Welcome to the Course" },
-  { id: "2", contentNumber: 2, contentDuration: "10:20 min", contentTitle: "Meditation Techniques" },
-  { id: "3", contentNumber: 3, contentDuration: "3:40 min", contentTitle: "Music for Meditation" },
-  { id: "4", contentNumber: 4, contentDuration: "8:03 min", contentTitle: "Where to Meditate?" },
-  { id: "5", contentNumber: 5, contentDuration: "12:36 min", contentTitle: "How to set up meditation" },
+  {
+    id: "1",
+    contentNumber: 1,
+    contentDuration: "5:35 min",
+    contentTitle: "Welcome to the Course",
+  },
+  {
+    id: "2",
+    contentNumber: 2,
+    contentDuration: "10:20 min",
+    contentTitle: "Meditation Techniques",
+  },
+  {
+    id: "3",
+    contentNumber: 3,
+    contentDuration: "3:40 min",
+    contentTitle: "Music for Meditation",
+  },
+  {
+    id: "4",
+    contentNumber: 4,
+    contentDuration: "8:03 min",
+    contentTitle: "Where to Meditate?",
+  },
+  {
+    id: "5",
+    contentNumber: 5,
+    contentDuration: "12:36 min",
+    contentTitle: "How to set up meditation",
+  },
+  {
+    id: "6",
+    contentNumber: 6,
+    contentDuration: "6:12 min",
+    contentTitle: "Breathing Patterns 101",
+  },
 ];
 
 export const CoursePreviewBottomSheet = ({
   panelTop,
   backgroundColor,
-  isExpanded,
-  onExpand,
-  onCollapse,
   screenHeight,
   collapsedTop,
 }) => {
-  const scrollOffsetRef = useRef(0);
-  const touchStartYRef = useRef(0);
-  const androidPullingRef = useRef(false);
-  const androidCollapseTriggeredRef = useRef(false);
+  const [contentHeight, setContentHeight] = useState(0);
+  const gestureStartTop = useRef(collapsedTop);
 
-  const resetCollapsedPosition = () => {
-    if (isExpanded) return;
-    androidPullingRef.current = false;
+  // Allow the sheet to move beyond the top when content is taller than screen.
+  const contentOverflow = Math.max(
+    0,
+    (contentHeight || screenHeight * 1.6) - screenHeight,
+  );
+  const minTop = -contentOverflow;
+  const maxStretch = collapsedTop + 56;
+
+  const animateTo = (value) => {
     Animated.spring(panelTop, {
-      toValue: collapsedTop,
+      toValue: value,
       useNativeDriver: false,
-      speed: 10,
-      bounciness: 8,
+      speed: 12,
+      bounciness: 7,
     }).start();
   };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dy) > 2 &&
+        Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
+      onPanResponderGrant: () => {
+        panelTop.stopAnimation((value) => {
+          gestureStartTop.current = value;
+        });
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const rawTop = gestureStartTop.current + gestureState.dy;
+        if (rawTop > collapsedTop) {
+          const overPull = rawTop - collapsedTop;
+          const jellyTop = collapsedTop + Math.min(56, overPull * 0.35);
+          panelTop.setValue(Math.min(maxStretch, jellyTop));
+          return;
+        }
+        panelTop.setValue(Math.max(minTop, rawTop));
+      },
+      onPanResponderRelease: () => {
+        panelTop.stopAnimation((value) => {
+          if (value > collapsedTop) {
+            animateTo(collapsedTop);
+            return;
+          }
+          if (value < minTop) {
+            animateTo(minTop);
+            return;
+          }
+          if (value > collapsedTop - 24) {
+            animateTo(collapsedTop);
+          }
+        });
+      },
+    }),
+  ).current;
 
   return (
     <Animated.View
@@ -45,91 +116,19 @@ export const CoursePreviewBottomSheet = ({
           backgroundColor,
         },
       ]}
+      {...panResponder.panHandlers}
     >
       <FlatList
         data={MOCK_COURSE_CONTENT}
         keyExtractor={(item) => item.id}
-        bounces
-        alwaysBounceVertical
-        overScrollMode={Platform.OS === "android" ? "always" : "auto"}
+        scrollEnabled={false}
         showsVerticalScrollIndicator={false}
-        onScroll={(event) => {
-          const offsetY = event.nativeEvent.contentOffset.y;
-          scrollOffsetRef.current = offsetY;
-
-          if (!isExpanded && offsetY < 0) {
-            const stretch = Math.min(48, Math.abs(offsetY) * 0.45);
-            panelTop.setValue(collapsedTop + stretch);
-            return;
-          }
-
-          if (offsetY > 6 && !isExpanded) {
-            onExpand();
-          }
-          if (offsetY < -20 && isExpanded) {
-            onCollapse();
-          }
+        onContentSizeChange={(_, height) => {
+          setContentHeight(height + 20);
         }}
-        onScrollEndDrag={(event) => {
-          if (!isExpanded) {
-            resetCollapsedPosition();
-            return;
-          }
-
-          if (Platform.OS !== "android" || !isExpanded) return;
-          const offsetY = event.nativeEvent.contentOffset.y;
-          const velocityY = event.nativeEvent.velocity?.y ?? 0;
-          if (offsetY <= 0 && velocityY < -0.2) {
-            onCollapse();
-          }
-        }}
-        onMomentumScrollEnd={() => {
-          resetCollapsedPosition();
-        }}
-        onTouchStart={(event) => {
-          if (Platform.OS !== "android") return;
-          touchStartYRef.current = event.nativeEvent.pageY;
-          androidPullingRef.current = false;
-          androidCollapseTriggeredRef.current = false;
-        }}
-        onTouchMove={(event) => {
-          const deltaY = event.nativeEvent.pageY - touchStartYRef.current;
-          if (Platform.OS !== "android" || deltaY <= 0) return;
-
-          if (isExpanded) {
-            if (
-              !androidCollapseTriggeredRef.current &&
-              scrollOffsetRef.current <= 0 &&
-              deltaY > 28
-            ) {
-              androidCollapseTriggeredRef.current = true;
-              onCollapse();
-            }
-            return;
-          }
-
-          if (scrollOffsetRef.current > 0) return;
-
-          androidPullingRef.current = true;
-          const stretch = Math.min(48, deltaY * 0.3);
-          panelTop.setValue(collapsedTop + stretch);
-        }}
-        onTouchEnd={() => {
-          if (Platform.OS !== "android") return;
-          if (androidPullingRef.current) {
-            resetCollapsedPosition();
-          }
-          androidCollapseTriggeredRef.current = false;
-        }}
-        scrollEventThrottle={16}
         contentContainerStyle={[
           styles.sheetContent,
-          {
-            minHeight:
-              Platform.OS === "android"
-                ? screenHeight + collapsedTop
-                : collapsedTop + 120,
-          },
+          { paddingBottom: collapsedTop + 24 },
         ]}
         ListHeaderComponent={
           <View>

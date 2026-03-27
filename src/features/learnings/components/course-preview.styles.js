@@ -41,23 +41,24 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   contentNumber: {
-    width: 26,
+    width: 38,
     fontSize: 24,
     fontWeight: "700",
     color: "#5E6A7E",
     marginRight: 10,
+    textAlign: "center",
   },
   contentBody: {
     flex: 1,
     paddingRight: 10,
   },
   contentDuration: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#5E6A7E",
     marginBottom: 2,
   },
   contentTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: "#3D2C34",
   },
