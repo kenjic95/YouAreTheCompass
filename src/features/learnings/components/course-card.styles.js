@@ -2,7 +2,6 @@ import styled from "styled-components/native";
 import { Card } from "react-native-paper";
 
 export const CourseCard = styled(Card)`
-  overflow: hidden;
   background-color: ${(props) => props.theme.colors.ui.quaternary};
 `;
 
