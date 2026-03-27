@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import { LearningsScreen } from "../../features/learnings/screens/learnings.screen";
 import { CoursesScreen } from "../../features/learnings/screens/courses.screen";
-import { CoursePreviewScreen } from "../../features/learnings/screens/course.preview.screen";
+import { CoursePreviewScreen } from "../../features/learnings/screens/course-preview.screen";
 
 const LearningsStack = createStackNavigator();
 
