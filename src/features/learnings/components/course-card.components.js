@@ -3,9 +3,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "styled-components/native";
 
 import {
+  AuthorText,
   CourseCard,
-  CourseCardCover,
-  Description,
+  CourseCardImage,
+  CourseCardLayout,
+  CourseTitle,
+  DurationText,
+  DurationValueText,
+  PriceValue,
   Info,
   StatItem,
   StatText,
@@ -19,7 +24,8 @@ export const CourseInfo = ({ course } = {}) => {
     courseTitle = "Mindfulness and Meditation",
     author = "John Doe",
     courseDuration = "2hr 46min",
-    price = "$20",
+    priceValue = "$20",
+    price,
     watchers = "18k",
     rating = "4.8",
     coursePhoto = [
@@ -28,34 +34,40 @@ export const CourseInfo = ({ course } = {}) => {
   } = course ?? {};
 
   const coverPhoto = Array.isArray(coursePhoto) ? coursePhoto[0] : coursePhoto;
+  const displayPriceValue = priceValue ?? price ?? "$20";
 
   return (
     <CourseCard elevation={5}>
-      <CourseCardCover source={{ uri: coverPhoto }} />
-      <Info>
-        <Description>{courseTitle}</Description>
-        <Description>By: {author}</Description>
-        <Description>Class Duration: {courseDuration}</Description>
-        <Description>{price}</Description>
-        <StatsRow>
-          <StatItem>
-            <Ionicons
-              name="people"
-              size={14}
-              color={theme.colors.text.primary}
-            />
-            <StatText>{watchers}</StatText>
-          </StatItem>
-          <StatItem>
-            <Ionicons
-              name="star"
-              size={14}
-              color={theme.colors.text.primary}
-            />
-            <StatText>{rating}</StatText>
-          </StatItem>
-        </StatsRow>
-      </Info>
+      <CourseCardLayout>
+        <Info>
+          <CourseTitle>{courseTitle}</CourseTitle>
+          <AuthorText>By: {author}</AuthorText>
+          <DurationText>
+            {"Class Duration\n"}
+            <DurationValueText>{courseDuration}</DurationValueText>
+          </DurationText>
+          <PriceValue>{displayPriceValue}</PriceValue>
+          <StatsRow>
+            <StatItem>
+              <Ionicons
+                name="people"
+                size={14}
+                color={theme.colors.text.primary}
+              />
+              <StatText>{watchers}</StatText>
+            </StatItem>
+            <StatItem>
+              <Ionicons
+                name="star"
+                size={14}
+                color={theme.colors.text.primary}
+              />
+              <StatText>{rating}</StatText>
+            </StatItem>
+          </StatsRow>
+        </Info>
+        <CourseCardImage source={{ uri: coverPhoto }} />
+      </CourseCardLayout>
     </CourseCard>
   );
 };

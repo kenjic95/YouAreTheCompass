@@ -2,24 +2,64 @@ import styled from "styled-components/native";
 import { Card } from "react-native-paper";
 
 export const CourseCard = styled(Card)`
-  background-color: ${(props) => props.theme.colors.bg.secondary};
+  overflow: hidden;
+  background-color: ${(props) => props.theme.colors.ui.quaternary};
 `;
 
-export const CourseCardCover = styled(Card.Cover)`
+export const CourseCardLayout = styled.View`
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  min-height: 220px;
   padding: ${(props) => props.theme.space[3]};
-  background-color: ${(props) => props.theme.colors.bg.secondary};
 `;
 
-export const Description = styled.Text`
+export const CourseCardImage = styled.Image`
+  width: 52%;
+  align-self: stretch;
+  margin-left: ${(props) => props.theme.space[1]};
+  border-radius: 24px;
+  background-color: ${(props) => props.theme.colors.ui.tertiary};
+`;
+
+export const CourseTitle = styled.Text`
+  font-family: ${(props) => props.theme.fonts.title};
+  font-size: ${(props) => props.theme.fontSizes.title};
+  font-weight: ${(props) => props.theme.fontWeights.bold};
+  color: ${(props) => props.theme.colors.text.primary};
+  margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const AuthorText = styled.Text`
   font-family: ${(props) => props.theme.fonts.body};
-  font-size: ${(props) => props.theme.fontSizes.caption};
+  font-size: ${(props) => props.theme.fontSizes.button};
+  color: ${(props) => props.theme.colors.ui.secondary};
+  margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const DurationText = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.button};
+  color: ${(props) => props.theme.colors.text.primary};
+  margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const DurationValueText = styled.Text`
+  color: ${(props) => props.theme.colors.ui.secondary};
+`;
+
+export const PriceValue = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.h4};
+  color: ${(props) => props.theme.colors.text.primary};
+  margin-bottom: ${(props) => props.theme.space[1]};
 `;
 
 export const Info = styled.View`
-  padding-top: ${(props) => props.theme.space[0]};
-  padding-right: ${(props) => props.theme.space[3]};
-  padding-bottom: ${(props) => props.theme.space[3]};
-  padding-left: ${(props) => props.theme.space[3]};
+  flex: 1;
+  align-items: flex-start;
+  padding-right: ${(props) => props.theme.space[2]};
+  background-color: transparent;
 `;
 
 export const StatsRow = styled.View`
