@@ -1,42 +1,43 @@
 import React, { useRef, useState } from "react";
-import { Animated, FlatList, PanResponder, Text, View } from "react-native";
+import {
+  Animated,
+  FlatList,
+  PanResponder,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./course-preview.styles";
 
 const MOCK_COURSE_CONTENT = [
   {
-    id: "1",
-    contentNumber: 1,
+    contentId: 1,
     contentDuration: "5:35 min",
     contentTitle: "Welcome to the Course",
   },
   {
-    id: "2",
-    contentNumber: 2,
+    contentId: 2,
     contentDuration: "10:20 min",
     contentTitle: "Meditation Techniques",
   },
   {
-    id: "3",
-    contentNumber: 3,
+    contentId: 3,
     contentDuration: "3:40 min",
     contentTitle: "Music for Meditation",
   },
   {
-    id: "4",
-    contentNumber: 4,
+    contentId: 4,
     contentDuration: "8:03 min",
     contentTitle: "Where to Meditate?",
   },
   {
-    id: "5",
-    contentNumber: 5,
+    contentId: 5,
     contentDuration: "12:36 min",
     contentTitle: "How to set up meditation",
   },
   {
-    id: "6",
-    contentNumber: 6,
+    contentId: 6,
     contentDuration: "6:12 min",
     contentTitle: "Breathing Patterns 101",
   },
@@ -120,7 +121,7 @@ export const CoursePreviewBottomSheet = ({
     >
       <FlatList
         data={MOCK_COURSE_CONTENT}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => `${item.contentId}`}
         scrollEnabled={false}
         showsVerticalScrollIndicator={false}
         onContentSizeChange={(_, height) => {
@@ -141,7 +142,7 @@ export const CoursePreviewBottomSheet = ({
         }
         renderItem={({ item }) => (
           <View style={styles.contentRow}>
-            <Text style={styles.contentNumber}>{item.contentNumber}</Text>
+            <Text style={styles.contentId}>{item.contentId}</Text>
             <View style={styles.contentBody}>
               <Text style={styles.contentDuration}>{item.contentDuration}</Text>
               <Text style={styles.contentTitle}>{item.contentTitle}</Text>
@@ -153,5 +154,26 @@ export const CoursePreviewBottomSheet = ({
         )}
       />
     </Animated.View>
+  );
+};
+
+export const CoursePreviewActionBar = ({
+  containerColor,
+  buyButtonColor,
+  buyTextColor,
+}) => {
+  return (
+    <View style={[styles.actionBarContainer, { backgroundColor: containerColor }]}>
+      <TouchableOpacity style={styles.cartButton} activeOpacity={0.8}>
+        <Ionicons name="cart" size={34} color="#D78686" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.buyNowButton, { backgroundColor: buyButtonColor }]}
+        activeOpacity={0.85}
+      >
+        <Text style={[styles.buyNowText, { color: buyTextColor }]}>BUY NOW</Text>
+      </TouchableOpacity>
+    </View>
   );
 };

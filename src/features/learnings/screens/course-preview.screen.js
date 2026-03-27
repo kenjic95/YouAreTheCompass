@@ -4,7 +4,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useTheme } from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { CourseInfo } from "../components/course-card.components";
-import { CoursePreviewBottomSheet } from "../components/course-preview.components";
+import {
+  CoursePreviewActionBar,
+  CoursePreviewBottomSheet,
+} from "../components/course-preview.components";
 import { styles } from "../components/course-preview.styles";
 
 export const CoursePreviewScreen = ({ route }) => {
@@ -34,6 +37,12 @@ export const CoursePreviewScreen = ({ route }) => {
               collapsedTop={collapsedTop}
             />
           ) : null}
+
+          <CoursePreviewActionBar
+            containerColor={theme.colors.brand.tertiary}
+            buyButtonColor={theme.colors.brand.primary}
+            buyTextColor={theme.colors.text.inverse}
+          />
         </View>
       </SafeArea>
     </SafeAreaProvider>
