@@ -78,5 +78,5 @@ export const StatText = styled.Text`
   margin-left: ${(props) => props.theme.space[1]};
   font-family: ${(props) => props.theme.fonts.body};
   font-size: ${(props) => props.theme.fontSizes.caption};
-  color: ${(props) => props.theme.colors.text.primary};
+  color: ${(props) => props.theme.colors.ui.secondary};
 `;

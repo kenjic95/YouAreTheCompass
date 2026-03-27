@@ -3,7 +3,7 @@ import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Searchbar } from "react-native-paper";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
 
 const categories = [
@@ -67,6 +67,7 @@ export const LearningsScreen = () => {
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.list}
+          ListHeaderComponent={<Text style={styles.sectionTitle}>Categories</Text>}
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
               <CategoryInfo
@@ -88,6 +89,12 @@ export const LearningsScreen = () => {
 const styles = StyleSheet.create({
   search: {
     padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#262626",
+    marginBottom: 12,
   },
   list: {
     padding: 16,

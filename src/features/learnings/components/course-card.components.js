@@ -52,7 +52,7 @@ export const CourseInfo = ({ course } = {}) => {
               <Ionicons
                 name="people"
                 size={14}
-                color={theme.colors.text.primary}
+                color={theme.colors.ui.secondary}
               />
               <StatText>{watchers}</StatText>
             </StatItem>
@@ -60,7 +60,7 @@ export const CourseInfo = ({ course } = {}) => {
               <Ionicons
                 name="star"
                 size={14}
-                color={theme.colors.text.primary}
+                color={theme.colors.ui.secondary}
               />
               <StatText>{rating}</StatText>
             </StatItem>

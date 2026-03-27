@@ -2,7 +2,7 @@ import React from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Searchbar } from "react-native-paper";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CourseInfo } from "../components/course-card.components";
 
 const courses = [
@@ -86,7 +86,8 @@ const courses = [
 ];
 
 export const CoursesScreen = ({ route }) => {
-  const selectedCategory = route?.params?.category; // keep for next filtering step
+  const selectedCategory = route?.params?.category;
+  const headerTitle = selectedCategory?.categoryTitle ?? "Courses";
   const data = courses;
 
   return (
@@ -100,6 +101,9 @@ export const CoursesScreen = ({ route }) => {
           data={data}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <Text style={styles.sectionTitle}>{headerTitle}</Text>
+          }
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
               <CourseInfo course={item} />
@@ -117,6 +121,12 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#262626",
+    marginBottom: 12,
   },
   cardWrapper: {
     width: "100%",
