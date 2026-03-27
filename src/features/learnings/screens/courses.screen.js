@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { Searchbar } from "react-native-paper";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CourseInfo } from "../components/course-card.components";
@@ -86,6 +87,7 @@ const courses = [
 ];
 
 export const CoursesScreen = ({ route }) => {
+  const navigation = useNavigation();
   const selectedCategory = route?.params?.category;
   const headerTitle = selectedCategory?.categoryTitle ?? "Courses";
   const data = courses;
@@ -106,7 +108,15 @@ export const CoursesScreen = ({ route }) => {
           }
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
-              <CourseInfo course={item} />
+              <CourseInfo
+                course={item}
+                onPress={() =>
+                  navigation.navigate("Course", {
+                    course: item,
+                    category: selectedCategory,
+                  })
+                }
+              />
             </View>
           )}
         />

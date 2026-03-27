@@ -67,7 +67,9 @@ export const LearningsScreen = () => {
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.list}
-          ListHeaderComponent={<Text style={styles.sectionTitle}>Categories</Text>}
+          ListHeaderComponent={
+            <Text style={styles.sectionTitle}>Categories</Text>
+          }
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
               <CategoryInfo
@@ -85,7 +87,6 @@ export const LearningsScreen = () => {
     </SafeAreaProvider>
   );
 };
-
 const styles = StyleSheet.create({
   search: {
     padding: 16,

@@ -17,7 +17,7 @@ import {
   StatsRow,
 } from "./course-card.styles";
 
-export const CourseInfo = ({ course } = {}) => {
+export const CourseInfo = ({ course, onPress } = {}) => {
   const theme = useTheme();
 
   const {
@@ -37,7 +37,7 @@ export const CourseInfo = ({ course } = {}) => {
   const displayPriceValue = priceValue ?? price ?? "$20";
 
   return (
-    <CourseCard elevation={5}>
+    <CourseCard elevation={5} onPress={onPress}>
       <CourseCardLayout>
         <Info>
           <CourseTitle>{courseTitle}</CourseTitle>
