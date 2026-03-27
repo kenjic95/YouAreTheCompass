@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 
-const logoImage = require("../../../../assets/logo.jpeg");
+const logoImage = require("../../../../assets/logo-transparentBG.png");
 
 const Screen = styled(SafeAreaView)`
   flex: 1;
