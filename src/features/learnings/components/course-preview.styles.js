@@ -29,4 +29,44 @@ export const styles = StyleSheet.create({
   footerSpacer: {
     width: "100%",
   },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#4A363A",
+    marginBottom: 16,
+  },
+  contentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  contentNumber: {
+    width: 26,
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#5E6A7E",
+    marginRight: 10,
+  },
+  contentBody: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  contentDuration: {
+    fontSize: 16,
+    color: "#5E6A7E",
+    marginBottom: 2,
+  },
+  contentTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#3D2C34",
+  },
+  playButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#E7F1F8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

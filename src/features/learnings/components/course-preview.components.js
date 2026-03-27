@@ -1,8 +1,15 @@
 import React, { useRef } from "react";
-import { Animated, FlatList, Platform, View } from "react-native";
+import { Animated, FlatList, Platform, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./course-preview.styles";
 
-const SHEET_PLACEHOLDER_DATA = [];
+const MOCK_COURSE_CONTENT = [
+  { id: "1", contentNumber: 1, contentDuration: "5:35 min", contentTitle: "Welcome to the Course" },
+  { id: "2", contentNumber: 2, contentDuration: "10:20 min", contentTitle: "Meditation Techniques" },
+  { id: "3", contentNumber: 3, contentDuration: "3:40 min", contentTitle: "Music for Meditation" },
+  { id: "4", contentNumber: 4, contentDuration: "8:03 min", contentTitle: "Where to Meditate?" },
+  { id: "5", contentNumber: 5, contentDuration: "12:36 min", contentTitle: "How to set up meditation" },
+];
 
 export const CoursePreviewBottomSheet = ({
   panelTop,
@@ -16,6 +23,7 @@ export const CoursePreviewBottomSheet = ({
   const scrollOffsetRef = useRef(0);
   const touchStartYRef = useRef(0);
   const androidPullingRef = useRef(false);
+  const androidCollapseTriggeredRef = useRef(false);
 
   const resetCollapsedPosition = () => {
     if (isExpanded) return;
@@ -39,8 +47,8 @@ export const CoursePreviewBottomSheet = ({
       ]}
     >
       <FlatList
-        data={SHEET_PLACEHOLDER_DATA}
-        keyExtractor={(_, index) => `${index}`}
+        data={MOCK_COURSE_CONTENT}
+        keyExtractor={(item) => item.id}
         bounces
         alwaysBounceVertical
         overScrollMode={Platform.OS === "android" ? "always" : "auto"}
@@ -82,13 +90,25 @@ export const CoursePreviewBottomSheet = ({
           if (Platform.OS !== "android") return;
           touchStartYRef.current = event.nativeEvent.pageY;
           androidPullingRef.current = false;
+          androidCollapseTriggeredRef.current = false;
         }}
         onTouchMove={(event) => {
-          if (Platform.OS !== "android" || isExpanded) return;
-          if (scrollOffsetRef.current > 0) return;
-
           const deltaY = event.nativeEvent.pageY - touchStartYRef.current;
-          if (deltaY <= 0) return;
+          if (Platform.OS !== "android" || deltaY <= 0) return;
+
+          if (isExpanded) {
+            if (
+              !androidCollapseTriggeredRef.current &&
+              scrollOffsetRef.current <= 0 &&
+              deltaY > 28
+            ) {
+              androidCollapseTriggeredRef.current = true;
+              onCollapse();
+            }
+            return;
+          }
+
+          if (scrollOffsetRef.current > 0) return;
 
           androidPullingRef.current = true;
           const stretch = Math.min(48, deltaY * 0.3);
@@ -99,6 +119,7 @@ export const CoursePreviewBottomSheet = ({
           if (androidPullingRef.current) {
             resetCollapsedPosition();
           }
+          androidCollapseTriggeredRef.current = false;
         }}
         scrollEventThrottle={16}
         contentContainerStyle={[
@@ -110,11 +131,27 @@ export const CoursePreviewBottomSheet = ({
                 : collapsedTop + 120,
           },
         ]}
-        ListHeaderComponent={<View style={styles.handle} />}
+        ListHeaderComponent={
+          <View>
+            <View style={styles.handle} />
+            <Text style={styles.sectionTitle}>Course Content</Text>
+          </View>
+        }
         ListFooterComponent={
           <View style={[styles.footerSpacer, { height: collapsedTop }]} />
         }
-        renderItem={() => null}
+        renderItem={({ item }) => (
+          <View style={styles.contentRow}>
+            <Text style={styles.contentNumber}>{item.contentNumber}</Text>
+            <View style={styles.contentBody}>
+              <Text style={styles.contentDuration}>{item.contentDuration}</Text>
+              <Text style={styles.contentTitle}>{item.contentTitle}</Text>
+            </View>
+            <View style={styles.playButton}>
+              <Ionicons name="play" size={26} color="#A9D4F4" />
+            </View>
+          </View>
+        )}
       />
     </Animated.View>
   );
