@@ -32,7 +32,7 @@ export const HomeList = styled(FlatList).attrs({
 })``;
 
 export const WelcomeContainer = styled.View`
-  padding-top: ${(props) => props.theme.space[5]};
+  padding-top: ${(props) => props.theme.space[1]};
   padding-bottom: ${(props) => props.theme.space[1]};
   padding-left: ${(props) => props.theme.space[1]};
   padding-right: ${(props) => props.theme.space[1]};
@@ -49,8 +49,9 @@ export const OpenMessage = styled(Text).attrs({
 export const WelcomeMessage = styled(Text).attrs({
   variant: "body",
 })`
-  font-size: ${(props) => props.theme.fontSizes.h4};
-  font-family: ${(props) => props.theme.fonts.monospace};
+  font-size: ${(props) => props.theme.fontSizes.h3};
+  font-family: ${(props) => props.theme.fonts.playball};
+  color: ${(props) => props.theme.colors.ui.quaternary};
   text-align: center;
 `;
 
@@ -58,6 +59,6 @@ export const WelcomeImage = styled.Image.attrs({
   resizeMode: "contain",
 })`
   width: 100%;
-  height: 220px;
-  margin-top: ${(props) => props.theme.space[4]};
+  height: 260px;
+  margin-top: ${(props) => props.theme.space[1]};
 `;

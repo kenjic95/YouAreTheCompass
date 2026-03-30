@@ -3,6 +3,7 @@ export const fonts = {
   heading: "Avenir_Regular",
   body: "Oswald_400Regular",
   monospace: "Lato_400Regular",
+  playball: "Playball_400Regular",
 };
 
 export const fontWeights = {

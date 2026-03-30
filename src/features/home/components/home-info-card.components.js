@@ -7,13 +7,12 @@ import {
   HomeCard,
   HomeCardCover,
   Info,
-  OpenMessage,
   WelcomeContainer,
   WelcomeImage,
   WelcomeMessage,
 } from "./home-info-card.styles";
 
-const welcomeImage = require("../../../../assets/mountain.png");
+const headerLogo = require("../../../../assets/logo-transparentBG.png");
 
 export const homeData = [
   {
@@ -46,11 +45,10 @@ export const homeData = [
 
 export const HomeListHeader = () => (
   <WelcomeContainer>
-    <OpenMessage>Find your direction</OpenMessage>
+    <WelcomeImage source={headerLogo} />
     <Spacer position="top" size="small">
-      <WelcomeMessage>Create, Connect, Inspire</WelcomeMessage>
+      <WelcomeMessage>{"Create\nConnect\nInspire"}</WelcomeMessage>
     </Spacer>
-    <WelcomeImage source={welcomeImage} />
   </WelcomeContainer>
 );
 
