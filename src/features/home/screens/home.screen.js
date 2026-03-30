@@ -2,14 +2,17 @@ import React from "react";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import {
   HomeInfoCard,
   HomeListHeader,
   homeData,
 } from "../components/home-info-card.components";
-import { HomeList } from "../components/home-info-card.styles";
+import {
+  HomeCardWrapper,
+  HomeList,
+  homeListColumnStyle,
+} from "../components/home-info-card.styles";
 
 export const HomeScreen = () => (
   <SafeAreaProvider>
@@ -17,10 +20,12 @@ export const HomeScreen = () => (
       <HomeList
         data={homeData}
         ListHeaderComponent={HomeListHeader}
+        numColumns={2}
+        columnWrapperStyle={homeListColumnStyle}
         renderItem={({ item }) => (
-          <Spacer position="bottom" size="large">
+          <HomeCardWrapper>
             <HomeInfoCard home={item} />
-          </Spacer>
+          </HomeCardWrapper>
         )}
         keyExtractor={(item) => item.id}
       />

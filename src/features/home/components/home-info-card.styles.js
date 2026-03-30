@@ -6,11 +6,14 @@ import { Text } from "../../../components/typography/text.component";
 
 export const HomeCard = styled(Card)`
   background-color: ${(props) => props.theme.colors.bg.secondary};
+  width: 100%;
+  height: 240px;
 `;
 
 export const HomeCardCover = styled(Card.Cover)`
   padding: ${(props) => props.theme.space[3]};
   background-color: ${(props) => props.theme.colors.bg.secondary};
+  height: 140px;
 `;
 
 export const Description = styled.Text`
@@ -19,6 +22,8 @@ export const Description = styled.Text`
 `;
 
 export const Info = styled.View`
+  min-height: 84px;
+  justify-content: flex-start;
   padding-top: ${(props) => props.theme.space[0]};
   padding-right: ${(props) => props.theme.space[3]};
   padding-bottom: ${(props) => props.theme.space[3]};
@@ -31,9 +36,18 @@ export const HomeList = styled(FlatList).attrs({
   },
 })``;
 
+export const HomeCardWrapper = styled.View`
+  width: 49%;
+  margin-bottom: ${(props) => props.theme.space[3]};
+`;
+
+export const homeListColumnStyle = {
+  justifyContent: "space-between",
+};
+
 export const WelcomeContainer = styled.View`
-  padding-top: ${(props) => props.theme.space[1]};
-  padding-bottom: ${(props) => props.theme.space[1]};
+  padding-top: ${(props) => props.theme.space[3]};
+  padding-bottom: ${(props) => props.theme.space[5]};
   padding-left: ${(props) => props.theme.space[1]};
   padding-right: ${(props) => props.theme.space[1]};
 `;
