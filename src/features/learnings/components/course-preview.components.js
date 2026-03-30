@@ -55,6 +55,7 @@ export const CoursePreviewBottomSheet = ({
   // Allow the sheet to move beyond the top when content is taller than screen.
   const contentOverflow = Math.max(
     0,
+
     (contentHeight || screenHeight * 1.6) - screenHeight,
   );
   const minTop = -contentOverflow;
@@ -163,7 +164,9 @@ export const CoursePreviewActionBar = ({
   buyTextColor,
 }) => {
   return (
-    <View style={[styles.actionBarContainer, { backgroundColor: containerColor }]}>
+    <View
+      style={[styles.actionBarContainer, { backgroundColor: containerColor }]}
+    >
       <TouchableOpacity style={styles.cartButton} activeOpacity={0.8}>
         <Ionicons name="cart" size={34} color="#D78686" />
       </TouchableOpacity>
@@ -172,7 +175,9 @@ export const CoursePreviewActionBar = ({
         style={[styles.buyNowButton, { backgroundColor: buyButtonColor }]}
         activeOpacity={0.85}
       >
-        <Text style={[styles.buyNowText, { color: buyTextColor }]}>BUY NOW</Text>
+        <Text style={[styles.buyNowText, { color: buyTextColor }]}>
+          BUY NOW
+        </Text>
       </TouchableOpacity>
     </View>
   );

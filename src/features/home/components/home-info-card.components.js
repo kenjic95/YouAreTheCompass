@@ -1,8 +1,19 @@
 import React from "react";
 import { Linking } from "react-native";
-import { Text } from "../../../components/typography/text.component";
 
-import { HomeCard, HomeCardCover, Info } from "./home-info-card.styles";
+import { Spacer } from "../../../components/spacer/spacer.component";
+import { Text } from "../../../components/typography/text.component";
+import {
+  HomeCard,
+  HomeCardCover,
+  Info,
+  OpenMessage,
+  WelcomeContainer,
+  WelcomeImage,
+  WelcomeMessage,
+} from "./home-info-card.styles";
+
+const welcomeImage = require("../../../../assets/mountain.png");
 
 export const homeData = [
   {
@@ -33,8 +44,19 @@ export const homeData = [
   },
 ];
 
+export const HomeListHeader = () => (
+  <WelcomeContainer>
+    <OpenMessage>Find your direction</OpenMessage>
+    <Spacer position="top" size="small">
+      <WelcomeMessage>Create, Connect, Inspire</WelcomeMessage>
+    </Spacer>
+    <WelcomeImage source={welcomeImage} />
+  </WelcomeContainer>
+);
+
 export const HomeInfoCard = ({ home }) => {
   const { name, photos, link } = home;
+
   const handlePress = () => {
     if (!link) return;
     Linking.openURL(link).catch(() => {});
