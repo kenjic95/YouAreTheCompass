@@ -45,6 +45,8 @@ export const homeData = [
     id: "spotify",
     name: "Listen on Spotify",
     description: "Sample description for the Spotify card.",
+    link: "https://open.spotify.com/show/6N4ivS4YxvtLVhDb5RJv04",
+    appLink: "spotify:show:6N4ivS4YxvtLVhDb5RJv04",
     photos: [
       "https://images.unsplash.com/photo-1611339555312-e607c8352fd7?auto=format&fit=crop&w=800&q=80",
     ],
@@ -61,10 +63,19 @@ export const HomeListHeader = () => (
 );
 
 export const HomeInfoCard = ({ home }) => {
-  const { name, photos, link } = home;
+  const { name, photos, link, appLink } = home;
 
-  const handlePress = () => {
+  const handlePress = async () => {
     if (!link) return;
+
+    if (appLink) {
+      const canOpenAppLink = await Linking.canOpenURL(appLink).catch(() => false);
+      if (canOpenAppLink) {
+        Linking.openURL(appLink).catch(() => {});
+        return;
+      }
+    }
+
     Linking.openURL(link).catch(() => {});
   };
 
