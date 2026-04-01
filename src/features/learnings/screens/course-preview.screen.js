@@ -31,6 +31,7 @@ export const CoursePreviewScreen = ({ route }) => {
 
           {screenHeight > 0 ? (
             <CoursePreviewBottomSheet
+              course={course}
               panelTop={panelTop}
               backgroundColor={theme.colors.brand.secondary}
               screenHeight={screenHeight}

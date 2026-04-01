@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   },
   contentRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 16,
   },
   contentId: {
@@ -55,12 +55,30 @@ export const styles = StyleSheet.create({
   contentDuration: {
     fontSize: 14,
     color: "#5E6A7E",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   contentTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#3D2C34",
+    marginBottom: 8,
+  },
+  typePill: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EAF2F8",
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  typeIcon: {
+    marginRight: 5,
+  },
+  typePillText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#496074",
   },
   playButton: {
     width: 52,

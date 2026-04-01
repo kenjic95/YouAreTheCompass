@@ -13,37 +13,79 @@ import { styles } from "./course-preview.styles";
 const MOCK_COURSE_CONTENT = [
   {
     contentId: 1,
+    contentType: "video",
     contentDuration: "5:35 min",
     contentTitle: "Welcome to the Course",
   },
   {
     contentId: 2,
+    contentType: "image",
+    fileFormat: "png",
+    fileSize: "2.1 MB",
+    contentTitle: "Meditation Posture Guide",
+  },
+  {
+    contentId: 3,
+    contentType: "pdf",
+    fileFormat: "pdf",
+    fileSize: "4.9 MB",
+    contentTitle: "Breathing Patterns Workbook",
+  },
+  {
+    contentId: 4,
+    contentType: "video",
     contentDuration: "10:20 min",
     contentTitle: "Meditation Techniques",
   },
   {
-    contentId: 3,
-    contentDuration: "3:40 min",
-    contentTitle: "Music for Meditation",
-  },
-  {
-    contentId: 4,
-    contentDuration: "8:03 min",
-    contentTitle: "Where to Meditate?",
-  },
-  {
     contentId: 5,
-    contentDuration: "12:36 min",
-    contentTitle: "How to set up meditation",
+    contentType: "image",
+    fileFormat: "jpg",
+    fileSize: "1.4 MB",
+    contentTitle: "Daily Meditation Checklist",
   },
   {
     contentId: 6,
-    contentDuration: "6:12 min",
-    contentTitle: "Breathing Patterns 101",
+    contentType: "video",
+    contentDuration: "3:40 min",
+    contentTitle: "Music for Meditation",
   },
 ];
 
+const CONTENT_TYPE_CONFIG = {
+  video: {
+    label: "Video",
+    icon: "play",
+    actionIcon: "play",
+  },
+  image: {
+    label: "Image",
+    icon: "image-outline",
+    actionIcon: "image-outline",
+  },
+  pdf: {
+    label: "PDF",
+    icon: "document-text-outline",
+    actionIcon: "document-text-outline",
+  },
+};
+
+const normalizeContentType = (type) => {
+  if (!type) {
+    return "video";
+  }
+  const lowered = String(type).toLowerCase();
+  if (lowered === "jpg" || lowered === "jpeg" || lowered === "png") {
+    return "image";
+  }
+  if (lowered === "pdf") {
+    return "pdf";
+  }
+  return lowered;
+};
+
 export const CoursePreviewBottomSheet = ({
+  course,
   panelTop,
   backgroundColor,
   screenHeight,
@@ -55,11 +97,11 @@ export const CoursePreviewBottomSheet = ({
   // Allow the sheet to move beyond the top when content is taller than screen.
   const contentOverflow = Math.max(
     0,
-
-    (contentHeight || screenHeight * 1.6) - screenHeight,
+    (contentHeight || screenHeight * 1.6) - screenHeight
   );
   const minTop = -contentOverflow;
   const maxStretch = collapsedTop + 56;
+  const courseContent = course?.courseContent ?? MOCK_COURSE_CONTENT;
 
   const animateTo = (value) => {
     Animated.spring(panelTop, {
@@ -106,7 +148,7 @@ export const CoursePreviewBottomSheet = ({
           }
         });
       },
-    }),
+    })
   ).current;
 
   return (
@@ -121,7 +163,7 @@ export const CoursePreviewBottomSheet = ({
       {...panResponder.panHandlers}
     >
       <FlatList
-        data={MOCK_COURSE_CONTENT}
+        data={courseContent}
         keyExtractor={(item) => `${item.contentId}`}
         scrollEnabled={false}
         showsVerticalScrollIndicator={false}
@@ -141,18 +183,47 @@ export const CoursePreviewBottomSheet = ({
         ListFooterComponent={
           <View style={[styles.footerSpacer, { height: collapsedTop }]} />
         }
-        renderItem={({ item }) => (
-          <View style={styles.contentRow}>
-            <Text style={styles.contentId}>{item.contentId}</Text>
-            <View style={styles.contentBody}>
-              <Text style={styles.contentDuration}>{item.contentDuration}</Text>
-              <Text style={styles.contentTitle}>{item.contentTitle}</Text>
+        renderItem={({ item, index }) => {
+          const contentType = normalizeContentType(
+            item?.contentType ?? item?.fileFormat
+          );
+          const typeConfig =
+            CONTENT_TYPE_CONFIG[contentType] ?? CONTENT_TYPE_CONFIG.video;
+          const rowId = item?.contentId ?? index + 1;
+          const formatLabel = item?.fileFormat
+            ? String(item.fileFormat).toUpperCase()
+            : typeConfig.label.toUpperCase();
+          const helperText =
+            contentType === "video"
+              ? item?.contentDuration ?? "Video"
+              : item?.fileSize ?? formatLabel;
+
+          return (
+            <View style={styles.contentRow}>
+              <Text style={styles.contentId}>{rowId}</Text>
+              <View style={styles.contentBody}>
+                <Text style={styles.contentDuration}>{helperText}</Text>
+                <Text style={styles.contentTitle}>{item.contentTitle}</Text>
+                <View style={styles.typePill}>
+                  <Ionicons
+                    name={typeConfig.icon}
+                    size={14}
+                    color="#496074"
+                    style={styles.typeIcon}
+                  />
+                  <Text style={styles.typePillText}>{typeConfig.label}</Text>
+                </View>
+              </View>
+              <View style={styles.playButton}>
+                <Ionicons
+                  name={typeConfig.actionIcon}
+                  size={24}
+                  color="#A9D4F4"
+                />
+              </View>
             </View>
-            <View style={styles.playButton}>
-              <Ionicons name="play" size={26} color="#A9D4F4" />
-            </View>
-          </View>
-        )}
+          );
+        }}
       />
     </Animated.View>
   );

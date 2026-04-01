@@ -6,6 +6,80 @@ import { Searchbar } from "react-native-paper";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CourseInfo } from "../components/course-card.components";
 
+const mindfulnessContent = [
+  {
+    contentId: 1,
+    contentType: "video",
+    contentDuration: "5:35 min",
+    contentTitle: "Welcome to the Course",
+  },
+  {
+    contentId: 2,
+    contentType: "jpg",
+    fileFormat: "jpg",
+    fileSize: "1.8 MB",
+    contentTitle: "Meditation Posture Cheat Sheet",
+  },
+  {
+    contentId: 3,
+    contentType: "pdf",
+    fileFormat: "pdf",
+    fileSize: "3.9 MB",
+    contentTitle: "Mindfulness Daily Workbook",
+  },
+  {
+    contentId: 4,
+    contentType: "video",
+    contentDuration: "10:20 min",
+    contentTitle: "Meditation Techniques",
+  },
+];
+
+const breathworkContent = [
+  {
+    contentId: 1,
+    contentType: "video",
+    contentDuration: "8:10 min",
+    contentTitle: "Breathwork Foundations",
+  },
+  {
+    contentId: 2,
+    contentType: "png",
+    fileFormat: "png",
+    fileSize: "2.4 MB",
+    contentTitle: "Breathing Cycle Diagram",
+  },
+  {
+    contentId: 3,
+    contentType: "pdf",
+    fileFormat: "pdf",
+    fileSize: "5.2 MB",
+    contentTitle: "Breath Counting Exercise Sheet",
+  },
+];
+
+const sleepYogaContent = [
+  {
+    contentId: 1,
+    contentType: "video",
+    contentDuration: "12:42 min",
+    contentTitle: "Wind-down Sequence",
+  },
+  {
+    contentId: 2,
+    contentType: "video",
+    contentDuration: "9:04 min",
+    contentTitle: "Evening Stretch Flow",
+  },
+  {
+    contentId: 3,
+    contentType: "pdf",
+    fileFormat: "pdf",
+    fileSize: "2.7 MB",
+    contentTitle: "Sleep Checklist",
+  },
+];
+
 const courses = [
   {
     id: "mindfulness-and-meditation",
@@ -17,6 +91,7 @@ const courses = [
     rating: "4.8",
     coursePhoto:
       "https://media.istockphoto.com/id/1459130410/vector/healthy-kids.jpg?s=612x612&w=0&k=20&c=3nLz49a_U4bB_ob6HziTBbsiJTrqYdGxUlLytRASdZs=",
+    courseContent: mindfulnessContent,
   },
   {
     id: "daily-breathwork-basics",
@@ -28,6 +103,7 @@ const courses = [
     rating: "4.7",
     coursePhoto:
       "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=900&q=80",
+    courseContent: breathworkContent,
   },
   {
     id: "yoga-for-better-sleep",
@@ -39,6 +115,7 @@ const courses = [
     rating: "4.9",
     coursePhoto:
       "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=900&q=80",
+    courseContent: sleepYogaContent,
   },
   {
     id: "journaling-for-focus",
@@ -50,6 +127,7 @@ const courses = [
     rating: "4.6",
     coursePhoto:
       "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=80",
+    courseContent: mindfulnessContent,
   },
   {
     id: "calm-anxiety-toolkit",
@@ -61,6 +139,7 @@ const courses = [
     rating: "4.8",
     coursePhoto:
       "https://images.unsplash.com/photo-1493836512294-502baa1986e2?auto=format&fit=crop&w=900&q=80",
+    courseContent: breathworkContent,
   },
   {
     id: "morning-routine-reset",
@@ -72,6 +151,7 @@ const courses = [
     rating: "4.7",
     coursePhoto:
       "https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=900&q=80",
+    courseContent: sleepYogaContent,
   },
   {
     id: "digital-detox-practical",
@@ -83,6 +163,7 @@ const courses = [
     rating: "4.5",
     coursePhoto:
       "https://images.unsplash.com/photo-1519834785169-98be25ec3f84?auto=format&fit=crop&w=900&q=80",
+    courseContent: mindfulnessContent,
   },
 ];
 
