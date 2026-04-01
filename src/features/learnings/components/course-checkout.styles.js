@@ -1,107 +1,133 @@
-import { StyleSheet } from "react-native";
+import styled from "styled-components/native";
+import { SafeArea } from "../../../components/utility/safe-area.component";
 
-export const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: "#F3FAFF",
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 22,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#E3F2FC",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#1F3342",
-  },
-  summaryCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 20,
-    shadowColor: "#000000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    color: "#4A6780",
-    marginBottom: 8,
-  },
-  courseTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#142636",
-    marginBottom: 6,
-  },
-  courseMeta: {
-    fontSize: 15,
-    color: "#587086",
-    marginBottom: 16,
-  },
-  metaRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  metaLabel: {
-    fontSize: 15,
-    color: "#4C6378",
-  },
-  metaValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F3342",
-  },
-  priceValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#0E79C8",
-  },
-  infoBox: {
-    marginTop: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: "#E6F4FF",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  infoText: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 13,
-    color: "#4A6780",
-    lineHeight: 18,
-  },
-  placeOrderButton: {
-    marginTop: "auto",
-    marginBottom: 18,
-    height: 58,
-    borderRadius: 29,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  placeOrderText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 0.4,
-  },
-});
+export const CheckoutSafeArea = styled(SafeArea)`
+  background-color: ${(props) => props.theme.colors.brand.muted};
+`;
+
+export const Container = styled.View`
+  flex: 1;
+  padding-horizontal: ${(props) => props.theme.space[3]};
+  padding-top: ${(props) => props.theme.space[2]};
+`;
+
+export const HeaderRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: ${(props) => props.theme.space[4]};
+`;
+
+export const BackButton = styled.TouchableOpacity.attrs({
+  activeOpacity: 0.8,
+})`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: ${(props) => props.theme.colors.brand.tertiary};
+  align-items: center;
+  justify-content: center;
+  margin-right: ${(props) => props.theme.space[2]};
+`;
+
+export const HeaderTitle = styled.Text`
+  font-family: ${(props) => props.theme.fonts.title};
+  font-size: ${(props) => props.theme.fontSizes.h5};
+  color: ${(props) => props.theme.colors.text.primary};
+`;
+
+export const SummaryCard = styled.View`
+  background-color: ${(props) => props.theme.colors.ui.quaternary};
+  border-radius: 24px;
+  padding-horizontal: ${(props) => props.theme.space[3]};
+  padding-vertical: ${(props) => props.theme.space[3]};
+  shadow-color: #000000;
+  shadow-opacity: 0.08;
+  shadow-radius: 6px;
+  elevation: 4;
+`;
+
+export const SectionLabel = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.caption};
+  color: ${(props) => props.theme.colors.text.tertiary};
+  margin-bottom: ${(props) => props.theme.space[2]};
+`;
+
+export const CourseTitle = styled.Text`
+  font-family: ${(props) => props.theme.fonts.title};
+  font-size: ${(props) => props.theme.fontSizes.title};
+  color: ${(props) => props.theme.colors.text.primary};
+  margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const CourseMeta = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.body};
+  color: ${(props) => props.theme.colors.ui.secondary};
+  margin-bottom: ${(props) => props.theme.space[3]};
+`;
+
+export const MetaRow = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+export const MetaLabel = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.body};
+  color: ${(props) => props.theme.colors.text.tertiary};
+`;
+
+export const MetaValue = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.body};
+  font-weight: ${(props) => props.theme.fontWeights.medium};
+  color: ${(props) => props.theme.colors.text.primary};
+`;
+
+export const PriceValue = styled.Text`
+  font-family: ${(props) => props.theme.fonts.title};
+  font-size: ${(props) => props.theme.fontSizes.title};
+  color: ${(props) => props.theme.colors.text.secondary};
+`;
+
+export const InfoBox = styled.View`
+  margin-top: ${(props) => props.theme.space[4]};
+  padding-horizontal: ${(props) => props.theme.space[3]};
+  padding-vertical: ${(props) => props.theme.space[2]};
+  border-radius: 16px;
+  background-color: ${(props) => props.theme.colors.brand.tertiary};
+  flex-direction: row;
+  align-items: center;
+`;
+
+export const InfoText = styled.Text`
+  flex: 1;
+  margin-left: ${(props) => props.theme.space[2]};
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.button};
+  color: ${(props) => props.theme.colors.text.tertiary};
+  line-height: ${(props) => props.theme.lineHeights.copy};
+`;
+
+export const PlaceOrderButton = styled.TouchableOpacity.attrs({
+  activeOpacity: 0.85,
+})`
+  margin-top: auto;
+  margin-bottom: ${(props) => props.theme.space[3]};
+  height: 58px;
+  border-radius: 29px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${(props) =>
+    props.bgColor ?? props.theme.colors.brand.primary};
+`;
+
+export const PlaceOrderText = styled.Text`
+  color: ${(props) => props.theme.colors.text.inverse};
+  font-family: ${(props) => props.theme.fonts.title};
+  font-size: 18px;
+  letter-spacing: 0.4px;
+`;

@@ -1,7 +1,24 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Text, TouchableOpacity, View } from "react-native";
-import { styles } from "./course-checkout.styles";
+import { useTheme } from "styled-components/native";
+import {
+  BackButton,
+  Container,
+  CourseMeta,
+  CourseTitle,
+  HeaderRow,
+  HeaderTitle,
+  InfoBox,
+  InfoText,
+  MetaLabel,
+  MetaRow,
+  MetaValue,
+  PlaceOrderButton,
+  PlaceOrderText,
+  PriceValue,
+  SectionLabel,
+  SummaryCard,
+} from "./course-checkout.styles";
 
 export const CourseCheckoutContent = ({
   courseTitle,
@@ -13,53 +30,55 @@ export const CourseCheckoutContent = ({
   onGoBack,
   onPlaceOrder,
 }) => {
+  const theme = useTheme();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity
-          style={styles.backButton}
-          activeOpacity={0.8}
-          onPress={onGoBack}
-        >
-          <Ionicons name="arrow-back" size={22} color="#1F3342" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
-      </View>
+    <Container>
+      <HeaderRow>
+        <BackButton onPress={onGoBack}>
+          <Ionicons
+            name="arrow-back"
+            size={22}
+            color={theme.colors.text.primary}
+          />
+        </BackButton>
+        <HeaderTitle>Checkout</HeaderTitle>
+      </HeaderRow>
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.sectionLabel}>Course Summary</Text>
-        <Text style={styles.courseTitle}>{courseTitle}</Text>
-        <Text style={styles.courseMeta}>By {author}</Text>
+      <SummaryCard>
+        <SectionLabel>Course Summary</SectionLabel>
+        <CourseTitle>{courseTitle}</CourseTitle>
+        <CourseMeta>By {author}</CourseMeta>
 
-        <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>Duration</Text>
-          <Text style={styles.metaValue}>{classDuration}</Text>
-        </View>
-        <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>Rating</Text>
-          <Text style={styles.metaValue}>{rating}</Text>
-        </View>
-        <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>Price</Text>
-          <Text style={styles.priceValue}>{price}</Text>
-        </View>
-      </View>
+        <MetaRow>
+          <MetaLabel>Duration</MetaLabel>
+          <MetaValue>{classDuration}</MetaValue>
+        </MetaRow>
+        <MetaRow>
+          <MetaLabel>Rating</MetaLabel>
+          <MetaValue>{rating}</MetaValue>
+        </MetaRow>
+        <MetaRow>
+          <MetaLabel>Price</MetaLabel>
+          <PriceValue>{price}</PriceValue>
+        </MetaRow>
+      </SummaryCard>
 
-      <View style={styles.infoBox}>
-        <Ionicons name="information-circle-outline" size={18} color="#4A6780" />
-        <Text style={styles.infoText}>
+      <InfoBox>
+        <Ionicons
+          name="information-circle-outline"
+          size={18}
+          color={theme.colors.text.tertiary}
+        />
+        <InfoText>
           This is a UI checkout flow. Payment and database will be connected
           later.
-        </Text>
-      </View>
+        </InfoText>
+      </InfoBox>
 
-      <TouchableOpacity
-        style={[styles.placeOrderButton, { backgroundColor: buyButtonColor }]}
-        activeOpacity={0.85}
-        onPress={onPlaceOrder}
-      >
-        <Text style={styles.placeOrderText}>PLACE ORDER</Text>
-      </TouchableOpacity>
-    </View>
+      <PlaceOrderButton bgColor={buyButtonColor} onPress={onPlaceOrder}>
+        <PlaceOrderText>PLACE ORDER</PlaceOrderText>
+      </PlaceOrderButton>
+    </Container>
   );
 };

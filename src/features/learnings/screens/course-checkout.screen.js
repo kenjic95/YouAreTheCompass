@@ -2,9 +2,8 @@ import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useTheme } from "styled-components/native";
-import { SafeArea } from "../../../components/utility/safe-area.component";
 import { CourseCheckoutContent } from "../components/course-checkout.components";
-import { styles } from "../components/course-checkout.styles";
+import { CheckoutSafeArea } from "../components/course-checkout.styles";
 
 export const CourseCheckoutScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -24,7 +23,7 @@ export const CourseCheckoutScreen = ({ route }) => {
 
   return (
     <SafeAreaProvider>
-      <SafeArea style={styles.safeArea}>
+      <CheckoutSafeArea>
         <CourseCheckoutContent
           courseTitle={courseTitle}
           author={author}
@@ -35,7 +34,7 @@ export const CourseCheckoutScreen = ({ route }) => {
           onGoBack={() => navigation.goBack()}
           onPlaceOrder={handlePlaceOrder}
         />
-      </SafeArea>
+      </CheckoutSafeArea>
     </SafeAreaProvider>
   );
 };
