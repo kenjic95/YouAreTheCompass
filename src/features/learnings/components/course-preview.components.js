@@ -233,6 +233,7 @@ export const CoursePreviewActionBar = ({
   containerColor,
   buyButtonColor,
   buyTextColor,
+  onBuyNow,
 }) => {
   return (
     <View
@@ -245,6 +246,7 @@ export const CoursePreviewActionBar = ({
       <TouchableOpacity
         style={[styles.buyNowButton, { backgroundColor: buyButtonColor }]}
         activeOpacity={0.85}
+        onPress={onBuyNow}
       >
         <Text style={[styles.buyNowText, { color: buyTextColor }]}>
           BUY NOW
