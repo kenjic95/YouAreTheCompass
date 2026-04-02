@@ -9,80 +9,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./course-preview.styles";
-
-const MOCK_COURSE_CONTENT = [
-  {
-    contentId: 1,
-    contentType: "video",
-    contentDuration: "5:35 min",
-    contentTitle: "Welcome to the Course",
-  },
-  {
-    contentId: 2,
-    contentType: "image",
-    fileFormat: "png",
-    fileSize: "2.1 MB",
-    contentTitle: "Meditation Posture Guide",
-  },
-  {
-    contentId: 3,
-    contentType: "pdf",
-    fileFormat: "pdf",
-    fileSize: "4.9 MB",
-    contentTitle: "Breathing Patterns Workbook",
-  },
-  {
-    contentId: 4,
-    contentType: "video",
-    contentDuration: "10:20 min",
-    contentTitle: "Meditation Techniques",
-  },
-  {
-    contentId: 5,
-    contentType: "image",
-    fileFormat: "jpg",
-    fileSize: "1.4 MB",
-    contentTitle: "Daily Meditation Checklist",
-  },
-  {
-    contentId: 6,
-    contentType: "video",
-    contentDuration: "3:40 min",
-    contentTitle: "Music for Meditation",
-  },
-];
-
-const CONTENT_TYPE_CONFIG = {
-  video: {
-    label: "Video",
-    icon: "play",
-    actionIcon: "play",
-  },
-  image: {
-    label: "Image",
-    icon: "image-outline",
-    actionIcon: "image-outline",
-  },
-  pdf: {
-    label: "PDF",
-    icon: "document-text-outline",
-    actionIcon: "document-text-outline",
-  },
-};
-
-const normalizeContentType = (type) => {
-  if (!type) {
-    return "video";
-  }
-  const lowered = String(type).toLowerCase();
-  if (lowered === "jpg" || lowered === "jpeg" || lowered === "png") {
-    return "image";
-  }
-  if (lowered === "pdf") {
-    return "pdf";
-  }
-  return lowered;
-};
+import { coursePreviewMockContext } from "../../../services/learnings/course-preview.mock";
+import { CoursePreviewContentRow } from "./course-preview-content-row.component";
 
 export const CoursePreviewBottomSheet = ({
   course,
@@ -101,7 +29,8 @@ export const CoursePreviewBottomSheet = ({
   );
   const minTop = -contentOverflow;
   const maxStretch = collapsedTop + 56;
-  const courseContent = course?.courseContent ?? MOCK_COURSE_CONTENT;
+  const { courseContent: fallbackCourseContent } = coursePreviewMockContext;
+  const courseContent = course?.courseContent ?? fallbackCourseContent;
 
   const animateTo = (value) => {
     Animated.spring(panelTop, {
@@ -183,47 +112,9 @@ export const CoursePreviewBottomSheet = ({
         ListFooterComponent={
           <View style={[styles.footerSpacer, { height: collapsedTop }]} />
         }
-        renderItem={({ item, index }) => {
-          const contentType = normalizeContentType(
-            item?.contentType ?? item?.fileFormat
-          );
-          const typeConfig =
-            CONTENT_TYPE_CONFIG[contentType] ?? CONTENT_TYPE_CONFIG.video;
-          const rowId = item?.contentId ?? index + 1;
-          const formatLabel = item?.fileFormat
-            ? String(item.fileFormat).toUpperCase()
-            : typeConfig.label.toUpperCase();
-          const helperText =
-            contentType === "video"
-              ? item?.contentDuration ?? "Video"
-              : item?.fileSize ?? formatLabel;
-
-          return (
-            <View style={styles.contentRow}>
-              <Text style={styles.contentId}>{rowId}</Text>
-              <View style={styles.contentBody}>
-                <Text style={styles.contentDuration}>{helperText}</Text>
-                <Text style={styles.contentTitle}>{item.contentTitle}</Text>
-                <View style={styles.typePill}>
-                  <Ionicons
-                    name={typeConfig.icon}
-                    size={14}
-                    color="#496074"
-                    style={styles.typeIcon}
-                  />
-                  <Text style={styles.typePillText}>{typeConfig.label}</Text>
-                </View>
-              </View>
-              <View style={styles.playButton}>
-                <Ionicons
-                  name={typeConfig.actionIcon}
-                  size={24}
-                  color="#A9D4F4"
-                />
-              </View>
-            </View>
-          );
-        }}
+        renderItem={({ item, index }) => (
+          <CoursePreviewContentRow item={item} index={index} />
+        )}
       />
     </Animated.View>
   );
