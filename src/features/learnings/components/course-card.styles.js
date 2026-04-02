@@ -24,7 +24,7 @@ export const CourseCardImage = styled.Image`
 
 export const CourseTitle = styled.Text`
   font-family: ${(props) => props.theme.fonts.title};
-  font-size: ${(props) => props.theme.fontSizes.title};
+  font-size: ${(props) => props.theme.fontSizes.body};
   font-weight: ${(props) => props.theme.fontWeights.bold};
   color: ${(props) => props.theme.colors.text.primary};
   margin-bottom: ${(props) => props.theme.space[1]};
