@@ -3,19 +3,20 @@ import { Card } from "react-native-paper";
 
 export const CourseCard = styled(Card)`
   background-color: ${(props) => props.theme.colors.ui.quaternary};
+  overflow: hidden;
 `;
 
 export const CourseCardLayout = styled.View`
   flex-direction: row;
   align-items: stretch;
   justify-content: space-between;
-  min-height: 220px;
+  height: 230px;
   padding: ${(props) => props.theme.space[3]};
 `;
 
 export const CourseCardImage = styled.Image`
-  width: 52%;
-  align-self: stretch;
+  width: 48%;
+  height: 100%;
   margin-left: ${(props) => props.theme.space[1]};
   border-radius: 24px;
   background-color: ${(props) => props.theme.colors.ui.tertiary};
@@ -80,7 +81,9 @@ export const BoughtText = styled.Text`
 export const Info = styled.View`
   flex: 1;
   align-items: flex-start;
+  justify-content: space-between;
   padding-right: ${(props) => props.theme.space[2]};
+  padding-bottom: ${(props) => props.theme.space[3]};
   background-color: transparent;
 `;
 
@@ -88,6 +91,7 @@ export const StatsRow = styled.View`
   flex-direction: row;
   align-items: center;
   margin-top: ${(props) => props.theme.space[1]};
+  margin-bottom: ${(props) => props.theme.space[1]};
 `;
 
 export const StatItem = styled.View`

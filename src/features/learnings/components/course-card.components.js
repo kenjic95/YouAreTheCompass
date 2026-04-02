@@ -81,7 +81,7 @@ export const CourseInfo = ({ course, onPress, isPurchased = false } = {}) => {
             </StatItem>
           </StatsRow>
         </Info>
-        <CourseCardImage source={{ uri: coverPhoto }} />
+        <CourseCardImage source={{ uri: coverPhoto }} resizeMode="cover" />
       </CourseCardLayout>
     </CourseCard>
   );
