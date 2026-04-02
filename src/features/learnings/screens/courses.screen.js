@@ -21,19 +21,23 @@ export const CoursesScreen = ({ route }) => {
   );
 
   const data = useMemo(() => {
+    const selectedCategoryId = selectedCategory?.id;
+    const categoryCourses = selectedCategoryId
+      ? courses.filter((course) => course?.categoryId === selectedCategoryId)
+      : courses;
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (!normalizedQuery) {
-      return courses;
+      return categoryCourses;
     }
 
-    return courses.filter((course) => {
+    return categoryCourses.filter((course) => {
       const title = course?.courseTitle?.toLowerCase() ?? "";
       const author = course?.author?.toLowerCase() ?? "";
       return (
         title.includes(normalizedQuery) || author.includes(normalizedQuery)
       );
     });
-  }, [courses, searchQuery]);
+  }, [courses, searchQuery, selectedCategory?.id]);
 
   return (
     <SafeAreaProvider>

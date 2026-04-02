@@ -5,22 +5,39 @@ import { useNavigation } from "@react-navigation/native";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
 import { categoriesMockContext } from "../../../services/learnings/categories.mock";
+import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
 import { LearningsSearch } from "../components/learnings-search.component";
 import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
 
 export const LearningsScreen = () => {
   const navigation = useNavigation();
   const { categories } = categoriesMockContext;
+  const { courses } = courseContentMockContext;
   const { purchasedCourses } = usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const categoriesWithCourseCount = useMemo(
+    () =>
+      categories.map((category) => {
+        const totalCourses = courses.filter(
+          (course) => course?.categoryId === category?.id
+        ).length;
+
+        return {
+          ...category,
+          noOfCourses: `${totalCourses} Courses`,
+        };
+      }),
+    [categories, courses]
+  );
 
   const filteredCategories = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (!normalizedQuery) {
-      return categories;
+      return categoriesWithCourseCount;
     }
 
-    return categories.filter((category) => {
+    return categoriesWithCourseCount.filter((category) => {
       const title = category?.categoryTitle?.toLowerCase() ?? "";
       const coursesLabel = category?.noOfCourses?.toLowerCase() ?? "";
       return (
@@ -28,7 +45,7 @@ export const LearningsScreen = () => {
         coursesLabel.includes(normalizedQuery)
       );
     });
-  }, [categories, searchQuery]);
+  }, [categoriesWithCourseCount, searchQuery]);
 
   return (
     <SafeAreaProvider>

@@ -75,6 +75,7 @@ const sleepYogaContent = [
 export const coursesMock = [
   {
     id: "mindfulness-and-meditation",
+    categoryId: "health-wellness",
     courseTitle: "Mindfulness and Meditation",
     author: "John Doe",
     courseDuration: "2hr 46min",
@@ -87,6 +88,7 @@ export const coursesMock = [
   },
   {
     id: "daily-breathwork-basics",
+    categoryId: "health-wellness",
     courseTitle: "Daily Breathwork Basics",
     author: "Mia Park",
     courseDuration: "1hr 35min",
@@ -99,6 +101,7 @@ export const coursesMock = [
   },
   {
     id: "yoga-for-better-sleep",
+    categoryId: "health-wellness",
     courseTitle: "Yoga for Better Sleep",
     author: "Liam Chen",
     courseDuration: "3hr 05min",
@@ -111,6 +114,7 @@ export const coursesMock = [
   },
   {
     id: "journaling-for-focus",
+    categoryId: "personal-development-lifestyle",
     courseTitle: "Journaling for Focus",
     author: "Ava Smith",
     courseDuration: "1hr 50min",
@@ -123,6 +127,7 @@ export const coursesMock = [
   },
   {
     id: "calm-anxiety-toolkit",
+    categoryId: "personal-development-lifestyle",
     courseTitle: "Calm Anxiety Toolkit",
     author: "Noah Wilson",
     courseDuration: "2hr 22min",
@@ -135,6 +140,7 @@ export const coursesMock = [
   },
   {
     id: "morning-routine-reset",
+    categoryId: "personal-development-lifestyle",
     courseTitle: "Morning Routine Reset",
     author: "Emma Brown",
     courseDuration: "2hr 10min",
@@ -147,6 +153,7 @@ export const coursesMock = [
   },
   {
     id: "digital-detox-practical",
+    categoryId: "personal-development-lifestyle",
     courseTitle: "Digital Detox Practical",
     author: "Ethan Taylor",
     courseDuration: "1hr 42min",
