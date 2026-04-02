@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components/native";
+import { StyleSheet } from "react-native";
 import { Searchbar } from "react-native-paper";
 
 const SearchContainer = styled.View`
@@ -14,6 +15,7 @@ export const Search = ({ keyword, onChangeKeyword, onSubmit }) => {
     <SearchContainer>
       <Searchbar
         placeholder="Search for a podcast"
+        style={styles.searchBar}
         value={keyword}
         onSubmitEditing={() => {
           if (onSubmit) {
@@ -27,3 +29,9 @@ export const Search = ({ keyword, onChangeKeyword, onSubmit }) => {
     </SearchContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  searchBar: {
+    backgroundColor: "#EAF2F8",
+  },
+});

@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#757575",
+    color: "#DEDEDE",
     marginTop: 8,
   },
 });
