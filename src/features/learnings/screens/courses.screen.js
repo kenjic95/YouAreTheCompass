@@ -1,30 +1,50 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { Searchbar } from "react-native-paper";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CourseInfo } from "../components/course-card.components";
 import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
+import { LearningsSearch } from "../components/learnings-search.component";
 
 export const CoursesScreen = ({ route }) => {
   const navigation = useNavigation();
   const selectedCategory = route?.params?.category;
   const headerTitle = selectedCategory?.categoryTitle ?? "Courses";
   const { courses } = courseContentMockContext;
-  const data = courses;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const data = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return courses;
+    }
+
+    return courses.filter((course) => {
+      const title = course?.courseTitle?.toLowerCase() ?? "";
+      const author = course?.author?.toLowerCase() ?? "";
+      return (
+        title.includes(normalizedQuery) || author.includes(normalizedQuery)
+      );
+    });
+  }, [courses, searchQuery]);
 
   return (
     <SafeAreaProvider>
       <SafeArea>
-        <View style={styles.search}>
-          <Searchbar />
-        </View>
+        <LearningsSearch
+          placeholder="Search Courses"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
 
         <FlatList
           data={data}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No courses found.</Text>
+          }
           ListHeaderComponent={
             <Text style={styles.sectionTitle}>{headerTitle}</Text>
           }
@@ -48,9 +68,6 @@ export const CoursesScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  search: {
-    padding: 16,
-  },
   list: {
     padding: 16,
   },
@@ -63,5 +80,10 @@ const styles = StyleSheet.create({
   cardWrapper: {
     width: "100%",
     marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#757575",
+    marginTop: 8,
   },
 });

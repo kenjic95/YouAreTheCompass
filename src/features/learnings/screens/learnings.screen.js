@@ -1,29 +1,51 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { Searchbar } from "react-native-paper";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
 import { categoriesMockContext } from "../../../services/learnings/categories.mock";
+import { LearningsSearch } from "../components/learnings-search.component";
 
 export const LearningsScreen = () => {
   const navigation = useNavigation();
   const { categories } = categoriesMockContext;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCategories = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return categories;
+    }
+
+    return categories.filter((category) => {
+      const title = category?.categoryTitle?.toLowerCase() ?? "";
+      const coursesLabel = category?.noOfCourses?.toLowerCase() ?? "";
+      return (
+        title.includes(normalizedQuery) ||
+        coursesLabel.includes(normalizedQuery)
+      );
+    });
+  }, [categories, searchQuery]);
 
   return (
     <SafeAreaProvider>
       <SafeArea>
-        <View style={styles.search}>
-          <Searchbar />
-        </View>
+        <LearningsSearch
+          placeholder="Search Categories"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
 
         <FlatList
-          data={categories}
+          data={filteredCategories}
           keyExtractor={(item) => item.id}
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No categories found.</Text>
+          }
           ListHeaderComponent={
             <Text style={styles.sectionTitle}>Categories</Text>
           }
@@ -45,9 +67,6 @@ export const LearningsScreen = () => {
   );
 };
 const styles = StyleSheet.create({
-  search: {
-    padding: 16,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
@@ -63,5 +82,10 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     width: "48%",
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#757575",
+    marginTop: 8,
   },
 });

@@ -70,10 +70,7 @@ export const CourseCheckoutContent = ({
           size={18}
           color={theme.colors.text.tertiary}
         />
-        <InfoText>
-          This is a UI checkout flow. Payment and database will be connected
-          later.
-        </InfoText>
+        <InfoText>info text here</InfoText>
       </InfoBox>
 
       <PlaceOrderButton bgColor={buyButtonColor} onPress={onPlaceOrder}>
