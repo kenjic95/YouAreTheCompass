@@ -9,7 +9,7 @@ import { styles } from "./course-preview.styles";
 
 export const CoursePreviewContentRow = ({ item, index }) => {
   const contentType = normalizeCoursePreviewType(
-    item?.contentType ?? item?.fileFormat
+    item?.contentType ?? item?.fileFormat,
   );
   const typeConfig =
     coursePreviewTypeConfig[contentType] ?? coursePreviewTypeConfig.video;
