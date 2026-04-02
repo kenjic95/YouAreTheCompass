@@ -51,7 +51,30 @@ export const PriceValue = styled.Text`
   font-family: ${(props) => props.theme.fonts.body};
   font-size: ${(props) => props.theme.fontSizes.h4};
   color: ${(props) => props.theme.colors.text.primary};
+`;
+
+export const PriceRow = styled.View`
+  flex-direction: row;
+  align-items: center;
   margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const BoughtBadge = styled.View`
+  margin-left: ${(props) => props.theme.space[2]};
+  padding-horizontal: ${(props) => props.theme.space[2]};
+  padding-vertical: ${(props) => props.theme.space[1]};
+  border-radius: 12px;
+  background-color: #e8f8ee;
+  flex-direction: row;
+  align-items: center;
+`;
+
+export const BoughtText = styled.Text`
+  margin-left: ${(props) => props.theme.space[1]};
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.caption};
+  font-weight: ${(props) => props.theme.fontWeights.bold};
+  color: ${(props) => props.theme.colors.text.success};
 `;
 
 export const Info = styled.View`

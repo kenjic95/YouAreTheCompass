@@ -6,13 +6,19 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CourseInfo } from "../components/course-card.components";
 import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
 import { LearningsSearch } from "../components/learnings-search.component";
+import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
 
 export const CoursesScreen = ({ route }) => {
   const navigation = useNavigation();
   const selectedCategory = route?.params?.category;
   const headerTitle = selectedCategory?.categoryTitle ?? "Courses";
   const { courses } = courseContentMockContext;
+  const { purchasedCourses } = usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
+  const purchasedCourseIds = useMemo(
+    () => new Set(purchasedCourses.map((course) => course.id)),
+    [purchasedCourses]
+  );
 
   const data = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -36,6 +42,13 @@ export const CoursesScreen = ({ route }) => {
           placeholder="Search Courses"
           value={searchQuery}
           onChangeText={setSearchQuery}
+          myCourses={purchasedCourses}
+          onNavigateCourse={(course) =>
+            navigation.navigate("Course", {
+              course,
+              category: selectedCategory,
+            })
+          }
         />
 
         <FlatList
@@ -52,6 +65,7 @@ export const CoursesScreen = ({ route }) => {
             <View style={styles.cardWrapper}>
               <CourseInfo
                 course={item}
+                isPurchased={purchasedCourseIds.has(item.id)}
                 onPress={() =>
                   navigation.navigate("Course", {
                     course: item,

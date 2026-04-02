@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { CourseInfo } from "../components/course-card.components";
+import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
 import {
   CoursePreviewActionBar,
   CoursePreviewBottomSheet,
@@ -16,9 +17,13 @@ export const CoursePreviewScreen = ({ route }) => {
   const theme = useTheme();
   const course = route?.params?.course;
   const selectedCategory = route?.params?.category;
+  const { purchasedCourses } = usePurchasedCourses();
   const [screenHeight, setScreenHeight] = useState(0);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
+  const isPurchased = purchasedCourses.some(
+    (purchasedCourse) => purchasedCourse.id === course?.id
+  );
 
   const handleLayout = ({ nativeEvent }) => {
     const nextHeight = nativeEvent.layout.height;
@@ -30,7 +35,7 @@ export const CoursePreviewScreen = ({ route }) => {
     <SafeAreaProvider>
       <SafeArea onLayout={handleLayout}>
         <View style={styles.container}>
-          <CourseInfo course={course} />
+          <CourseInfo course={course} isPurchased={isPurchased} />
 
           {screenHeight > 0 ? (
             <CoursePreviewBottomSheet
@@ -46,7 +51,9 @@ export const CoursePreviewScreen = ({ route }) => {
             containerColor={theme.colors.brand.tertiary}
             buyButtonColor={theme.colors.brand.primary}
             buyTextColor={theme.colors.text.inverse}
+            isPurchased={isPurchased}
             onBuyNow={() =>
+              !isPurchased &&
               navigation.navigate("Checkout", {
                 course,
                 category: selectedCategory,

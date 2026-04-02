@@ -4,11 +4,14 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useTheme } from "styled-components/native";
 import { CourseCheckoutContent } from "../components/course-checkout.components";
 import { CheckoutSafeArea } from "../components/course-checkout.styles";
+import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
 
 export const CourseCheckoutScreen = ({ route }) => {
   const navigation = useNavigation();
   const theme = useTheme();
   const course = route?.params?.course ?? {};
+  const selectedCategory = route?.params?.category;
+  const { addPurchasedCourse } = usePurchasedCourses();
 
   const courseTitle = course?.courseTitle ?? "Course";
   const author = course?.author ?? "Unknown Instructor";
@@ -17,8 +20,10 @@ export const CourseCheckoutScreen = ({ route }) => {
   const rating = course?.rating ?? "N/A";
 
   const handlePlaceOrder = () => {
-    // DB/payment integration will be added later.
-    navigation.navigate("Courses");
+    addPurchasedCourse(course);
+    navigation.navigate("Courses", {
+      category: selectedCategory,
+    });
   };
 
   return (

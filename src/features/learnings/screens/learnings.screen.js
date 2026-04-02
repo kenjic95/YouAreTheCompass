@@ -6,10 +6,12 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
 import { categoriesMockContext } from "../../../services/learnings/categories.mock";
 import { LearningsSearch } from "../components/learnings-search.component";
+import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
 
 export const LearningsScreen = () => {
   const navigation = useNavigation();
   const { categories } = categoriesMockContext;
+  const { purchasedCourses } = usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCategories = useMemo(() => {
@@ -35,6 +37,12 @@ export const LearningsScreen = () => {
           placeholder="Search Categories"
           value={searchQuery}
           onChangeText={setSearchQuery}
+          myCourses={purchasedCourses}
+          onNavigateCourse={(course) =>
+            navigation.navigate("Course", {
+              course,
+            })
+          }
         />
 
         <FlatList

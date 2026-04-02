@@ -123,4 +123,11 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.5,
   },
+  buyNowContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  buyNowIcon: {
+    marginRight: 6,
+  },
 });

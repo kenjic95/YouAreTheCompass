@@ -10,14 +10,17 @@ import {
   CourseTitle,
   DurationText,
   DurationValueText,
+  BoughtBadge,
+  BoughtText,
   PriceValue,
+  PriceRow,
   Info,
   StatItem,
   StatText,
   StatsRow,
 } from "./course-card.styles";
 
-export const CourseInfo = ({ course, onPress } = {}) => {
+export const CourseInfo = ({ course, onPress, isPurchased = false } = {}) => {
   const theme = useTheme();
 
   const {
@@ -46,7 +49,19 @@ export const CourseInfo = ({ course, onPress } = {}) => {
             {"Class Duration\n"}
             <DurationValueText>{courseDuration}</DurationValueText>
           </DurationText>
-          <PriceValue>{displayPriceValue}</PriceValue>
+          <PriceRow>
+            <PriceValue>{displayPriceValue}</PriceValue>
+            {isPurchased ? (
+              <BoughtBadge>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={theme.colors.text.success}
+                />
+                <BoughtText>Bought</BoughtText>
+              </BoughtBadge>
+            ) : null}
+          </PriceRow>
           <StatsRow>
             <StatItem>
               <Ionicons

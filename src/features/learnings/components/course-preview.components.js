@@ -125,7 +125,11 @@ export const CoursePreviewActionBar = ({
   buyButtonColor,
   buyTextColor,
   onBuyNow,
+  isPurchased = false,
 }) => {
+  const buyNowBackgroundColor = isPurchased ? "#68B684" : buyButtonColor;
+  const buyNowLabel = isPurchased ? "BOUGHT" : "BUY NOW";
+
   return (
     <View
       style={[styles.actionBarContainer, { backgroundColor: containerColor }]}
@@ -135,13 +139,27 @@ export const CoursePreviewActionBar = ({
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.buyNowButton, { backgroundColor: buyButtonColor }]}
+        style={[
+          styles.buyNowButton,
+          { backgroundColor: buyNowBackgroundColor },
+        ]}
         activeOpacity={0.85}
         onPress={onBuyNow}
+        disabled={isPurchased}
       >
-        <Text style={[styles.buyNowText, { color: buyTextColor }]}>
-          BUY NOW
-        </Text>
+        <View style={styles.buyNowContent}>
+          {isPurchased ? (
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={buyTextColor}
+              style={styles.buyNowIcon}
+            />
+          ) : null}
+          <Text style={[styles.buyNowText, { color: buyTextColor }]}>
+            {buyNowLabel}
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
