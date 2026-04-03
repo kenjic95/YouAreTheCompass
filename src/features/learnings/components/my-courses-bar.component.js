@@ -7,7 +7,7 @@ import { Text } from "../../../components/typography/text.component";
 import { CompactCourseInfo } from "./compact-course-info.component";
 
 const MyCoursesWrapper = styled.View`
-  padding: 10px 16px 8px;
+  padding: 0px 16px 8px;
 `;
 
 const Row = styled.View`
