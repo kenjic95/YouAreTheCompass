@@ -18,6 +18,8 @@ export const CoursePreviewBottomSheet = ({
   backgroundColor,
   screenHeight,
   collapsedTop,
+  viewedContentIds = [],
+  onContentPress,
 }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const gestureStartTop = useRef(collapsedTop);
@@ -43,7 +45,7 @@ export const CoursePreviewBottomSheet = ({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) =>
         Math.abs(gestureState.dy) > 2 &&
         Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
@@ -113,7 +115,12 @@ export const CoursePreviewBottomSheet = ({
           <View style={[styles.footerSpacer, { height: collapsedTop }]} />
         }
         renderItem={({ item, index }) => (
-          <CoursePreviewContentRow item={item} index={index} />
+          <CoursePreviewContentRow
+            item={item}
+            index={index}
+            isViewed={viewedContentIds.includes(item?.contentId)}
+            onPress={() => onContentPress?.(item)}
+          />
         )}
       />
     </Animated.View>

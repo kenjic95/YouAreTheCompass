@@ -1,13 +1,13 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import {
   coursePreviewTypeConfig,
   normalizeCoursePreviewType,
 } from "../../../services/learnings/course-preview.mock";
 import { styles } from "./course-preview.styles";
 
-export const CoursePreviewContentRow = ({ item, index }) => {
+export const CoursePreviewContentRow = ({ item, index, isViewed, onPress }) => {
   const contentType = normalizeCoursePreviewType(
     item?.contentType ?? item?.fileFormat,
   );
@@ -23,7 +23,11 @@ export const CoursePreviewContentRow = ({ item, index }) => {
       : item?.fileSize ?? formatLabel;
 
   return (
-    <View style={styles.contentRow}>
+    <TouchableOpacity
+      style={styles.contentRow}
+      activeOpacity={0.85}
+      onPress={onPress}
+    >
       <Text style={styles.contentId}>{rowId}</Text>
       <View style={styles.contentBody}>
         <Text style={styles.contentDuration}>{helperText}</Text>
@@ -38,9 +42,13 @@ export const CoursePreviewContentRow = ({ item, index }) => {
           <Text style={styles.typePillText}>{typeConfig.label}</Text>
         </View>
       </View>
-      <View style={styles.playButton}>
-        <Ionicons name={typeConfig.actionIcon} size={24} color="#A9D4F4" />
+      <View style={[styles.playButton, isViewed ? styles.playButtonViewed : null]}>
+        <Ionicons
+          name={isViewed ? "checkmark" : typeConfig.actionIcon}
+          size={24}
+          color={isViewed ? "#5EA6DF" : "#A9D4F4"}
+        />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };

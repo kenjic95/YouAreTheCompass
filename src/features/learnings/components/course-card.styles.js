@@ -60,6 +60,40 @@ export const PriceRow = styled.View`
   margin-bottom: ${(props) => props.theme.space[1]};
 `;
 
+export const ProgressSection = styled.View`
+  width: 100%;
+  margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const ProgressLabel = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.caption};
+  font-weight: ${(props) => props.theme.fontWeights.bold};
+  color: #2f5f87;
+  margin-bottom: 6px;
+`;
+
+export const ProgressTrack = styled.View`
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background-color: #dceaf6;
+  overflow: hidden;
+  margin-bottom: 8px;
+`;
+
+export const ProgressFill = styled.View`
+  height: 100%;
+  border-radius: 999px;
+  background-color: #5ea6df;
+`;
+
+export const ProgressMeta = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 11px;
+  color: ${(props) => props.theme.colors.ui.secondary};
+`;
+
 export const BoughtBadge = styled.View`
   margin-left: ${(props) => props.theme.space[2]};
   padding-horizontal: ${(props) => props.theme.space[2]};
@@ -99,7 +133,7 @@ export const CartText = styled.Text`
 export const Info = styled.View`
   flex: 1;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: ${(props) => props.$justifyContent ?? "space-between"};
   padding-right: ${(props) => props.theme.space[2]};
   padding-bottom: ${(props) => props.theme.space[3]};
   background-color: transparent;

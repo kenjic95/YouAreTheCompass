@@ -88,6 +88,11 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  playButtonViewed: {
+    backgroundColor: "#DFF0FC",
+    borderWidth: 1,
+    borderColor: "#8BBEE4",
+  },
   actionBarContainer: {
     position: "absolute",
     left: 0,
