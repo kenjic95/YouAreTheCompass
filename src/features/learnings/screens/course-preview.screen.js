@@ -17,13 +17,14 @@ export const CoursePreviewScreen = ({ route }) => {
   const theme = useTheme();
   const course = route?.params?.course;
   const selectedCategory = route?.params?.category;
-  const { purchasedCourses } = usePurchasedCourses();
+  const { purchasedCourses, cartCourses, addToCart } = usePurchasedCourses();
   const [screenHeight, setScreenHeight] = useState(0);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
   const isPurchased = purchasedCourses.some(
     (purchasedCourse) => purchasedCourse.id === course?.id
   );
+  const isInCart = cartCourses.some((cartCourse) => cartCourse.id === course?.id);
 
   const handleLayout = ({ nativeEvent }) => {
     const nextHeight = nativeEvent.layout.height;
@@ -52,6 +53,8 @@ export const CoursePreviewScreen = ({ route }) => {
             buyButtonColor={theme.colors.brand.primary}
             buyTextColor={theme.colors.text.inverse}
             isPurchased={isPurchased}
+            isInCart={isInCart}
+            onAddToCart={() => !isPurchased && addToCart(course)}
             onBuyNow={() =>
               !isPurchased &&
               navigation.navigate("Checkout", {

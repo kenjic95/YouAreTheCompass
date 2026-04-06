@@ -38,6 +38,22 @@ export const MyCoursesToggleButton = ({ isActive, onPress }) => {
   );
 };
 
+export const AddToCartToggleButton = ({ isActive, onPress }) => {
+  return (
+    <TouchableOpacity
+      style={styles.iconButton}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
+      <Ionicons
+        name={isActive ? "cart" : "cart-outline"}
+        size={22}
+        color="#757575"
+      />
+    </TouchableOpacity>
+  );
+};
+
 export const MyCoursesBar = ({ courses, onNavigateCourse }) => {
   return (
     <MyCoursesWrapper>
@@ -58,6 +74,34 @@ export const MyCoursesBar = ({ courses, onNavigateCourse }) => {
           </ScrollView>
         ) : (
           <Text variant="caption">No courses yet. Buy a course to add it.</Text>
+        )}
+      </Spacer>
+    </MyCoursesWrapper>
+  );
+};
+
+export const AddToCartBar = ({ courses, onNavigateCourse }) => {
+  return (
+    <MyCoursesWrapper>
+      <MyCoursesTitle>Add to Cart</MyCoursesTitle>
+      <Spacer position="top" size="small">
+        {courses?.length ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {courses.map((course) => (
+              <Spacer key={course.id} position="right" size="small">
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => onNavigateCourse?.(course)}
+                >
+                  <CompactCourseInfo course={course} />
+                </TouchableOpacity>
+              </Spacer>
+            ))}
+          </ScrollView>
+        ) : (
+          <Text variant="caption">
+            No courses in cart yet. Add one to see it here.
+          </Text>
         )}
       </Spacer>
     </MyCoursesWrapper>

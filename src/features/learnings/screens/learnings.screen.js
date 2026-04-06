@@ -13,7 +13,7 @@ export const LearningsScreen = () => {
   const navigation = useNavigation();
   const { categories } = categoriesMockContext;
   const { courses } = courseContentMockContext;
-  const { purchasedCourses } = usePurchasedCourses();
+  const { purchasedCourses, cartCourses } = usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
 
   const categoriesWithCourseCount = useMemo(
@@ -55,6 +55,7 @@ export const LearningsScreen = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           myCourses={purchasedCourses}
+          cartCourses={cartCourses}
           onNavigateCourse={(course) =>
             navigation.navigate("Course", {
               course,

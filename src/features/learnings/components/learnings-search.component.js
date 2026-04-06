@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Searchbar } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 import {
+  AddToCartToggleButton,
+  AddToCartBar,
   LearningsSearchRow,
   MyCoursesBar,
   MyCoursesToggleButton,
@@ -12,9 +14,12 @@ export const LearningsSearch = ({
   value,
   onChangeText,
   myCourses = [],
+  cartCourses = [],
   onNavigateCourse,
+  onNavigateCartCourse,
 }) => {
   const [isMyCoursesOpen, setIsMyCoursesOpen] = useState(false);
+  const [isAddToCartOpen, setIsAddToCartOpen] = useState(false);
 
   return (
     <View>
@@ -22,7 +27,17 @@ export const LearningsSearch = ({
         <LearningsSearchRow>
           <MyCoursesToggleButton
             isActive={isMyCoursesOpen}
-            onPress={() => setIsMyCoursesOpen((previous) => !previous)}
+            onPress={() => {
+              setIsMyCoursesOpen((previous) => !previous);
+              setIsAddToCartOpen(false);
+            }}
+          />
+          <AddToCartToggleButton
+            isActive={isAddToCartOpen}
+            onPress={() => {
+              setIsAddToCartOpen((previous) => !previous);
+              setIsMyCoursesOpen(false);
+            }}
           />
           <View style={styles.searchInput}>
             <Searchbar
@@ -36,6 +51,12 @@ export const LearningsSearch = ({
       </View>
       {isMyCoursesOpen ? (
         <MyCoursesBar courses={myCourses} onNavigateCourse={onNavigateCourse} />
+      ) : null}
+      {isAddToCartOpen ? (
+        <AddToCartBar
+          courses={cartCourses}
+          onNavigateCourse={onNavigateCartCourse ?? onNavigateCourse}
+        />
       ) : null}
     </View>
   );

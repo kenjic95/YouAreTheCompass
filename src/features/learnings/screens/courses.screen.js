@@ -13,7 +13,7 @@ export const CoursesScreen = ({ route }) => {
   const selectedCategory = route?.params?.category;
   const headerTitle = selectedCategory?.categoryTitle ?? "Courses";
   const { courses } = courseContentMockContext;
-  const { purchasedCourses } = usePurchasedCourses();
+  const { purchasedCourses, cartCourses } = usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
   const purchasedCourseIds = useMemo(
     () => new Set(purchasedCourses.map((course) => course.id)),
@@ -47,6 +47,7 @@ export const CoursesScreen = ({ route }) => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           myCourses={purchasedCourses}
+          cartCourses={cartCourses}
           onNavigateCourse={(course) =>
             navigation.navigate("Course", {
               course,

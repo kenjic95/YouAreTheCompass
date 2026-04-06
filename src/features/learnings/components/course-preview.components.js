@@ -125,17 +125,26 @@ export const CoursePreviewActionBar = ({
   buyButtonColor,
   buyTextColor,
   onBuyNow,
+  onAddToCart,
   isPurchased = false,
+  isInCart = false,
 }) => {
   const buyNowBackgroundColor = isPurchased ? "#68B684" : buyButtonColor;
   const buyNowLabel = isPurchased ? "BOUGHT" : "BUY NOW";
+  const cartIconName = isInCart ? "cart" : "cart-outline";
+  const cartIconColor = isInCart ? "#68B684" : "#D78686";
 
   return (
     <View
       style={[styles.actionBarContainer, { backgroundColor: containerColor }]}
     >
-      <TouchableOpacity style={styles.cartButton} activeOpacity={0.8}>
-        <Ionicons name="cart" size={34} color="#D78686" />
+      <TouchableOpacity
+        style={styles.cartButton}
+        activeOpacity={0.8}
+        onPress={onAddToCart}
+        disabled={isPurchased || isInCart}
+      >
+        <Ionicons name={cartIconName} size={34} color={cartIconColor} />
       </TouchableOpacity>
 
       <TouchableOpacity
