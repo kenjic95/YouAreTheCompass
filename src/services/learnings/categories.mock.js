@@ -37,8 +37,12 @@ export const categoriesMock = [
   {
     id: 7,
     categoryTitle: "Nautibuoy",
-    categoryPhoto:
-      "https://c8.alamy.com/comp/W3FEPY/saving-money-business-finance-cartoon-W3FEPY.jpg",
+    categoryPhoto: require("../../../assets/Nautibuoy.jpg"),
+  },
+  {
+    id: 8,
+    categoryTitle: "You Are the Compass",
+    categoryPhoto: require("../../../assets/logo-transparentBG.png"),
   },
 ];
 

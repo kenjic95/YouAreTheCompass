@@ -20,10 +20,12 @@ export const CategoryInfo = ({ category, onPress } = {}) => {
   const coverPhoto = Array.isArray(categoryPhoto)
     ? categoryPhoto[0]
     : categoryPhoto;
+  const imageSource =
+    typeof coverPhoto === "string" ? { uri: coverPhoto } : coverPhoto;
 
   return (
     <CategoryCard elevation={5} onPress={onPress}>
-      <CategoryCardCover source={{ uri: coverPhoto }} resizeMode="contain" />
+      <CategoryCardCover source={imageSource} resizeMode="contain" />
       <CardOverlay>
         <Title>{categoryTitle}</Title>
         <CourseText>{noOfCourses}</CourseText>
