@@ -52,6 +52,12 @@ export const CoursesScreen = ({ route }) => {
           onChangeText={setSearchQuery}
           myCourses={purchasedCourses}
           cartCourses={cartCourses}
+          onNavigateMyCourse={(course) =>
+            navigation.navigate("MyCourse", {
+              course,
+              category: selectedCategory,
+            })
+          }
           onNavigateCourse={(course) =>
             navigation.navigate("Course", {
               course,

@@ -56,6 +56,11 @@ export const LearningsScreen = () => {
           onChangeText={setSearchQuery}
           myCourses={purchasedCourses}
           cartCourses={cartCourses}
+          onNavigateMyCourse={(course) =>
+            navigation.navigate("MyCourse", {
+              course,
+            })
+          }
           onNavigateCourse={(course) =>
             navigation.navigate("Course", {
               course,

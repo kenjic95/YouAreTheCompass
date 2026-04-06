@@ -16,6 +16,7 @@ export const LearningsSearch = ({
   myCourses = [],
   cartCourses = [],
   onNavigateCourse,
+  onNavigateMyCourse,
   onNavigateCartCourse,
 }) => {
   const [isMyCoursesOpen, setIsMyCoursesOpen] = useState(false);
@@ -50,7 +51,10 @@ export const LearningsSearch = ({
         </LearningsSearchRow>
       </View>
       {isMyCoursesOpen ? (
-        <MyCoursesBar courses={myCourses} onNavigateCourse={onNavigateCourse} />
+        <MyCoursesBar
+          courses={myCourses}
+          onNavigateCourse={onNavigateMyCourse ?? onNavigateCourse}
+        />
       ) : null}
       {isAddToCartOpen ? (
         <AddToCartBar
