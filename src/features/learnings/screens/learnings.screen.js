@@ -64,7 +64,7 @@ export const LearningsScreen = () => {
 
         <FlatList
           data={filteredCategories}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.id)}
           numColumns={2}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.list}

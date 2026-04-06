@@ -75,7 +75,7 @@ const sleepYogaContent = [
 export const coursesMock = [
   {
     id: "mindfulness-and-meditation",
-    categoryId: "health-wellness",
+    categoryId: 1,
     courseTitle: "Mindfulness and Meditation",
     author: "John Doe",
     courseDuration: "2hr 46min",
@@ -88,7 +88,7 @@ export const coursesMock = [
   },
   {
     id: "daily-breathwork-basics",
-    categoryId: "health-wellness",
+    categoryId: 1,
     courseTitle: "Daily Breathwork Basics",
     author: "Mia Park",
     courseDuration: "1hr 35min",
@@ -101,7 +101,7 @@ export const coursesMock = [
   },
   {
     id: "yoga-for-better-sleep",
-    categoryId: "health-wellness",
+    categoryId: 1,
     courseTitle: "Yoga for Better Sleep",
     author: "Liam Chen",
     courseDuration: "3hr 05min",
@@ -114,7 +114,7 @@ export const coursesMock = [
   },
   {
     id: "journaling-for-focus",
-    categoryId: "personal-development-lifestyle",
+    categoryId: 2,
     courseTitle: "Journaling for Focus",
     author: "Ava Smith",
     courseDuration: "1hr 50min",
@@ -127,7 +127,7 @@ export const coursesMock = [
   },
   {
     id: "calm-anxiety-toolkit",
-    categoryId: "personal-development-lifestyle",
+    categoryId: 2,
     courseTitle: "Calm Anxiety Toolkit",
     author: "Noah Wilson",
     courseDuration: "2hr 22min",
@@ -140,7 +140,7 @@ export const coursesMock = [
   },
   {
     id: "morning-routine-reset",
-    categoryId: "personal-development-lifestyle",
+    categoryId: 2,
     courseTitle: "Morning Routine Reset",
     author: "Emma Brown",
     courseDuration: "2hr 10min",
@@ -153,7 +153,7 @@ export const coursesMock = [
   },
   {
     id: "digital-detox-practical",
-    categoryId: "personal-development-lifestyle",
+    categoryId: 2,
     courseTitle: "Digital Detox Practical",
     author: "Ethan Taylor",
     courseDuration: "1hr 42min",
@@ -166,7 +166,7 @@ export const coursesMock = [
   },
   {
     id: "beginner-watercolor-essentials",
-    categoryId: "creative-arts-media",
+    categoryId: 3,
     courseTitle: "Beginner Watercolor Essentials",
     author: "Sophie Rivera",
     courseDuration: "2hr 12min",
@@ -179,7 +179,7 @@ export const coursesMock = [
   },
   {
     id: "smartphone-photography-lighting",
-    categoryId: "creative-arts-media",
+    categoryId: 3,
     courseTitle: "Smartphone Photography Lighting",
     author: "Marcus Lee",
     courseDuration: "1hr 58min",
@@ -192,7 +192,7 @@ export const coursesMock = [
   },
   {
     id: "urban-balcony-gardening",
-    categoryId: "home-hobbies",
+    categoryId: 4,
     courseTitle: "Urban Balcony Gardening",
     author: "Nina Patel",
     courseDuration: "2hr 05min",
@@ -205,7 +205,7 @@ export const coursesMock = [
   },
   {
     id: "home-coffee-brewing-lab",
-    categoryId: "home-hobbies",
+    categoryId: 4,
     courseTitle: "Home Coffee Brewing Lab",
     author: "Daniel Cruz",
     courseDuration: "1hr 44min",
@@ -218,7 +218,7 @@ export const coursesMock = [
   },
   {
     id: "practical-spanish-for-travel",
-    categoryId: "language-education",
+    categoryId: 5,
     courseTitle: "Practical Spanish for Travel",
     author: "Lucia Gomez",
     courseDuration: "2hr 30min",
@@ -231,7 +231,7 @@ export const coursesMock = [
   },
   {
     id: "public-speaking-english-confidence",
-    categoryId: "language-education",
+    categoryId: 5,
     courseTitle: "Public Speaking English Confidence",
     author: "Ryan Walker",
     courseDuration: "2hr 08min",
@@ -244,7 +244,7 @@ export const coursesMock = [
   },
   {
     id: "investing-fundamentals-101",
-    categoryId: "finance-investing",
+    categoryId: 6,
     courseTitle: "Investing Fundamentals 101",
     author: "Olivia Reed",
     courseDuration: "2hr 18min",
@@ -257,7 +257,7 @@ export const coursesMock = [
   },
   {
     id: "budgeting-and-cashflow-starter",
-    categoryId: "finance-investing",
+    categoryId: 6,
     courseTitle: "Budgeting and Cashflow Starter",
     author: "Harper Kim",
     courseDuration: "1hr 40min",
