@@ -36,7 +36,11 @@ export const CoursePreviewScreen = ({ route }) => {
     <SafeAreaProvider>
       <SafeArea onLayout={handleLayout}>
         <View style={styles.container}>
-          <CourseInfo course={course} isPurchased={isPurchased} />
+          <CourseInfo
+            course={course}
+            isPurchased={isPurchased}
+            isInCart={isInCart}
+          />
 
           {screenHeight > 0 ? (
             <CoursePreviewBottomSheet

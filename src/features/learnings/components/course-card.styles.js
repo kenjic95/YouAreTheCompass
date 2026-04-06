@@ -78,6 +78,24 @@ export const BoughtText = styled.Text`
   color: ${(props) => props.theme.colors.text.success};
 `;
 
+export const CartBadge = styled.View`
+  margin-left: ${(props) => props.theme.space[2]};
+  padding-horizontal: ${(props) => props.theme.space[2]};
+  padding-vertical: ${(props) => props.theme.space[1]};
+  border-radius: 12px;
+  background-color: #e7f1fb;
+  flex-direction: row;
+  align-items: center;
+`;
+
+export const CartText = styled.Text`
+  margin-left: ${(props) => props.theme.space[1]};
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: ${(props) => props.theme.fontSizes.caption};
+  font-weight: ${(props) => props.theme.fontWeights.bold};
+  color: #2a6da8;
+`;
+
 export const Info = styled.View`
   flex: 1;
   align-items: flex-start;

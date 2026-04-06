@@ -19,6 +19,10 @@ export const CoursesScreen = ({ route }) => {
     () => new Set(purchasedCourses.map((course) => course.id)),
     [purchasedCourses]
   );
+  const cartCourseIds = useMemo(
+    () => new Set(cartCourses.map((course) => course.id)),
+    [cartCourses]
+  );
 
   const data = useMemo(() => {
     const selectedCategoryId = selectedCategory?.id;
@@ -71,6 +75,7 @@ export const CoursesScreen = ({ route }) => {
               <CourseInfo
                 course={item}
                 isPurchased={purchasedCourseIds.has(item.id)}
+                isInCart={cartCourseIds.has(item.id)}
                 onPress={() =>
                   navigation.navigate("Course", {
                     course: item,

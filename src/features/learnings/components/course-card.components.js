@@ -12,6 +12,8 @@ import {
   DurationValueText,
   BoughtBadge,
   BoughtText,
+  CartBadge,
+  CartText,
   PriceValue,
   PriceRow,
   Info,
@@ -20,7 +22,12 @@ import {
   StatsRow,
 } from "./course-card.styles";
 
-export const CourseInfo = ({ course, onPress, isPurchased = false } = {}) => {
+export const CourseInfo = ({
+  course,
+  onPress,
+  isPurchased = false,
+  isInCart = false,
+} = {}) => {
   const theme = useTheme();
 
   const {
@@ -60,6 +67,11 @@ export const CourseInfo = ({ course, onPress, isPurchased = false } = {}) => {
                 />
                 <BoughtText>Bought</BoughtText>
               </BoughtBadge>
+            ) : isInCart ? (
+              <CartBadge>
+                <Ionicons name="cart" size={14} color="#2A6DA8" />
+                <CartText>In Cart</CartText>
+              </CartBadge>
             ) : null}
           </PriceRow>
           <StatsRow>
