@@ -40,9 +40,14 @@ const variants = {
   hint,
 };
 
+const getVariantStyle = (variant, theme) => {
+  const variantFn = variants[variant] || variants.body;
+  return variantFn(theme);
+};
+
 export const Text = styled.Text`
   ${({ theme }) => defaultTextStyles(theme)}
-  ${({ variant, theme }) => variants[variant](theme)}
+  ${({ variant, theme }) => getVariantStyle(variant, theme)}
 `;
 
 Text.defaultProps = {
