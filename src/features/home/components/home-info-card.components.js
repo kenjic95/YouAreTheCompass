@@ -66,10 +66,14 @@ export const HomeInfoCard = ({ home }) => {
   const { name, photos, link, appLink } = home;
 
   const handlePress = async () => {
-    if (!link) return;
+    if (!link) {
+      return;
+    }
 
     if (appLink) {
-      const canOpenAppLink = await Linking.canOpenURL(appLink).catch(() => false);
+      const canOpenAppLink = await Linking.canOpenURL(appLink).catch(
+        () => false,
+      );
       if (canOpenAppLink) {
         Linking.openURL(appLink).catch(() => {});
         return;
