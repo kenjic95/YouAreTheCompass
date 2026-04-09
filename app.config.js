@@ -11,8 +11,10 @@ module.exports = () => {
     ...expoConfig,
     extra: {
       ...(expoConfig.extra || {}),
-      youtubeApiKey: process.env.YOUTUBE_API_KEY || "",
-      youtubeChannelId: process.env.YOUTUBE_CHANNEL_ID || "",
+      YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY || expoConfig.extra?.YOUTUBE_API_KEY || expoConfig.extra?.youtubeApiKey || "",
+      YOUTUBE_CHANNEL_ID: process.env.YOUTUBE_CHANNEL_ID || expoConfig.extra?.YOUTUBE_CHANNEL_ID || expoConfig.extra?.youtubeChannelId || "",
+      youtubeApiKey: process.env.YOUTUBE_API_KEY || expoConfig.extra?.YOUTUBE_API_KEY || expoConfig.extra?.youtubeApiKey || "",
+      youtubeChannelId: process.env.YOUTUBE_CHANNEL_ID || expoConfig.extra?.YOUTUBE_CHANNEL_ID || expoConfig.extra?.youtubeChannelId || "",
     },
   };
 };
