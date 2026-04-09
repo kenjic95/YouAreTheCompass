@@ -16,7 +16,6 @@ export const Search = ({ keyword, onChangeKeyword, onSubmit }) => {
       <Searchbar
         placeholder="Search for a podcast"
         style={styles.searchBar}
-        inputStyle={styles.inputText}
         value={keyword}
         onSubmitEditing={() => {
           if (onSubmit) {
@@ -33,12 +32,6 @@ export const Search = ({ keyword, onChangeKeyword, onSubmit }) => {
 
 const styles = StyleSheet.create({
   searchBar: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    height: 48,
-    elevation: 0,
-  },
-  inputText: {
-    fontSize: 15,
+    backgroundColor: "#EAF2F8",
   },
 });

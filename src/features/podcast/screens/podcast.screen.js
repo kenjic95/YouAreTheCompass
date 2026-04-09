@@ -1,174 +1,147 @@
-import React, { useState, useEffect } from "react";
-import { FlatList, TouchableOpacity, ActivityIndicator, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { FlatList, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { Search } from "../components/search.component";
 import { AlbumInfoCard } from "../components/album-info-card.components";
-import { getChannelVideos } from "../../../services/youtube";
+
+const getYoutubeId = (url) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
+  return match?.[1] || null;
+};
+
+const getYoutubeThumbnail = (url) => {
+  const videoId = getYoutubeId(url);
+  return videoId
+    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    : "https://marketplace.canva.com/EAFDFX9GQ4k/2/0/1600w/canva-black-blue-pink-retro-neon-podcast-cover-Z8Lbz7K3t9s.jpg";
+};
 
 const mockPodcasts = [
   {
     id: "podcast-1",
-    albumName: "Podcast 1",
-    description: "Sound healing",
-    photos: [
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80",
-    ],
+    albumName: "Free Podcast: Compass Reflection",
+    description: "A free episode for guided reflection.",
+    photos: [getYoutubeThumbnail("https://www.youtube.com/watch?v=Dnx7rujVsIA")],
     premiumIcon: false,
+    sourceType: "youtube",
     sourceUrl: "https://www.youtube.com/watch?v=Dnx7rujVsIA",
     premium: false,
   },
   {
     id: "podcast-2",
-    albumName: "Podcast 2",
-    description: "Sound healing",
-    photos: [
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
-    ],
-    premiumIcon: true,
+    albumName: "Free Podcast: Journey Voice",
+    description: "A free episode for grounding and calm.",
+    photos: [getYoutubeThumbnail("https://www.youtube.com/watch?v=YZx0-Urhr-Q")],
+    premiumIcon: false,
+    sourceType: "youtube",
     sourceUrl: "https://www.youtube.com/watch?v=YZx0-Urhr-Q",
+    premium: false,
+  },
+  {
+    id: "podcast-3",
+    albumName: "Premium Podcast: Guided Compass",
+    description: "Premium episode with deeper guidance.",
+    photos: [getYoutubeThumbnail("https://www.youtube.com/watch?v=rHuQJCUDdRo")],
+    premiumIcon: true,
+    sourceType: "youtube",
+    sourceUrl: "https://www.youtube.com/watch?v=rHuQJCUDdRo",
+    premium: true,
+  },
+  {
+    id: "podcast-4",
+    albumName: "Premium Podcast: Inner Compass",
+    description: "Premium episode for deeper insight.",
+    photos: [getYoutubeThumbnail("https://www.youtube.com/watch?v=BQhYbjPWvgE")],
+    premiumIcon: true,
+    sourceType: "youtube",
+    sourceUrl: "https://www.youtube.com/watch?v=BQhYbjPWvgE",
     premium: true,
   },
 ];
 
-const Screen = styled.View`
-  flex: 1;
-  background-color: ${(props) => props.theme.colors.brand.primary};
-`;
-
-const PageContent = styled.View`
-  flex: 1;
-  padding: 32px 24px 0;
-`;
+const AlbumList = styled(FlatList).attrs({
+  contentContainerStyle: {
+    padding: 16,
+  },
+})``;
 
 const HeaderBar = styled.View`
-  margin-bottom: 24px;
+  padding: 0 16px 16px;
 `;
 
 const HeaderText = styled.Text`
-  color: ${(props) => props.theme.colors.text.inverse};
-  font-size: 36px;
-  font-family: ${(props) => props.theme.fonts.heading};
-  font-weight: ${(props) => props.theme.fontWeights.bold};
-`;
-
-const SubtitleText = styled.Text`
-  color: ${(props) => props.theme.colors.text.inverse};
-  opacity: 0.8;
-  font-size: ${(props) => props.theme.fontSizes.body};
-  line-height: 24px;
-`;
-
-const AlbumList = styled(FlatList).attrs({
-  contentContainerStyle: {
-    paddingBottom: 40,
-  },
-  showsVerticalScrollIndicator: false,
-})``;
-
-const LoadingContainer = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  background-color: ${(props) => props.theme.colors.brand.primary};
-`;
-
-const ErrorText = styled.Text`
-  color: ${(props) => props.theme.colors.text.inverse};
-  font-size: ${(props) => props.theme.fontSizes.body};
-  text-align: center;
-  margin-top: 16px;
-`;
-
-const RetryButton = styled.TouchableOpacity`
-  margin-top: 16px;
-  padding: 12px 24px;
-  background-color: ${(props) => props.theme.colors.ui.secondary};
-  border-radius: 8px;
-`;
-
-const RetryText = styled.Text`
+  font-size: ${(props) => props.theme.fontSizes.title};
   color: ${(props) => props.theme.colors.text.primary};
-  font-size: ${(props) => props.theme.fontSizes.button};
-  font-weight: ${(props) => props.theme.fontWeights.bold};
+  font-family: ${(props) => props.theme.fonts.heading};
+`;
+
+const StatusPill = styled.View`
+  margin: 0 16px 16px;
+  padding: 12px 14px;
+  background-color: ${(props) => props.theme.colors.bg.secondary};
+  border-radius: 16px;
+`;
+
+const StatusText = styled.Text`
+  color: ${(props) => props.theme.colors.text.primary};
+  font-size: ${(props) => props.theme.fontSizes.caption};
 `;
 
 export const AlbumScreen = ({ navigation }) => {
-  const [podcasts, setPodcasts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [keyword, setKeyword] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
 
-  const fetchPodcasts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const videos = await getChannelVideos();
-      setPodcasts(videos);
-    } catch (err) {
-      setError(err.message || 'Failed to load podcasts');
-    } finally {
-      setLoading(false);
+  const listData = useMemo(() => {
+    const term = submittedKeyword.trim().toLowerCase();
+    if (!term) {
+      return mockPodcasts;
     }
-  };
 
-  useEffect(() => {
-    fetchPodcasts();
-  }, []);
-
-  if (loading) {
-    return (
-      <SafeAreaProvider>
-        <SafeArea>
-          <LoadingContainer>
-            <ActivityIndicator size="large" color="#FFFFFF" />
-          </LoadingContainer>
-        </SafeArea>
-      </SafeAreaProvider>
+    return mockPodcasts.filter((item) =>
+      ((item.albumName || "") + " " + (item.description || ""))
+        .toLowerCase()
+        .includes(term)
     );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaProvider>
-        <SafeArea>
-          <LoadingContainer>
-            <ErrorText>{error}</ErrorText>
-            <RetryButton onPress={fetchPodcasts}>
-              <RetryText>Retry</RetryText>
-            </RetryButton>
-          </LoadingContainer>
-        </SafeArea>
-      </SafeAreaProvider>
-    );
-  }
+  }, [submittedKeyword]);
 
   return (
     <SafeAreaProvider>
       <SafeArea>
-        <Screen>
-          <PageContent>
-            <HeaderBar>
-              <HeaderText>Podcast</HeaderText>
-            </HeaderBar>
+        <HeaderBar>
+          <HeaderText>Podcast Videos</HeaderText>
+        </HeaderBar>
 
-            <AlbumList
-              data={podcasts}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => navigation.navigate("PodcastPlayer", { podcast: item })}
-                >
-                  <Spacer position="bottom" size="medium">
-                    <AlbumInfoCard album={item} />
-                  </Spacer>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item.id}
-            />
-          </PageContent>
-        </Screen>
+        <Search
+          keyword={keyword}
+          onChangeKeyword={setKeyword}
+          onSubmit={(value) => setSubmittedKeyword(value)}
+        />
+
+        <StatusPill>
+          <StatusText>
+            Tap a podcast card to play the video directly in the app.
+          </StatusText>
+        </StatusPill>
+
+        <AlbumList
+          data={listData}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate("PodcastPlayer", { podcast: item })}
+            >
+              <Spacer position="bottom" size="large">
+                <AlbumInfoCard album={item} />
+              </Spacer>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item.id}
+        />
       </SafeArea>
     </SafeAreaProvider>
   );

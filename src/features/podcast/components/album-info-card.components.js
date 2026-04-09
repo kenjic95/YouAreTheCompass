@@ -1,15 +1,14 @@
 import React from "react";
 import { Text } from "../../../components/typography/text.component";
 import { SvgXml } from "react-native-svg";
+import { Spacer } from "../../../components/spacer/spacer.component";
 import lock from "../../../../assets/lock";
 import {
   AlbumCard,
   AlbumCardCover,
   CoverContainer,
-  PremiumBadge,
-  PremiumText,
+  LockIcon,
   Info,
-  Title,
   Description,
 } from "./album-info-card.styles";
 
@@ -24,20 +23,21 @@ export const AlbumInfoCard = ({ album = {} }) => {
   } = album;
 
   return (
-    <AlbumCard elevation={4}>
+    <AlbumCard elevation={5}>
       <CoverContainer>
         <AlbumCardCover key={albumName} source={{ uri: photos[0] }} />
         {premiumIcon ? (
-          <PremiumBadge>
-            <SvgXml xml={lock} width={14} height={14} />
-            <PremiumText>Premium</PremiumText>
-          </PremiumBadge>
+          <LockIcon>
+            <Spacer position="top" size="medium">
+              <SvgXml xml={lock} width={35} height={35} />
+            </Spacer>
+          </LockIcon>
         ) : null}
       </CoverContainer>
 
       <Info>
-        <Title numberOfLines={2}>{albumName}</Title>
-        <Description numberOfLines={2}>{description}</Description>
+        <Text variant="label">{albumName}</Text>
+        <Description>{description}</Description>
       </Info>
     </AlbumCard>
   );
