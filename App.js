@@ -6,14 +6,7 @@ import {
   useFonts as useOswald,
   Oswald_400Regular,
 } from "@expo-google-fonts/oswald";
-import {
-  useFonts as useLato,
-  Lato_400Regular,
-} from "@expo-google-fonts/lato";
-import {
-  useFonts as usePlayball,
-  Playball_400Regular,
-} from "@expo-google-fonts/playball";
+import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
 import { useFonts } from "expo-font";
 import { theme } from "./src/infrastructure/theme";
 import { Navigation } from "./src/infrastructure/navigation";
@@ -25,9 +18,6 @@ export default function App() {
   const [latoLoaded] = useLato({
     Lato_400Regular,
   });
-  const [playballLoaded] = usePlayball({
-    Playball_400Regular,
-  });
   const [customLoaded] = useFonts({
     Avenir_Regular: require("./src/infrastructure/theme/customFont/Avenir-Regular.ttf"),
   });
@@ -36,13 +26,7 @@ export default function App() {
     Avenir_Heavy: require("./src/infrastructure/theme/customFont/Avenir-Heavy.ttf"),
   });
 
-  if (
-    !oswaldLoaded ||
-    !latoLoaded ||
-    !playballLoaded ||
-    !customLoaded ||
-    !customheavyLoaded
-  ) {
+  if (!oswaldLoaded || !latoLoaded || !customLoaded || !customheavyLoaded) {
     return null;
   }
   return (

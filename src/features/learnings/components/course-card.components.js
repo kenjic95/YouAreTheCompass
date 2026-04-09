@@ -10,8 +10,11 @@ import {
   AuthorText,
   CourseCard,
   CourseCardImage,
+  CourseCardImageWrap,
   CourseCardLayout,
   CourseTitle,
+  CourseBadge,
+  CourseBadgeText,
   DurationText,
   DurationValueText,
   BoughtBadge,
@@ -53,6 +56,8 @@ export const CourseInfo = ({
     coursePhoto = [
       "https://media.istockphoto.com/id/1459130410/vector/healthy-kids.jpg?s=612x612&w=0&k=20&c=3nLz49a_U4bB_ob6HziTBbsiJTrqYdGxUlLytRASdZs=",
     ],
+    isFoundationCourse = false,
+    prerequisiteCourseId = null,
   } = course ?? {};
 
   const coverPhoto = Array.isArray(coursePhoto) ? coursePhoto[0] : coursePhoto;
@@ -69,6 +74,17 @@ export const CourseInfo = ({
     Math.min(100, Math.round(progress?.percent ?? 0)),
   );
   const hasProgress = Boolean(progress);
+  const badgeVariant = prerequisiteCourseId
+    ? "prerequisite"
+    : isFoundationCourse
+      ? "foundation"
+      : null;
+  const badgeLabel =
+    badgeVariant === "prerequisite"
+      ? "Prerequisite"
+      : badgeVariant === "foundation"
+        ? "Foundation"
+        : null;
   const infoJustifyContent =
     hasProgress && !showDuration && !showStats ? "flex-start" : "space-between";
   const authorBottomSpacing = hasProgress ? 20 : 0;
@@ -144,7 +160,16 @@ export const CourseInfo = ({
             </StatsRow>
           ) : null}
         </Info>
-        <CourseCardImage source={{ uri: coverPhoto }} resizeMode="cover" />
+        <CourseCardImageWrap>
+          <CourseCardImage source={{ uri: coverPhoto }} resizeMode="cover" />
+          {badgeVariant ? (
+            <CourseBadge $variant={badgeVariant}>
+              <CourseBadgeText $variant={badgeVariant}>
+                {badgeLabel}
+              </CourseBadgeText>
+            </CourseBadge>
+          ) : null}
+        </CourseCardImageWrap>
       </CourseCardLayout>
     </CourseCard>
   );

@@ -7,6 +7,7 @@ export const CourseCard = styled(Card)`
 `;
 
 export const CourseCardLayout = styled.View`
+  position: relative;
   flex-direction: row;
   align-items: stretch;
   justify-content: space-between;
@@ -14,10 +15,15 @@ export const CourseCardLayout = styled.View`
   padding: ${(props) => props.theme.space[3]};
 `;
 
-export const CourseCardImage = styled.Image`
+export const CourseCardImageWrap = styled.View`
   width: 48%;
   height: 100%;
   margin-left: ${(props) => props.theme.space[1]};
+`;
+
+export const CourseCardImage = styled.Image`
+  width: 100%;
+  height: 100%;
   border-radius: 24px;
   background-color: ${(props) => props.theme.colors.ui.tertiary};
 `;
@@ -35,6 +41,25 @@ export const AuthorText = styled.Text`
   font-size: ${(props) => props.theme.fontSizes.button};
   color: ${(props) => props.theme.colors.ui.secondary};
   margin-bottom: ${(props) => props.theme.space[1]};
+`;
+
+export const CourseBadge = styled.View`
+  position: absolute;
+  top: ${(props) => props.theme.space[2]};
+  right: ${(props) => props.theme.space[2]};
+  padding-horizontal: 6px;
+  padding-vertical: 4px;
+  border-radius: 8px;
+  background-color: ${(props) =>
+    props.$variant === "prerequisite" ? "#FDEEDC" : "#E3F0FF"};
+`;
+
+export const CourseBadgeText = styled.Text`
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 10px;
+  font-weight: ${(props) => props.theme.fontWeights.bold};
+  color: ${(props) =>
+    props.$variant === "prerequisite" ? "#8A4B08" : "#1F4B82"};
 `;
 
 export const DurationText = styled.Text`

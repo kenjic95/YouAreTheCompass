@@ -7,7 +7,13 @@ import {
 } from "../../../services/learnings/course-preview.mock";
 import { styles } from "./course-preview.styles";
 
-export const CoursePreviewContentRow = ({ item, index, isViewed, onPress }) => {
+export const CoursePreviewContentRow = ({
+  item,
+  index,
+  isViewed,
+  onPress,
+  isLocked = false,
+}) => {
   const contentType = normalizeCoursePreviewType(
     item?.contentType ?? item?.fileFormat,
   );
@@ -24,9 +30,10 @@ export const CoursePreviewContentRow = ({ item, index, isViewed, onPress }) => {
 
   return (
     <TouchableOpacity
-      style={styles.contentRow}
-      activeOpacity={0.85}
+      style={[styles.contentRow, isLocked ? styles.contentRowLocked : null]}
+      activeOpacity={isLocked ? 1 : 0.85}
       onPress={onPress}
+      disabled={isLocked}
     >
       <Text style={styles.contentId}>{rowId}</Text>
       <View style={styles.contentBody}>
@@ -44,9 +51,9 @@ export const CoursePreviewContentRow = ({ item, index, isViewed, onPress }) => {
       </View>
       <View style={[styles.playButton, isViewed ? styles.playButtonViewed : null]}>
         <Ionicons
-          name={isViewed ? "checkmark" : typeConfig.actionIcon}
+          name={isLocked ? "lock-closed" : isViewed ? "checkmark" : typeConfig.actionIcon}
           size={24}
-          color={isViewed ? "#5EA6DF" : "#A9D4F4"}
+          color={isLocked ? "#7D8A97" : isViewed ? "#5EA6DF" : "#A9D4F4"}
         />
       </View>
     </TouchableOpacity>

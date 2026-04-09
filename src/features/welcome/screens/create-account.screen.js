@@ -37,7 +37,7 @@ const Logo = styled.Image.attrs({
 `;
 
 const Title = styled.Text`
-  font-family: ${(props) => props.theme.fonts.body};
+  font-family: ${(props) => props.theme.fonts.playball};
   font-size: 30px;
   color: #111111;
   text-align: center;

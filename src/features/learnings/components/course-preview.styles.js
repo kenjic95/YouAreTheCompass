@@ -40,6 +40,9 @@ export const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 16,
   },
+  contentRowLocked: {
+    opacity: 0.55,
+  },
   contentId: {
     width: 38,
     fontSize: 24,
@@ -92,6 +95,18 @@ export const styles = StyleSheet.create({
     backgroundColor: "#DFF0FC",
     borderWidth: 1,
     borderColor: "#8BBEE4",
+  },
+  lockNotice: {
+    backgroundColor: "#F4EBDD",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  lockNoticeText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#73470A",
   },
   actionBarContainer: {
     position: "absolute",
