@@ -3,11 +3,17 @@ import { FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTripLogs } from "../../../services/triplogs/journals.context";
 
 const ScreenContainer = styled.View`
   flex: 1;
   background-color: #ddd9d9;
   padding: 20px;
+`;
+
+const ScreenSafeArea = styled(SafeAreaView)`
+  flex: 1;
+  background-color: #ddd9d9;
 `;
 
 const CreateButton = styled.TouchableOpacity`
@@ -61,37 +67,46 @@ const JournalText = styled.Text`
   color: #3a6e97;
 `;
 
-
-const journals = [
-  { id: "1", title: "Hiking in Blue Mountains" },
-  { id: "2", title: "Scuba Diving in Cairns" },
-  { id: "3", title: "Camping in Cokatoo Island" },
-  { id: "4", title: "Coastal Walk in coogee" },
-];
+const JournalDate = styled.Text`
+  font-size: 14px;
+  color: #3a6e97;
+  opacity: 0.85;
+  margin-top: 8px;
+`;
 
 export const TripLogsScreen = ({ navigation }) => {
+  const { journals } = useTripLogs();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ddd9d9" }}>
-    <ScreenContainer>
-       <CreateButton onPress={() => navigation.navigate("CreateJournal")}>
-        <Ionicons name="add-circle-outline" size={38} color="#3a6e97" />
-        <CreateButtonText>Create a journal</CreateButtonText>
-      </CreateButton>
+    <ScreenSafeArea>
+      <ScreenContainer>
+        <CreateButton onPress={() => navigation.navigate("CreateJournal")}>
+          <Ionicons name="add-circle-outline" size={38} color="#3a6e97" />
+          <CreateButtonText>Create a journal</CreateButtonText>
+        </CreateButton>
 
-      <Title>My journal</Title>
-      <Divider />
+        <Title>My journal</Title>
+        <Divider />
 
-      <FlatList
-        data={journals}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <JournalCard light={item.light}>
-            <JournalText>{item.title}</JournalText>
-          </JournalCard>
-        )}
-        showsVerticalScrollIndicator={false}
-      />
-    </ScreenContainer>
-    </SafeAreaView>
+        <FlatList
+          data={journals}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <JournalCard
+              light={index % 2 === 0}
+              onPress={() =>
+                navigation.navigate("CreateJournal", {
+                  journalId: item.id,
+                })
+              }
+            >
+              <JournalText>{item.title}</JournalText>
+              <JournalDate>{item.date}</JournalDate>
+            </JournalCard>
+          )}
+          showsVerticalScrollIndicator={false}
+        />
+      </ScreenContainer>
+    </ScreenSafeArea>
   );
 };
