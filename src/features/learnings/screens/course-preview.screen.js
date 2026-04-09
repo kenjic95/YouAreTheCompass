@@ -1,30 +1,97 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "styled-components/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { CourseInfo } from "../components/course-card.components";
 import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
+import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
 import {
   CoursePreviewActionBar,
   CoursePreviewBottomSheet,
 } from "../components/course-preview.components";
 import { styles } from "../components/course-preview.styles";
 
+const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
+
 export const CoursePreviewScreen = ({ route }) => {
   const navigation = useNavigation();
   const theme = useTheme();
   const course = route?.params?.course;
   const selectedCategory = route?.params?.category;
+  const { courses } = courseContentMockContext;
   const { purchasedCourses, cartCourses, addToCart } = usePurchasedCourses();
   const [screenHeight, setScreenHeight] = useState(0);
+  const [isPrerequisiteComplete, setIsPrerequisiteComplete] = useState(null);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
   const isPurchased = purchasedCourses.some(
     (purchasedCourse) => purchasedCourse.id === course?.id
   );
   const isInCart = cartCourses.some((cartCourse) => cartCourse.id === course?.id);
+  const prerequisiteCourseId = course?.prerequisiteCourseId;
+  const foundationCourse = useMemo(
+    () => courses.find((item) => item?.id === prerequisiteCourseId),
+    [courses, prerequisiteCourseId]
+  );
+  const foundationCourseTitle =
+    foundationCourse?.courseTitle ?? "Required foundation course";
+
+  useEffect(() => {
+    let isActive = true;
+
+    const resolvePrerequisiteCompletion = async () => {
+      if (!prerequisiteCourseId) {
+        if (isActive) {
+          setIsPrerequisiteComplete(true);
+        }
+        return;
+      }
+
+      setIsPrerequisiteComplete(null);
+
+      const requiredContentIds = (foundationCourse?.courseContent ?? [])
+        .map((content) => content?.contentId)
+        .filter(Boolean);
+      const progressStorageKey = `${COURSE_PROGRESS_KEY_PREFIX}:${prerequisiteCourseId}`;
+
+      try {
+        const storedValue = await AsyncStorage.getItem(progressStorageKey);
+        const parsedIds = storedValue ? JSON.parse(storedValue) : [];
+        const viewedIds = new Set(Array.isArray(parsedIds) ? parsedIds : []);
+        const isComplete =
+          requiredContentIds.length > 0 &&
+          requiredContentIds.every((contentId) => viewedIds.has(contentId));
+
+        if (isActive) {
+          setIsPrerequisiteComplete(isComplete);
+        }
+      } catch {
+        if (isActive) {
+          setIsPrerequisiteComplete(false);
+        }
+      }
+    };
+
+    resolvePrerequisiteCompletion();
+
+    return () => {
+      isActive = false;
+    };
+  }, [foundationCourse?.courseContent, prerequisiteCourseId]);
+
+  const isCheckingPrerequisite =
+    Boolean(prerequisiteCourseId) && isPrerequisiteComplete === null;
+  const isLockedByPrerequisite =
+    Boolean(prerequisiteCourseId) &&
+    !isCheckingPrerequisite &&
+    !isPrerequisiteComplete;
+  const isLocked = !isPurchased && (isCheckingPrerequisite || isLockedByPrerequisite);
+  const prerequisiteLockMessage = isCheckingPrerequisite
+    ? "Checking foundation course progress..."
+    : `Complete the foundation course: ${foundationCourseTitle}`;
 
   const handleLayout = ({ nativeEvent }) => {
     const nextHeight = nativeEvent.layout.height;
@@ -49,6 +116,8 @@ export const CoursePreviewScreen = ({ route }) => {
               backgroundColor={theme.colors.brand.secondary}
               screenHeight={screenHeight}
               collapsedTop={collapsedTop}
+              isContentLocked={isLocked}
+              lockMessage={isLockedByPrerequisite ? prerequisiteLockMessage : ""}
             />
           ) : null}
 
@@ -58,9 +127,11 @@ export const CoursePreviewScreen = ({ route }) => {
             buyTextColor={theme.colors.text.inverse}
             isPurchased={isPurchased}
             isInCart={isInCart}
-            onAddToCart={() => !isPurchased && addToCart(course)}
+            isLocked={isLocked}
+            onAddToCart={() => !isPurchased && !isLocked && addToCart(course)}
             onBuyNow={() =>
               !isPurchased &&
+              !isLocked &&
               navigation.navigate("Checkout", {
                 course,
                 category: selectedCategory,

@@ -20,6 +20,8 @@ export const CoursePreviewBottomSheet = ({
   collapsedTop,
   viewedContentIds = [],
   onContentPress,
+  isContentLocked = false,
+  lockMessage = "",
 }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const gestureStartTop = useRef(collapsedTop);
@@ -109,6 +111,11 @@ export const CoursePreviewBottomSheet = ({
           <View>
             <View style={styles.handle} />
             <Text style={styles.sectionTitle}>Course Content</Text>
+            {isContentLocked && lockMessage ? (
+              <View style={styles.lockNotice}>
+                <Text style={styles.lockNoticeText}>{lockMessage}</Text>
+              </View>
+            ) : null}
           </View>
         }
         ListFooterComponent={
@@ -119,7 +126,8 @@ export const CoursePreviewBottomSheet = ({
             item={item}
             index={index}
             isViewed={viewedContentIds.includes(item?.contentId)}
-            onPress={() => onContentPress?.(item)}
+            isLocked={isContentLocked}
+            onPress={() => !isContentLocked && onContentPress?.(item)}
           />
         )}
       />
@@ -135,11 +143,16 @@ export const CoursePreviewActionBar = ({
   onAddToCart,
   isPurchased = false,
   isInCart = false,
+  isLocked = false,
 }) => {
-  const buyNowBackgroundColor = isPurchased ? "#68B684" : buyButtonColor;
-  const buyNowLabel = isPurchased ? "BOUGHT" : "BUY NOW";
-  const cartIconName = isInCart ? "cart" : "cart-outline";
-  const cartIconColor = isInCart ? "#68B684" : "#D78686";
+  const buyNowBackgroundColor = isLocked
+    ? "#A8B3BE"
+    : isPurchased
+      ? "#68B684"
+      : buyButtonColor;
+  const buyNowLabel = isLocked ? "LOCKED" : isPurchased ? "BOUGHT" : "BUY NOW";
+  const cartIconName = isLocked ? "lock-closed" : isInCart ? "cart" : "cart-outline";
+  const cartIconColor = isLocked ? "#8A97A5" : isInCart ? "#68B684" : "#D78686";
 
   return (
     <View
@@ -149,7 +162,7 @@ export const CoursePreviewActionBar = ({
         style={styles.cartButton}
         activeOpacity={0.8}
         onPress={onAddToCart}
-        disabled={isPurchased || isInCart}
+        disabled={isPurchased || isInCart || isLocked}
       >
         <Ionicons name={cartIconName} size={34} color={cartIconColor} />
       </TouchableOpacity>
@@ -161,12 +174,12 @@ export const CoursePreviewActionBar = ({
         ]}
         activeOpacity={0.85}
         onPress={onBuyNow}
-        disabled={isPurchased}
+        disabled={isPurchased || isLocked}
       >
         <View style={styles.buyNowContent}>
-          {isPurchased ? (
+          {isPurchased || isLocked ? (
             <Ionicons
-              name="checkmark-circle"
+              name={isLocked ? "lock-closed" : "checkmark-circle"}
               size={20}
               color={buyTextColor}
               style={styles.buyNowIcon}
