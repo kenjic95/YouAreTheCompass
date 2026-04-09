@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from "react-native";
 import styled from "styled-components/native";
 import { WebView } from "react-native-webview";
 
+import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Text } from "../../../components/typography/text.component";
@@ -45,16 +46,8 @@ const VideoWrapper = styled.View`
   background-color: black;
 `;
 
-const VideoWebView = styled(WebView)`
-  flex: 1;
-  background-color: black;
-`;
-
 const getYouTubeId = (url) => {
-  if (!url) {
-    return null;
-  }
-
+  if (!url) return null;
   const match = url.match(
     /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/
   );
@@ -72,9 +65,10 @@ export const PodcastPlayerScreen = ({ route, navigation }) => {
     if (videoId) {
       const html = `<!DOCTYPE html><html><head><meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0"><style>body{margin:0;background:#000;}iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}</style></head><body><iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&playsinline=1" allow="autoplay; encrypted-media" allowfullscreen></iframe></body></html>`;
       return (
-        <VideoWebView
+        <WebView
           originWhitelist={["*"]}
           source={{ html }}
+          style={{ flex: 1, backgroundColor: "black" }}
           javaScriptEnabled
           domStorageEnabled
           allowsInlineMediaPlayback
@@ -87,9 +81,10 @@ export const PodcastPlayerScreen = ({ route, navigation }) => {
     if (podcast?.sourceUrl) {
       const html = `<!DOCTYPE html><html><head><meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0"><style>body{margin:0;background:#000;}iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}</style></head><body><iframe src="${podcast.sourceUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe></body></html>`;
       return (
-        <VideoWebView
+        <WebView
           originWhitelist={["*"]}
           source={{ html }}
+          style={{ flex: 1, backgroundColor: "black" }}
           javaScriptEnabled
           domStorageEnabled
           allowsInlineMediaPlayback
