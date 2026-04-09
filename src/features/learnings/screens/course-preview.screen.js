@@ -19,7 +19,7 @@ const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
 export const CoursePreviewScreen = ({ route }) => {
   const navigation = useNavigation();
   const theme = useTheme();
-  const course = route?.params?.course;
+  const routeCourse = route?.params?.course;
   const selectedCategory = route?.params?.category;
   const { courses } = courseContentMockContext;
   const { purchasedCourses, cartCourses, addToCart } = usePurchasedCourses();
@@ -27,11 +27,24 @@ export const CoursePreviewScreen = ({ route }) => {
   const [isPrerequisiteComplete, setIsPrerequisiteComplete] = useState(null);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
+  const course = useMemo(() => {
+    const routeCourseId = routeCourse?.id;
+    if (!routeCourseId) {
+      return routeCourse;
+    }
+
+    const canonicalCourse = courses.find((item) => item?.id === routeCourseId);
+    return canonicalCourse ?? routeCourse;
+  }, [courses, routeCourse]);
+
   const isPurchased = purchasedCourses.some(
     (purchasedCourse) => purchasedCourse.id === course?.id
   );
-  const isInCart = cartCourses.some((cartCourse) => cartCourse.id === course?.id);
   const prerequisiteCourseId = course?.prerequisiteCourseId;
+  const isFoundationPurchased = purchasedCourses.some(
+    (purchasedCourse) => purchasedCourse.id === prerequisiteCourseId
+  );
+  const isInCart = cartCourses.some((cartCourse) => cartCourse.id === course?.id);
   const foundationCourse = useMemo(
     () => courses.find((item) => item?.id === prerequisiteCourseId),
     [courses, prerequisiteCourseId]
@@ -46,6 +59,13 @@ export const CoursePreviewScreen = ({ route }) => {
       if (!prerequisiteCourseId) {
         if (isActive) {
           setIsPrerequisiteComplete(true);
+        }
+        return;
+      }
+
+      if (!isFoundationPurchased) {
+        if (isActive) {
+          setIsPrerequisiteComplete(false);
         }
         return;
       }
@@ -80,7 +100,7 @@ export const CoursePreviewScreen = ({ route }) => {
     return () => {
       isActive = false;
     };
-  }, [foundationCourse?.courseContent, prerequisiteCourseId]);
+  }, [foundationCourse?.courseContent, isFoundationPurchased, prerequisiteCourseId]);
 
   const isCheckingPrerequisite =
     Boolean(prerequisiteCourseId) && isPrerequisiteComplete === null;
