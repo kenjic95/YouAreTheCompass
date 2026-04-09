@@ -72,6 +72,51 @@ const sleepYogaContent = [
   },
 ];
 
+const boatingFoundationContent = [
+  {
+    contentId: 1,
+    contentType: "video",
+    contentDuration: "11:18 min",
+    contentTitle: "Boat Safety Essentials",
+  },
+  {
+    contentId: 2,
+    contentType: "pdf",
+    fileFormat: "pdf",
+    fileSize: "4.1 MB",
+    contentTitle: "Pre-Departure Safety Checklist",
+  },
+  {
+    contentId: 3,
+    contentType: "video",
+    contentDuration: "14:07 min",
+    contentTitle: "Basic Navigation Markers",
+  },
+];
+
+const coastalFishingContent = [
+  {
+    contentId: 1,
+    contentType: "video",
+    contentDuration: "9:54 min",
+    contentTitle: "Coastal Fishing Rig Setup",
+  },
+  {
+    contentId: 2,
+    contentType: "jpg",
+    fileFormat: "jpg",
+    fileSize: "2.0 MB",
+    contentTitle: "Knot Reference Guide",
+  },
+  {
+    contentId: 3,
+    contentType: "pdf",
+    fileFormat: "pdf",
+    fileSize: "3.6 MB",
+    contentTitle: "Tide and Weather Planning Worksheet",
+  },
+];
+
 export const coursesMock = [
   {
     id: "mindfulness-and-meditation",
@@ -267,6 +312,36 @@ export const coursesMock = [
     coursePhoto:
       "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80",
     courseContent: breathworkContent,
+  },
+  {
+    id: "nautibuoy-boating-foundation",
+    categoryId: 7,
+    courseTitle: "Nautibuoy Boating Foundation",
+    author: "Captain Morgan",
+    courseDuration: "2hr 05min",
+    priceValue: "$22",
+    watchers: "6k",
+    rating: "4.8",
+    coursePhoto:
+      "https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=900&q=80",
+    isFoundationCourse: true,
+    prerequisiteCourseId: null,
+    courseContent: boatingFoundationContent,
+  },
+  {
+    id: "nautibuoy-coastal-fishing-prerequisite",
+    categoryId: 7,
+    courseTitle: "Coastal Fishing Setup and Strategy",
+    author: "Captain Morgan",
+    courseDuration: "1hr 52min",
+    priceValue: "$19",
+    watchers: "4k",
+    rating: "4.7",
+    coursePhoto:
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=80",
+    isFoundationCourse: false,
+    prerequisiteCourseId: "nautibuoy-boating-foundation",
+    courseContent: coastalFishingContent,
   },
 ];
 
