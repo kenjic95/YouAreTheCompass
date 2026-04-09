@@ -2,7 +2,7 @@ import styled from "styled-components/native";
 import { Card } from "react-native-paper";
 
 export const AlbumCard = styled(Card)`
-  background-color: ${(props) => props.theme.colors.bg.primary};
+  background-color: ${(props) => props.theme.colors.bg.secondary};
 `;
 
 export const AlbumCardCover = styled(Card.Cover)`
