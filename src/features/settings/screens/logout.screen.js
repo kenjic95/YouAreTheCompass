@@ -1,10 +1,30 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { CommonActions } from "@react-navigation/native";
 
 export default function LogoutScreen({ navigation }) {
   const handleLogout = () => {
-    Alert.alert("Logout", "You have been logged out.");
+    Alert.alert("Logout", "You have been logged out.", [
+      {
+        text: "OK",
+        onPress: () => {
+          const rootNavigation = navigation.getParent()?.getParent();
+
+          if (rootNavigation) {
+            rootNavigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: "Welcome" }],
+              })
+            );
+            return;
+          }
+
+          navigation.navigate("Welcome");
+        },
+      },
+    ]);
   };
 
   return (
