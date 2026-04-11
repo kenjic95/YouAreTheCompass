@@ -17,18 +17,6 @@ export const HeaderRow = styled.View`
   margin-bottom: ${(props) => props.theme.space[4]};
 `;
 
-export const BackButton = styled.TouchableOpacity.attrs({
-  activeOpacity: 0.8,
-})`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  background-color: ${(props) => props.theme.colors.brand.tertiary};
-  align-items: center;
-  justify-content: center;
-  margin-right: ${(props) => props.theme.space[2]};
-`;
-
 export const HeaderTitle = styled.Text`
   font-family: ${(props) => props.theme.fonts.title};
   font-size: ${(props) => props.theme.fontSizes.h5};

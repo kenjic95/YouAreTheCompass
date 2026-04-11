@@ -36,7 +36,6 @@ export const CourseCheckoutScreen = ({ route }) => {
           rating={rating}
           price={price}
           buyButtonColor={theme.colors.brand.primary}
-          onGoBack={() => navigation.goBack()}
           onPlaceOrder={handlePlaceOrder}
         />
       </CheckoutSafeArea>

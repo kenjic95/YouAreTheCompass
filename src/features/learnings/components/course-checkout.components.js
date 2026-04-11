@@ -2,7 +2,6 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "styled-components/native";
 import {
-  BackButton,
   Container,
   CourseMeta,
   CourseTitle,
@@ -27,7 +26,6 @@ export const CourseCheckoutContent = ({
   rating,
   price,
   buyButtonColor,
-  onGoBack,
   onPlaceOrder,
 }) => {
   const theme = useTheme();
@@ -35,14 +33,7 @@ export const CourseCheckoutContent = ({
   return (
     <Container>
       <HeaderRow>
-        <BackButton onPress={onGoBack}>
-          <Ionicons
-            name="arrow-back"
-            size={22}
-            color={theme.colors.text.primary}
-          />
-        </BackButton>
-        <HeaderTitle>Checkout</HeaderTitle>
+        <HeaderTitle>Review Checkout</HeaderTitle>
       </HeaderRow>
 
       <SummaryCard>
@@ -70,7 +61,7 @@ export const CourseCheckoutContent = ({
           size={18}
           color={theme.colors.text.tertiary}
         />
-        <InfoText>info text here</InfoText>
+        <InfoText>price in mock data</InfoText>
       </InfoBox>
 
       <PlaceOrderButton bgColor={buyButtonColor} onPress={onPlaceOrder}>
