@@ -2,13 +2,35 @@ import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CommonActions } from "@react-navigation/native";
+import { signOut } from "firebase/auth";
+
+import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
 export default function LogoutScreen({ navigation }) {
   const handleLogout = () => {
-    Alert.alert("Logout", "You have been logged out.", [
+    Alert.alert("Logout", "Are you sure you want to logout?", [
       {
-        text: "OK",
-        onPress: () => {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Confirm",
+        onPress: async () => {
+          if (!isFirebaseConfigured || !auth) {
+            Alert.alert(
+              "Auth disabled",
+              "Firebase is not configured yet. Nothing to logout from."
+            );
+            return;
+          }
+
+          try {
+            await signOut(auth);
+          } catch {
+            Alert.alert("Logout failed", "Unable to logout right now.");
+            return;
+          }
+
           const rootNavigation = navigation.getParent()?.getParent();
 
           if (rootNavigation) {

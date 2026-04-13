@@ -1,8 +1,23 @@
 import React, { useState } from "react";
-import { ScrollView, TouchableOpacity, View, Text } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+  View,
+  Text,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+
+import {
+  auth,
+  db,
+  isFirebaseConfigured,
+} from "../../../services/auth/firebase";
 
 const logoImage = require("../../../../assets/logo-transparentBG.png");
 
@@ -161,6 +176,97 @@ export const CreateAccountScreen = ({ navigation }) => {
 
   const [selectedYear, setSelectedYear] = useState("Year");
   const [showYear, setShowYear] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const getCreateAccountErrorMessage = (code) => {
+    switch (code) {
+      case "auth/email-already-in-use":
+        return "That email is already in use.";
+      case "auth/invalid-email":
+        return "Please enter a valid email address.";
+      case "auth/weak-password":
+        return "Password must be at least 6 characters.";
+      default:
+        return "Unable to create account right now. Please try again.";
+    }
+  };
+
+  const handleCreateAccount = async () => {
+    if (!isFirebaseConfigured || !auth || !db) {
+      Alert.alert(
+        "Auth disabled",
+        "Firebase is not configured yet. Add Firebase keys in .env to enable account creation."
+      );
+      return;
+    }
+
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (
+      !trimmedFirstName ||
+      !trimmedLastName ||
+      !normalizedEmail ||
+      !password
+    ) {
+      Alert.alert("Missing fields", "Please complete all required fields.");
+      return;
+    }
+
+    if (
+      selectedDay === "Day" ||
+      selectedMonth === "Month" ||
+      selectedYear === "Year"
+    ) {
+      Alert.alert(
+        "Missing date of birth",
+        "Please select your full date of birth."
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        normalizedEmail,
+        password
+      );
+      const displayName = `${trimmedFirstName} ${trimmedLastName}`.trim();
+
+      await updateProfile(credential.user, { displayName });
+      await setDoc(
+        doc(db, "users", credential.user.uid),
+        {
+          uid: credential.user.uid,
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          email: normalizedEmail,
+          dateOfBirth: {
+            day: selectedDay,
+            month: selectedMonth,
+            year: selectedYear,
+          },
+          createdAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MainTabs" }],
+      });
+    } catch (error) {
+      Alert.alert(
+        "Create account failed",
+        getCreateAccountErrorMessage(error?.code)
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Screen edges={["top", "right", "bottom", "left"]}>
@@ -255,7 +361,20 @@ export const CreateAccountScreen = ({ navigation }) => {
                     elevation: 10,
                   }}
                 >
-                  {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m, i) => (
+                  {[
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ].map((m, i) => (
                     <Text
                       key={i}
                       style={{ padding: 10 }}
@@ -289,7 +408,7 @@ export const CreateAccountScreen = ({ navigation }) => {
                   }}
                 >
                   {[...Array(50)].map((_, i) => {
-                    const y = 2026 - i;
+                    const y = new Date().getFullYear() - i;
                     return (
                       <Text
                         key={i}
@@ -309,8 +428,16 @@ export const CreateAccountScreen = ({ navigation }) => {
           </BirthRow>
         </FieldGroup>
 
-        <SubmitButton activeOpacity={0.9}>
-          <SubmitLabel>Create an Account</SubmitLabel>
+        <SubmitButton
+          activeOpacity={0.9}
+          onPress={handleCreateAccount}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <SubmitLabel>Create an Account</SubmitLabel>
+          )}
         </SubmitButton>
 
         <FooterRow>

@@ -1,7 +1,11 @@
 import React, { useState } from "react";
+import { ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import { signInWithEmailAndPassword } from "firebase/auth";
+
+import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
 const logoImage = require("../../../../assets/logo.jpeg");
 
@@ -96,6 +100,51 @@ const ForgotPassword = styled.Text`
 export const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const getSignInErrorMessage = (code) => {
+    switch (code) {
+      case "auth/invalid-email":
+        return "Please enter a valid email address.";
+      case "auth/user-not-found":
+      case "auth/wrong-password":
+      case "auth/invalid-credential":
+        return "Invalid email or password.";
+      default:
+        return "Unable to sign in right now. Please try again.";
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      Alert.alert(
+        "Auth disabled",
+        "Firebase is not configured yet. Add Firebase keys in .env to enable sign in."
+      );
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      Alert.alert("Missing fields", "Please enter your email and password.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await signInWithEmailAndPassword(auth, normalizedEmail, password);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MainTabs" }],
+      });
+    } catch (error) {
+      Alert.alert("Sign in failed", getSignInErrorMessage(error?.code));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Screen edges={["top", "right", "bottom", "left"]}>
@@ -127,8 +176,16 @@ export const SignInScreen = ({ navigation }) => {
           />
         </FieldGroup>
 
-        <SubmitButton activeOpacity={0.9}>
-          <SubmitLabel>Sign In</SubmitLabel>
+        <SubmitButton
+          activeOpacity={0.9}
+          onPress={handleSignIn}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <SubmitLabel>Sign In</SubmitLabel>
+          )}
         </SubmitButton>
 
         <ForgotPassword>Forgot Password?</ForgotPassword>
