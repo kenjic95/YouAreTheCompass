@@ -30,7 +30,7 @@ const mapVideoToAlbum = (video) => {
     albumName: video.snippet?.title || "Untitled",
     description: video.snippet?.description || "",
     photos: bestThumb ? [bestThumb] : undefined,
-    premiumIcon: true,
+    premiumIcon: false,
     id: video.id?.videoId || video.id,
   };
 };
