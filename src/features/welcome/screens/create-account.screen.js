@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, TouchableOpacity, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -81,6 +81,7 @@ const BirthRow = styled.View`
 
 const BirthInputWrap = styled.View`
   flex: ${(props) => props.flexValue || 1};
+  z-index: 10;
 `;
 
 const BirthInput = styled.View`
@@ -152,6 +153,15 @@ export const CreateAccountScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [selectedDay, setSelectedDay] = useState("Day");
+  const [showDay, setShowDay] = useState(false);
+
+  const [selectedMonth, setSelectedMonth] = useState("Month");
+  const [showMonth, setShowMonth] = useState(false);
+
+  const [selectedYear, setSelectedYear] = useState("Year");
+  const [showYear, setShowYear] = useState(false);
+
   return (
     <Screen edges={["top", "right", "bottom", "left"]}>
       <Content>
@@ -196,23 +206,105 @@ export const CreateAccountScreen = ({ navigation }) => {
           <Label>Date of Birth</Label>
           <BirthRow>
             <BirthInputWrap>
-              <BirthInput>
-                <BirthText>Day</BirthText>
-                <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
-              </BirthInput>
+              <TouchableOpacity onPress={() => setShowDay(!showDay)}>
+                <BirthInput>
+                  <BirthText>{selectedDay}</BirthText>
+                  <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
+                </BirthInput>
+              </TouchableOpacity>
+              {showDay && (
+                <View
+                  style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: 10,
+                    marginTop: 5,
+                    zIndex: 999,
+                    elevation: 10,
+                  }}
+                >
+                  {[...Array(31)].map((_, i) => (
+                    <Text
+                      key={i}
+                      style={{ padding: 10 }}
+                      onPress={() => {
+                        setSelectedDay(`${i + 1}`);
+                        setShowDay(false);
+                      }}
+                    >
+                      {i + 1}
+                    </Text>
+                  ))}
+                </View>
+              )}
             </BirthInputWrap>
 
             <BirthInputWrap>
-              <BirthInput>
-                <BirthText>Month</BirthText>
-                <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
-              </BirthInput>
+              <TouchableOpacity onPress={() => setShowMonth(!showMonth)}>
+                <BirthInput>
+                  <BirthText>{selectedMonth}</BirthText>
+                  <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
+                </BirthInput>
+              </TouchableOpacity>
+              {showMonth && (
+                <View
+                  style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: 10,
+                    marginTop: 5,
+                    zIndex: 999,
+                    elevation: 10,
+                  }}
+                >
+                  {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m, i) => (
+                    <Text
+                      key={i}
+                      style={{ padding: 10 }}
+                      onPress={() => {
+                        setSelectedMonth(m);
+                        setShowMonth(false);
+                      }}
+                    >
+                      {m}
+                    </Text>
+                  ))}
+                </View>
+              )}
             </BirthInputWrap>
 
             <BirthInputWrap flexValue={1.3}>
-              <BirthInput>
-                <BirthText>Year</BirthText>
-              </BirthInput>
+              <TouchableOpacity onPress={() => setShowYear(!showYear)}>
+                <BirthInput>
+                  <BirthText>{selectedYear}</BirthText>
+                  <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
+                </BirthInput>
+              </TouchableOpacity>
+              {showYear && (
+                <View
+                  style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: 10,
+                    marginTop: 5,
+                    zIndex: 999,
+                    elevation: 10,
+                  }}
+                >
+                  {[...Array(50)].map((_, i) => {
+                    const y = 2026 - i;
+                    return (
+                      <Text
+                        key={i}
+                        style={{ padding: 10 }}
+                        onPress={() => {
+                          setSelectedYear(`${y}`);
+                          setShowYear(false);
+                        }}
+                      >
+                        {y}
+                      </Text>
+                    );
+                  })}
+                </View>
+              )}
             </BirthInputWrap>
           </BirthRow>
         </FieldGroup>
