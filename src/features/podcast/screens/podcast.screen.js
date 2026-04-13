@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, ActivityIndicator } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import styled from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
@@ -26,16 +27,27 @@ const mapVideoToAlbum = (video) => {
     thumbnails.default?.url ||
     "";
 
+  // Extract video ID - handle different response structures
+  let videoId = "";
+  if (video.id?.videoId) {
+    videoId = video.id.videoId;
+  } else if (typeof video.id === "string") {
+    videoId = video.id;
+  } else if (video.id?.kind === "youtube#video" && video.id?.videoId) {
+    videoId = video.id.videoId;
+  }
+
   return {
     albumName: video.snippet?.title || "Untitled",
     description: video.snippet?.description || "",
     photos: bestThumb ? [bestThumb] : undefined,
     premiumIcon: false,
-    id: video.id?.videoId || video.id,
+    id: videoId,
   };
 };
 
 export const AlbumScreen = () => {
+  const navigation = useNavigation();
   const [albums, setAlbums] = useState([]);
   const [keyword, setKeyword] = useState("");
   const [submittedKeyword, setSubmittedKeyword] = useState("");
@@ -98,7 +110,14 @@ export const AlbumScreen = () => {
             data={listData}
             renderItem={({ item }) => (
               <Spacer position="bottom" size="large">
-                <AlbumInfoCard album={item} />
+                <AlbumInfoCard
+                  album={item}
+                  onPress={() => navigation.navigate("PodcastPlayer", {
+                    videoId: item.id,
+                    title: item.albumName,
+                    description: item.description,
+                  })}
+                />
               </Spacer>
             )}
             keyExtractor={(item) => item.id}
