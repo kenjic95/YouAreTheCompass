@@ -50,7 +50,6 @@ export const AlbumScreen = () => {
   const navigation = useNavigation();
   const [albums, setAlbums] = useState([]);
   const [keyword, setKeyword] = useState("");
-  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -85,7 +84,7 @@ export const AlbumScreen = () => {
   }, []);
 
   const listData = useMemo(() => {
-    const term = submittedKeyword.trim().toLowerCase();
+    const term = keyword.trim().toLowerCase();
     if (!term) {
       return albums;
     }
@@ -93,16 +92,12 @@ export const AlbumScreen = () => {
     return albums.filter((album) =>
       (album.albumName || "").toLowerCase().includes(term)
     );
-  }, [albums, submittedKeyword]);
+  }, [albums, keyword]);
 
   return (
     <SafeAreaProvider>
       <SafeArea>
-        <Search
-          keyword={keyword}
-          onChangeKeyword={setKeyword}
-          onSubmit={(value) => setSubmittedKeyword(value)}
-        />
+        <Search keyword={keyword} onChangeKeyword={setKeyword} />
         {isLoading ? (
           <ActivityIndicator />
         ) : (
@@ -112,11 +107,13 @@ export const AlbumScreen = () => {
               <Spacer position="bottom" size="large">
                 <AlbumInfoCard
                   album={item}
-                  onPress={() => navigation.navigate("PodcastPlayer", {
-                    videoId: item.id,
-                    title: item.albumName,
-                    description: item.description,
-                  })}
+                  onPress={() =>
+                    navigation.navigate("PodcastPlayer", {
+                      videoId: item.id,
+                      title: item.albumName,
+                      description: item.description,
+                    })
+                  }
                 />
               </Spacer>
             )}
