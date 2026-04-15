@@ -1,8 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { onAuthStateChanged } from "firebase/auth";
+
+import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
+
+const FALLBACK_NAME = "User Full Name";
+const FALLBACK_EMAIL = "user@email.com";
+
+const getDisplayProfile = (user) => {
+  if (!user) {
+    return {
+      name: FALLBACK_NAME,
+      email: FALLBACK_EMAIL,
+    };
+  }
+
+  return {
+    name: user.displayName?.trim() || FALLBACK_NAME,
+    email: user.email?.trim() || FALLBACK_EMAIL,
+  };
+};
 
 export default function AccountScreen({ navigation }) {
+  const [profile, setProfile] = useState(() =>
+    getDisplayProfile(auth?.currentUser || null)
+  );
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      setProfile(getDisplayProfile(null));
+      return undefined;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setProfile(getDisplayProfile(user));
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -103,7 +140,7 @@ export default function AccountScreen({ navigation }) {
               marginBottom: 8,
             }}
           >
-            User Full Name
+            {profile.name}
           </Text>
 
           <Text
@@ -113,7 +150,7 @@ export default function AccountScreen({ navigation }) {
               color: "#5F5F5F",
             }}
           >
-            user@email.com
+            {profile.email}
           </Text>
         </View>
       </View>
