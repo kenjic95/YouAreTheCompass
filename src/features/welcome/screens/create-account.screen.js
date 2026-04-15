@@ -237,7 +237,13 @@ export const CreateAccountScreen = ({ navigation }) => {
       const displayName = `${trimmedFirstName} ${trimmedLastName}`.trim();
 
       await updateProfile(credential.user, { displayName });
-      await setDoc(
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MainTabs" }],
+      });
+
+      setDoc(
         doc(db, "users", credential.user.uid),
         {
           uid: credential.user.uid,
@@ -252,11 +258,11 @@ export const CreateAccountScreen = ({ navigation }) => {
           createdAt: serverTimestamp(),
         },
         { merge: true }
-      );
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "MainTabs" }],
+      ).catch((persistError) => {
+        console.warn(
+          "Unable to persist user profile in Firestore.",
+          persistError
+        );
       });
     } catch (error) {
       Alert.alert(
