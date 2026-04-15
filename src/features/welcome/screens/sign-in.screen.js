@@ -135,10 +135,6 @@ export const SignInScreen = ({ navigation }) => {
 
     try {
       await signInWithEmailAndPassword(auth, normalizedEmail, password);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "MainTabs" }],
-      });
     } catch (error) {
       Alert.alert("Sign in failed", getSignInErrorMessage(error?.code));
     } finally {

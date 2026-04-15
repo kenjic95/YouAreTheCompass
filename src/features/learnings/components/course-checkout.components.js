@@ -25,6 +25,8 @@ export const CourseCheckoutContent = ({
   classDuration,
   rating,
   price,
+  originalPrice,
+  discountLabel,
   buyButtonColor,
   onPlaceOrder,
 }) => {
@@ -53,6 +55,12 @@ export const CourseCheckoutContent = ({
           <MetaLabel>Price</MetaLabel>
           <PriceValue>{price}</PriceValue>
         </MetaRow>
+        {discountLabel ? (
+          <MetaRow>
+            <MetaLabel>{discountLabel}</MetaLabel>
+            <MetaValue>{originalPrice}</MetaValue>
+          </MetaRow>
+        ) : null}
       </SummaryCard>
 
       <InfoBox>

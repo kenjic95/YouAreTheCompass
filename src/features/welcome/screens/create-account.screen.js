@@ -238,11 +238,6 @@ export const CreateAccountScreen = ({ navigation }) => {
 
       await updateProfile(credential.user, { displayName });
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "MainTabs" }],
-      });
-
       setDoc(
         doc(db, "users", credential.user.uid),
         {
@@ -255,6 +250,9 @@ export const CreateAccountScreen = ({ navigation }) => {
             month: selectedMonth,
             year: selectedYear,
           },
+          role: "student",
+          plan: "free",
+          discountPercent: 0,
           createdAt: serverTimestamp(),
         },
         { merge: true }
