@@ -213,14 +213,16 @@ export const CreateAccountScreen = ({ navigation }) => {
                 </BirthInput>
               </TouchableOpacity>
               {showDay && (
-                <View
+                <ScrollView
                   style={{
                     backgroundColor: "#ffffff",
                     borderRadius: 10,
                     marginTop: 5,
                     zIndex: 999,
                     elevation: 10,
+                    maxHeight: 180,
                   }}
+                  nestedScrollEnabled
                 >
                   {[...Array(31)].map((_, i) => (
                     <Text
@@ -234,7 +236,7 @@ export const CreateAccountScreen = ({ navigation }) => {
                       {i + 1}
                     </Text>
                   ))}
-                </View>
+                </ScrollView>
               )}
             </BirthInputWrap>
 
@@ -246,14 +248,16 @@ export const CreateAccountScreen = ({ navigation }) => {
                 </BirthInput>
               </TouchableOpacity>
               {showMonth && (
-                <View
+                <ScrollView
                   style={{
                     backgroundColor: "#ffffff",
                     borderRadius: 10,
                     marginTop: 5,
                     zIndex: 999,
                     elevation: 10,
+                    maxHeight: 180,
                   }}
+                  nestedScrollEnabled
                 >
                   {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m, i) => (
                     <Text
@@ -267,7 +271,7 @@ export const CreateAccountScreen = ({ navigation }) => {
                       {m}
                     </Text>
                   ))}
-                </View>
+                </ScrollView>
               )}
             </BirthInputWrap>
 
@@ -279,14 +283,16 @@ export const CreateAccountScreen = ({ navigation }) => {
                 </BirthInput>
               </TouchableOpacity>
               {showYear && (
-                <View
+                <ScrollView
                   style={{
                     backgroundColor: "#ffffff",
                     borderRadius: 10,
                     marginTop: 5,
                     zIndex: 999,
                     elevation: 10,
+                    maxHeight: 180,
                   }}
+                  nestedScrollEnabled
                 >
                   {[...Array(50)].map((_, i) => {
                     const y = 2026 - i;
@@ -303,7 +309,7 @@ export const CreateAccountScreen = ({ navigation }) => {
                       </Text>
                     );
                   })}
-                </View>
+                </ScrollView>
               )}
             </BirthInputWrap>
           </BirthRow>
