@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, ActivityIndicator } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import styled from "styled-components/native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 
 import { Search } from "../components/search.component";
 import { AlbumInfoCard } from "../components/album-info-card.components";
-
-const YOUTUBE_API_KEY = Constants.expoConfig?.extra?.youtubeApiKey || "";
-const YOUTUBE_CHANNEL_ID = Constants.expoConfig?.extra?.youtubeChannelId || "";
+import {
+  fetchPodcastAlbums,
+  filterAlbumsByKeyword,
+} from "../services/podcast.service";
 
 const AlbumList = styled(FlatList).attrs({
   contentContainerStyle: {
@@ -18,50 +19,17 @@ const AlbumList = styled(FlatList).attrs({
   },
 })``;
 
-const mapVideoToAlbum = (video) => {
-  const thumbnails = video.snippet?.thumbnails || {};
-  const bestThumb =
-    thumbnails.high?.url ||
-    thumbnails.medium?.url ||
-    thumbnails.default?.url ||
-    "";
-
-  return {
-    albumName: video.snippet?.title || "Untitled",
-    description: video.snippet?.description || "",
-    photos: bestThumb ? [bestThumb] : undefined,
-    premiumIcon: true,
-    id: video.id?.videoId || video.id,
-  };
-};
-
 export const AlbumScreen = () => {
+  const navigation = useNavigation();
   const [albums, setAlbums] = useState([]);
   const [keyword, setKeyword] = useState("");
-  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const loadVideos = async () => {
       try {
-        if (!YOUTUBE_API_KEY || !YOUTUBE_CHANNEL_ID) {
-          throw new Error("Missing YouTube API config.");
-        }
-
-        const url =
-          "https://www.googleapis.com/youtube/v3/search" +
-          `?part=snippet&channelId=${YOUTUBE_CHANNEL_ID}` +
-          "&maxResults=20&order=date&type=video" +
-          `&key=${YOUTUBE_API_KEY}`;
-        const response = await fetch(url);
-        const json = await response.json();
-
-        if (!response.ok) {
-          throw new Error(json?.error?.message || "Failed to fetch videos.");
-        }
-
-        setAlbums((json.items || []).map(mapVideoToAlbum));
+        setAlbums(await fetchPodcastAlbums());
       } catch (err) {
         setError(err.message);
       } finally {
@@ -73,24 +41,13 @@ export const AlbumScreen = () => {
   }, []);
 
   const listData = useMemo(() => {
-    const term = submittedKeyword.trim().toLowerCase();
-    if (!term) {
-      return albums;
-    }
-
-    return albums.filter((album) =>
-      (album.albumName || "").toLowerCase().includes(term)
-    );
-  }, [albums, submittedKeyword]);
+    return filterAlbumsByKeyword(albums, keyword);
+  }, [albums, keyword]);
 
   return (
     <SafeAreaProvider>
       <SafeArea>
-        <Search
-          keyword={keyword}
-          onChangeKeyword={setKeyword}
-          onSubmit={(value) => setSubmittedKeyword(value)}
-        />
+        <Search keyword={keyword} onChangeKeyword={setKeyword} />
         {isLoading ? (
           <ActivityIndicator />
         ) : (
@@ -98,7 +55,16 @@ export const AlbumScreen = () => {
             data={listData}
             renderItem={({ item }) => (
               <Spacer position="bottom" size="large">
-                <AlbumInfoCard album={item} />
+                <AlbumInfoCard
+                  album={item}
+                  onPress={() =>
+                    navigation.navigate("PodcastPlayer", {
+                      videoId: item.id,
+                      title: item.albumName,
+                      description: item.description,
+                    })
+                  }
+                />
               </Spacer>
             )}
             keyExtractor={(item) => item.id}

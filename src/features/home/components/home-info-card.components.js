@@ -41,16 +41,6 @@ export const homeData = [
       "https://static.wixstatic.com/media/8db060_f0df3c1c2c2a43c999c53376355313c7~mv2.jpeg/v1/fill/w_1196,h_1080,fp_0.61_0.50,q_85,enc_avif,quality_auto/Untitled%20(7).jpeg",
     ],
   },
-  {
-    id: "spotify",
-    name: "Listen on Spotify",
-    description: "Sample description for the Spotify card.",
-    link: "https://open.spotify.com/show/6N4ivS4YxvtLVhDb5RJv04",
-    appLink: "spotify:show:6N4ivS4YxvtLVhDb5RJv04",
-    photos: [
-      "https://images.unsplash.com/photo-1611339555312-e607c8352fd7?auto=format&fit=crop&w=800&q=80",
-    ],
-  },
 ];
 
 export const HomeListHeader = () => (

@@ -10,16 +10,6 @@ import HelpSupportScreen from "../../features/settings/screens/help-support.scre
 import FeedbackScreen from "../../features/settings/screens/feedback.screen.js";
 import LogoutScreen from "../../features/settings/screens/logout.screen.js";
 
-
-console.log("SettingsScreen:", SettingsScreen);
-console.log("PremiumScreen:", PremiumScreen);
-console.log("AccountScreen:", AccountScreen);
-console.log("Settings-detailScreen:", SettingsDetailScreen);
-console.log("aboutScreen:", AboutScreen);
-console.log("Help-supportScreen:", HelpSupportScreen);
-console.log("feedback:", FeedbackScreen);
-console.log("logout", LogoutScreen);
-
 const SettingsStack = createNativeStackNavigator();
 
 export const SettingsNavigator = () => {
@@ -28,7 +18,10 @@ export const SettingsNavigator = () => {
       <SettingsStack.Screen name="Settings" component={SettingsScreen} />
       <SettingsStack.Screen name="Premium" component={PremiumScreen} />
       <SettingsStack.Screen name="Account" component={AccountScreen} />
-      <SettingsStack.Screen name="SettingsDetail" component={SettingsDetailScreen} />
+      <SettingsStack.Screen
+        name="SettingsDetail"
+        component={SettingsDetailScreen}
+      />
       <SettingsStack.Screen name="About" component={AboutScreen} />
       <SettingsStack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />

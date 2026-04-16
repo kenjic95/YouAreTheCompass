@@ -12,7 +12,7 @@ import {
   Description,
 } from "./album-info-card.styles";
 
-export const AlbumInfoCard = ({ album = {} }) => {
+export const AlbumInfoCard = ({ album = {}, onPress }) => {
   const {
     albumName = "Album 1",
     premiumIcon = true,
@@ -23,7 +23,7 @@ export const AlbumInfoCard = ({ album = {} }) => {
   } = album;
 
   return (
-    <AlbumCard elevation={5}>
+    <AlbumCard elevation={5} onPress={onPress}>
       <CoverContainer>
         <AlbumCardCover key={albumName} source={{ uri: photos[0] }} />
         {premiumIcon ? (

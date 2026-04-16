@@ -1,6 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
+
+const logoImage = require("../../../../assets/logo-transparentBG.png");
 
 export default function AboutScreen({ navigation }) {
   return (
@@ -201,11 +203,18 @@ export default function AboutScreen({ navigation }) {
           paddingTop: 30,
         }}
       >
-        <Feather name="compass" size={95} color="#222222" />
+        <Image
+          source={logoImage}
+          style={{
+            width: 180,
+            height: 180,
+          }}
+          resizeMode="contain"
+        />
 
         <Text
           style={{
-            marginTop: 14,
+            marginTop: 18,
             fontSize: 18,
             fontWeight: "700",
             color: "#222222",

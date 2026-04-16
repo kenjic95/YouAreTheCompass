@@ -1,8 +1,35 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { Alert, View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { doc, setDoc } from "firebase/firestore";
+
+import { db, isFirebaseConfigured } from "../../../services/auth/firebase";
+import { useUserProfile } from "../../../services/auth/user-profile.context";
 
 export default function PremiumScreen({ navigation }) {
+  const { authUser, isPremium } = useUserProfile();
+
+  const handleActivatePremium = async () => {
+    if (!isFirebaseConfigured || !db || !authUser?.uid) {
+      Alert.alert("Not available", "Please sign in with Firebase to continue.");
+      return;
+    }
+
+    try {
+      await setDoc(
+        doc(db, "users", authUser.uid),
+        { plan: "premium", discountPercent: 20 },
+        { merge: true }
+      );
+      Alert.alert(
+        "Premium active",
+        "20% discount has been applied to courses."
+      );
+    } catch (error) {
+      Alert.alert("Update failed", "Unable to activate premium right now.");
+    }
+  };
+
   return (
     <View
       style={{
@@ -37,19 +64,6 @@ export default function PremiumScreen({ navigation }) {
       >
         Upgrade to Premium
       </Text>
-
-      {/*Logo}
-      {
-        <Image
-          source={require("../../../assets/logo.jpeg")}
-          style={{
-            width: 220,
-            height: 220,
-            marginBottom: 30,
-          }}
-          resizeMode="contain"
-        />
-      }
 
       {/* Subtitle */}
       <Text
@@ -112,9 +126,9 @@ export default function PremiumScreen({ navigation }) {
 
       {/* Button */}
       <TouchableOpacity
-        onPress={() => alert("Premium subscription coming soon!")}
+        onPress={handleActivatePremium}
         style={{
-          backgroundColor: "#69B0E5",
+          backgroundColor: isPremium ? "#6f9fc6" : "#69B0E5",
           paddingVertical: 18,
           paddingHorizontal: 38,
           borderRadius: 35,
@@ -132,7 +146,7 @@ export default function PremiumScreen({ navigation }) {
             fontWeight: "700",
           }}
         >
-          Unlock Premium
+          {isPremium ? "Premium Active" : "Unlock Premium"}
         </Text>
       </TouchableOpacity>
     </View>
