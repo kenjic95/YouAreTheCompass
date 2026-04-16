@@ -117,7 +117,7 @@ const coastalFishingContent = [
   },
 ];
 
-export const coursesMock = [
+const seededCoursesMock = [
   {
     id: "mindfulness-and-meditation",
     categoryId: 1,
@@ -344,6 +344,40 @@ export const coursesMock = [
     courseContent: coastalFishingContent,
   },
 ];
+
+export const MOCK_ADMIN_UID = "admin-demo-uid";
+export const MOCK_TEACHER_UIDS = {
+  mindfulnessTeacher: "teacher-mindful-uid",
+  skillsTeacher: "teacher-skills-uid",
+  nautibuoyTeacher: "teacher-nautibuoy-uid",
+};
+
+const AUTHOR_OWNER_MAP = {
+  "John Doe": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Mia Park": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Liam Chen": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Ava Smith": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Noah Wilson": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Emma Brown": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Ethan Taylor": MOCK_TEACHER_UIDS.mindfulnessTeacher,
+  "Sophie Rivera": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Marcus Lee": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Nina Patel": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Daniel Cruz": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Lucia Gomez": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Ryan Walker": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Olivia Reed": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Harper Kim": MOCK_TEACHER_UIDS.skillsTeacher,
+  "Captain Morgan": MOCK_TEACHER_UIDS.nautibuoyTeacher,
+};
+
+export const coursesMock = seededCoursesMock.map((course) => ({
+  ...course,
+  ownerId:
+    course.ownerId ??
+    AUTHOR_OWNER_MAP[course.author] ??
+    MOCK_TEACHER_UIDS.skillsTeacher,
+}));
 
 export const courseContentMockContext = {
   courses: coursesMock,

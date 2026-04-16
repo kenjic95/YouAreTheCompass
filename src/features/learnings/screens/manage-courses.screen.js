@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Alert, FlatList, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 
 import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
+import { useUserProfile } from "../../../services/auth/user-profile.context";
+
+const DEV_FORCE_CREATOR_UI =
+  String(process.env.EXPO_PUBLIC_DEV_FORCE_CREATOR_UI ?? "").toLowerCase() ===
+  "true";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -80,37 +85,105 @@ const ActionText = styled.Text`
 
 export const ManageCoursesScreen = () => {
   const { courses } = courseContentMockContext;
+  const { authUser, role, isCreator } = useUserProfile();
+  const currentUserId = authUser?.uid;
+  const canAccessCreator = DEV_FORCE_CREATOR_UI || isCreator;
 
-  const showSoon = () => {
-    Alert.alert("Coming soon", "Upload and edit flow will be connected next.");
+  const visibleCourses = useMemo(() => {
+    if (DEV_FORCE_CREATOR_UI) {
+      return courses;
+    }
+
+    if (role === "admin") {
+      return courses;
+    }
+
+    if (role === "teacher") {
+      return courses.filter((course) => course?.ownerId === currentUserId);
+    }
+
+    return [];
+  }, [courses, currentUserId, role]);
+
+  const showSoon = (
+    message = "Upload and edit flow will be connected next."
+  ) => {
+    Alert.alert("Coming soon", message);
   };
+
+  const handleUploadPress = () => {
+    if (!canAccessCreator) {
+      Alert.alert(
+        "Access denied",
+        "Only admin or teacher accounts can upload."
+      );
+      return;
+    }
+
+    showSoon();
+  };
+
+  const subtitle =
+    role === "admin"
+      ? "Admin workspace with access to all courses."
+      : role === "teacher"
+      ? "Teacher workspace with access to your own courses only."
+      : DEV_FORCE_CREATOR_UI
+      ? "Creator workspace preview (dev override enabled)."
+      : "Teacher workspace with access to your own courses only.";
+
+  const emptyMessage =
+    role === "teacher"
+      ? "No courses assigned to this teacher account yet."
+      : "No courses found.";
+
+  if (!canAccessCreator) {
+    return (
+      <Screen>
+        <Header>
+          <Title>Course Creator</Title>
+          <Subtitle>
+            Access denied. This area is only for teacher/admin accounts.
+          </Subtitle>
+        </Header>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
       <Header>
         <Title>Course Creator</Title>
-        <Subtitle>
-          Teacher/Admin workspace for uploading and managing courses.
-        </Subtitle>
+        <Subtitle>{subtitle}</Subtitle>
       </Header>
 
-      <UploadButton onPress={showSoon}>
+      <UploadButton onPress={handleUploadPress}>
         <UploadButtonText>Upload New Course</UploadButtonText>
       </UploadButton>
 
       <FlatList
-        data={courses}
+        data={visibleCourses}
         keyExtractor={(item) => item.id}
+        ListEmptyComponent={<CourseMeta>{emptyMessage}</CourseMeta>}
         renderItem={({ item }) => (
           <CourseCard>
             <CourseTitle>{item.courseTitle}</CourseTitle>
             <CourseMeta>{item.author}</CourseMeta>
+            <CourseMeta>Owner ID: {item.ownerId}</CourseMeta>
             <CourseMeta>{item.priceValue}</CourseMeta>
             <Row>
-              <Action onPress={showSoon}>
+              <Action
+                onPress={() =>
+                  showSoon("Course edit flow will be connected next.")
+                }
+              >
                 <ActionText>Edit</ActionText>
               </Action>
-              <Action onPress={showSoon}>
+              <Action
+                onPress={() =>
+                  showSoon("Course analytics dashboard will be connected next.")
+                }
+              >
                 <ActionText>View Analytics</ActionText>
               </Action>
             </Row>
