@@ -16,6 +16,20 @@ const DEFAULT_PROFILE = {
   discountPercent: 0,
 };
 
+const getDisplayName = (authUser, data = {}) => {
+  const authDisplayName = authUser?.displayName?.trim();
+  const savedDisplayName = data?.displayName?.trim();
+  const fallbackName = [data?.firstName, data?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return authDisplayName || savedDisplayName || fallbackName || "";
+};
+
+const getPhotoURL = (authUser, data = {}) =>
+  authUser?.photoURL?.trim() || data?.photoURL?.trim() || "";
+
 const UserProfileContext = createContext({
   authUser: null,
   profile: DEFAULT_PROFILE,
@@ -68,7 +82,8 @@ export const UserProfileProvider = ({ children }) => {
             ...data,
             uid: user.uid,
             email: user.email ?? data?.email,
-            displayName: user.displayName ?? data?.displayName,
+            displayName: getDisplayName(user, data),
+            photoURL: getPhotoURL(user, data),
           });
           setIsLoading(false);
         },
@@ -77,7 +92,8 @@ export const UserProfileProvider = ({ children }) => {
             ...DEFAULT_PROFILE,
             uid: user.uid,
             email: user.email ?? "",
-            displayName: user.displayName ?? "",
+            displayName: getDisplayName(user),
+            photoURL: getPhotoURL(user),
           });
           setIsLoading(false);
         }

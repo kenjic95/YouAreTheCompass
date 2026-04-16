@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Image } from "react-native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { onAuthStateChanged } from "firebase/auth";
 
 import {
   Container,
@@ -20,42 +20,31 @@ import {
   LogoutText,
   BottomSpace,
 } from "../components/settings.styles";
-import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
+import { useUserProfile } from "../../../services/auth/user-profile.context";
 
 const FALLBACK_NAME = "User Full Name";
 const FALLBACK_EMAIL = "user@email.com";
 
-const getDisplayProfile = (user) => {
-  if (!user) {
-    return {
-      name: FALLBACK_NAME,
-      email: FALLBACK_EMAIL,
-    };
-  }
-
-  return {
-    name: user.displayName?.trim() || FALLBACK_NAME,
-    email: user.email?.trim() || FALLBACK_EMAIL,
-  };
-};
-
 export default function SettingsScreen({ navigation }) {
-  const [profile, setProfile] = useState(() =>
-    getDisplayProfile(auth?.currentUser || null)
-  );
+  const { profile } = useUserProfile();
+  const [hasAvatarError, setHasAvatarError] = useState(false);
+
+  const displayProfile = useMemo(() => {
+    const fullName = [profile?.firstName, profile?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    return {
+      name: profile?.displayName?.trim() || fullName || FALLBACK_NAME,
+      email: profile?.email?.trim() || FALLBACK_EMAIL,
+      photoURL: profile?.photoURL?.trim() || "",
+    };
+  }, [profile]);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !auth) {
-      setProfile(getDisplayProfile(null));
-      return undefined;
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setProfile(getDisplayProfile(user));
-    });
-
-    return unsubscribe;
-  }, []);
+    setHasAvatarError(false);
+  }, [displayProfile.photoURL]);
 
   return (
     <Container>
@@ -63,12 +52,24 @@ export default function SettingsScreen({ navigation }) {
         <ProfileSection>
           <ProfileLeft>
             <AvatarCircle>
-              <Feather name="user" size={30} color="#8d8d8d" />
+              {displayProfile.photoURL && !hasAvatarError ? (
+                <Image
+                  source={{ uri: displayProfile.photoURL }}
+                  onError={() => setHasAvatarError(true)}
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                  }}
+                />
+              ) : (
+                <Feather name="user" size={30} color="#8d8d8d" />
+              )}
             </AvatarCircle>
 
             <UserInfo>
-              <UserName>{profile.name}</UserName>
-              <UserEmail>{profile.email}</UserEmail>
+              <UserName>{displayProfile.name}</UserName>
+              <UserEmail>{displayProfile.email}</UserEmail>
             </UserInfo>
           </ProfileLeft>
 

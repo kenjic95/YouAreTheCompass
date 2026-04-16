@@ -1,186 +1,527 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { onAuthStateChanged } from "firebase/auth";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  updateProfile,
+} from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
-import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
+import {
+  auth,
+  db,
+  isFirebaseConfigured,
+} from "../../../services/auth/firebase";
+import { useUserProfile } from "../../../services/auth/user-profile.context";
 
 const FALLBACK_NAME = "User Full Name";
 const FALLBACK_EMAIL = "user@email.com";
 
-const getDisplayProfile = (user) => {
-  if (!user) {
-    return {
-      name: FALLBACK_NAME,
-      email: FALLBACK_EMAIL,
-    };
-  }
+const buildDisplayProfile = (profile) => {
+  const fullName = [profile?.firstName, profile?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
   return {
-    name: user.displayName?.trim() || FALLBACK_NAME,
-    email: user.email?.trim() || FALLBACK_EMAIL,
+    firstName: profile?.firstName?.trim() || "",
+    lastName: profile?.lastName?.trim() || "",
+    name: profile?.displayName?.trim() || fullName || FALLBACK_NAME,
+    email: profile?.email?.trim() || FALLBACK_EMAIL,
+    photoURL: profile?.photoURL?.trim() || "",
   };
 };
 
+const createInitialForm = (profile) => ({
+  firstName: profile.firstName,
+  lastName: profile.lastName,
+  photoURL: profile.photoURL,
+  currentPassword: "",
+  newPassword: "",
+});
+
 export default function AccountScreen({ navigation }) {
-  const [profile, setProfile] = useState(() =>
-    getDisplayProfile(auth?.currentUser || null)
+  const { profile: userProfile, isLoading } = useUserProfile();
+  const { width } = useWindowDimensions();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [form, setForm] = useState(createInitialForm(buildDisplayProfile({})));
+
+  const profile = useMemo(
+    () => buildDisplayProfile(userProfile || {}),
+    [userProfile]
   );
+  const avatarSize = Math.min(width * 0.5, 220);
+  const avatarInnerSize = avatarSize * 0.68;
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !auth) {
-      setProfile(getDisplayProfile(null));
-      return undefined;
+    setAvatarError(false);
+  }, [profile.photoURL]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setForm(createInitialForm(profile));
+    }
+  }, [isEditing, profile]);
+
+  const updateFormValue = (key, value) => {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  };
+
+  const handleStartEditing = () => {
+    setForm(createInitialForm(profile));
+    setIsEditing(true);
+  };
+
+  const handleCancelEditing = () => {
+    setForm(createInitialForm(profile));
+    setIsEditing(false);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!isFirebaseConfigured || !auth || !db || !auth.currentUser) {
+      Alert.alert(
+        "Profile editing unavailable",
+        "Firebase is not configured yet, so account changes cannot be saved."
+      );
+      return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setProfile(getDisplayProfile(user));
-    });
+    const trimmedFirstName = form.firstName.trim();
+    const trimmedLastName = form.lastName.trim();
+    const trimmedPhotoURL = form.photoURL.trim();
+    const trimmedCurrentPassword = form.currentPassword.trim();
+    const trimmedNewPassword = form.newPassword.trim();
+    const displayName = `${trimmedFirstName} ${trimmedLastName}`.trim();
 
-    return unsubscribe;
-  }, []);
+    if (!trimmedFirstName || !trimmedLastName) {
+      Alert.alert(
+        "Missing fields",
+        "Please enter both your name and surname before saving."
+      );
+      return;
+    }
+
+    if (trimmedNewPassword && trimmedNewPassword.length < 6) {
+      Alert.alert(
+        "Weak password",
+        "Your new password must be at least 6 characters long."
+      );
+      return;
+    }
+
+    if (trimmedNewPassword && !trimmedCurrentPassword) {
+      Alert.alert(
+        "Current password required",
+        "Enter your current password to confirm the password change."
+      );
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      if (trimmedNewPassword) {
+        const email = auth.currentUser.email?.trim();
+
+        if (!email) {
+          throw new Error("missing-email");
+        }
+
+        const credential = EmailAuthProvider.credential(
+          email,
+          trimmedCurrentPassword
+        );
+
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        await updatePassword(auth.currentUser, trimmedNewPassword);
+      }
+
+      await updateProfile(auth.currentUser, {
+        displayName,
+        photoURL: trimmedPhotoURL || null,
+      });
+
+      await setDoc(
+        doc(db, "users", auth.currentUser.uid),
+        {
+          uid: auth.currentUser.uid,
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          displayName,
+          email: auth.currentUser.email ?? profile.email,
+          photoURL: trimmedPhotoURL,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      setForm((current) => ({
+        ...current,
+        currentPassword: "",
+        newPassword: "",
+      }));
+      setIsEditing(false);
+      Alert.alert("Account updated", "Your account details were saved.");
+    } catch (error) {
+      let message = "We couldn't save your account changes right now.";
+
+      if (error?.code === "auth/wrong-password") {
+        message = "Your current password is incorrect.";
+      } else if (error?.code === "auth/too-many-requests") {
+        message = "Too many attempts were made. Please try again shortly.";
+      } else if (error?.code === "auth/requires-recent-login") {
+        message =
+          "Please sign in again before changing your password, then try once more.";
+      } else if (error?.message === "missing-email") {
+        message =
+          "This account is missing an email address, so the password could not be updated.";
+      }
+
+      Alert.alert("Update failed", message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteRequest = () => {
+    Alert.alert(
+      "Account deletion",
+      "Please contact support or add your account deletion flow here when you're ready."
+    );
+  };
+
+  const previewPhoto = isEditing ? form.photoURL.trim() : profile.photoURL;
+  const shouldShowAvatarImage = previewPhoto && !avatarError;
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingBottom: 40,
-      }}
-      style={{
-        flex: 1,
-        backgroundColor: "#69AEE6",
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1, backgroundColor: "#69AEE6" }}
     >
-      {/* Back button */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
         style={{
-          position: "absolute",
-          top: 58,
-          left: 22,
-          zIndex: 10,
+          flex: 1,
+          backgroundColor: "#69AEE6",
         }}
       >
-        <Ionicons name="arrow-back" size={30} color="#6B6B6B" />
-      </TouchableOpacity>
-
-      {/* Top Card */}
-      <View
-        style={{
-          backgroundColor: "#DCEBF7",
-          borderBottomLeftRadius: 48,
-          borderBottomRightRadius: 48,
-          paddingTop: 95,
-          paddingHorizontal: 30,
-          paddingBottom: 38,
-          alignItems: "center",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.16,
-          shadowRadius: 8,
-          elevation: 8,
-        }}
-      >
-        <Text
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
           style={{
-            fontSize: 20,
-            fontWeight: "700",
-            color: "#5A5A5A",
-            marginBottom: 20,
+            position: "absolute",
+            top: 58,
+            left: 22,
+            zIndex: 10,
           }}
         >
-          Account Settings
-        </Text>
+          <Ionicons name="arrow-back" size={30} color="#6B6B6B" />
+        </TouchableOpacity>
 
-        {/* Avatar outer circle */}
         <View
           style={{
-            width: 220,
-            height: 220,
-            borderRadius: 110,
-            backgroundColor: "#F4F4F4",
+            backgroundColor: "#DCEBF7",
+            borderBottomLeftRadius: 48,
+            borderBottomRightRadius: 48,
+            paddingTop: 95,
+            paddingHorizontal: 24,
+            paddingBottom: 38,
             alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 34,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.16,
+            shadowRadius: 8,
+            elevation: 8,
           }}
         >
-          {/* Avatar inner circle */}
-          <View
+          <Text
             style={{
-              width: 150,
-              height: 150,
-              borderRadius: 75,
-              backgroundColor: "#8A8A8A",
-              alignItems: "center",
-              justifyContent: "center",
+              fontSize: 20,
+              fontWeight: "700",
+              color: "#5A5A5A",
+              marginBottom: 20,
+              textAlign: "center",
             }}
           >
-            <Feather name="user" size={90} color="#FFFFFF" />
+            Account Settings
+          </Text>
+
+          <View
+            style={{
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: avatarSize / 2,
+              backgroundColor: "#F4F4F4",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                width: avatarInnerSize,
+                height: avatarInnerSize,
+                borderRadius: avatarInnerSize / 2,
+                backgroundColor: shouldShowAvatarImage ? "#F4F4F4" : "#8A8A8A",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {shouldShowAvatarImage ? (
+                <Image
+                  source={{ uri: previewPhoto }}
+                  onError={() => setAvatarError(true)}
+                  style={{
+                    width: avatarInnerSize,
+                    height: avatarInnerSize,
+                  }}
+                />
+              ) : (
+                <Feather
+                  name="user"
+                  size={Math.max(50, avatarInnerSize * 0.6)}
+                  color="#FFFFFF"
+                />
+              )}
+            </View>
+          </View>
+
+          {isEditing ? (
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: "#5F5F5F",
+                marginBottom: 18,
+                textAlign: "center",
+                paddingHorizontal: 16,
+              }}
+            >
+              Add or replace your profile photo by pasting an image URL below.
+            </Text>
+          ) : null}
+
+          <View style={{ width: "100%" }}>
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: "800",
+                color: "#1F1F1F",
+                marginBottom: 10,
+              }}
+            >
+              Account Details
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: "800",
+                color: "#2A2A2A",
+                marginBottom: 6,
+              }}
+            >
+              {profile.name}
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "700",
+                color: "#5F5F5F",
+                marginBottom: 4,
+              }}
+            >
+              {profile.email}
+            </Text>
+
+            {isLoading ? (
+              <View style={{ paddingTop: 16 }}>
+                <ActivityIndicator color="#4F86B9" />
+              </View>
+            ) : null}
           </View>
         </View>
 
-        {/* Account info */}
-        <View style={{ width: "100%" }}>
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "800",
-              color: "#1F1F1F",
-              marginBottom: 10,
-            }}
-          >
-            Account Details
-          </Text>
+        <View
+          style={{
+            paddingHorizontal: 22,
+            paddingTop: 24,
+          }}
+        >
+          {isEditing ? (
+            <View
+              style={{
+                backgroundColor: "#DCEBF7",
+                borderRadius: 30,
+                paddingHorizontal: 20,
+                paddingVertical: 22,
+                marginBottom: 22,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.16,
+                shadowRadius: 5,
+                elevation: 5,
+              }}
+            >
+              <EditField
+                label="Name"
+                value={form.firstName}
+                onChangeText={(value) => updateFormValue("firstName", value)}
+                autoCapitalize="words"
+                placeholder="Enter your name"
+              />
 
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "700",
-              color: "#5F5F5F",
-              marginBottom: 8,
-            }}
-          >
-            {profile.name}
-          </Text>
+              <EditField
+                label="Surname"
+                value={form.lastName}
+                onChangeText={(value) => updateFormValue("lastName", value)}
+                autoCapitalize="words"
+                placeholder="Enter your surname"
+              />
 
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "700",
-              color: "#5F5F5F",
-            }}
-          >
-            {profile.email}
-          </Text>
+              <EditField
+                label="Profile Photo URL"
+                value={form.photoURL}
+                onChangeText={(value) => {
+                  setAvatarError(false);
+                  updateFormValue("photoURL", value);
+                }}
+                autoCapitalize="none"
+                keyboardType="url"
+                placeholder="https://example.com/profile-photo.jpg"
+              />
+
+              <EditField
+                label="Current Password"
+                value={form.currentPassword}
+                onChangeText={(value) =>
+                  updateFormValue("currentPassword", value)
+                }
+                autoCapitalize="none"
+                secureTextEntry
+                placeholder="Required to change password"
+              />
+
+              <EditField
+                label="New Password"
+                value={form.newPassword}
+                onChangeText={(value) => updateFormValue("newPassword", value)}
+                autoCapitalize="none"
+                secureTextEntry
+                placeholder="Leave blank to keep your password"
+              />
+
+              <View
+                style={{
+                  flexDirection: width > 420 ? "row" : "column",
+                  gap: 12,
+                  marginTop: 12,
+                }}
+              >
+                <PrimaryButton
+                  label={isSaving ? "Saving..." : "Save Changes"}
+                  onPress={handleSaveProfile}
+                  disabled={isSaving}
+                />
+                <SecondaryButton
+                  label="Cancel"
+                  onPress={handleCancelEditing}
+                  disabled={isSaving}
+                />
+              </View>
+            </View>
+          ) : (
+            <ActionCard
+              icon={<Feather name="edit-2" size={24} color="#1A1A1A" />}
+              label="Edit Account Details"
+              onPress={handleStartEditing}
+            />
+          )}
+
+          <ActionCard
+            icon={
+              <MaterialCommunityIcons
+                name="trash-can-outline"
+                size={26}
+                color="#1A1A1A"
+              />
+            }
+            label="Request Account Deletion"
+            onPress={handleDeleteRequest}
+          />
         </View>
-      </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
 
-      {/* Buttons */}
-      <View
+function EditField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  secureTextEntry,
+  autoCapitalize,
+  keyboardType,
+}) {
+  return (
+    <View style={{ marginBottom: 14 }}>
+      <Text
         style={{
-          paddingHorizontal: 28,
-          paddingTop: 24,
+          fontSize: 15,
+          fontWeight: "700",
+          color: "#4C6D87",
+          marginBottom: 8,
+          marginLeft: 6,
         }}
       >
-        <ActionCard
-          icon={<Feather name="edit-2" size={24} color="#1A1A1A" />}
-          label="Edit Account Details"
-          onPress={() => {}}
-        />
+        {label}
+      </Text>
 
-        <ActionCard
-          icon={
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={26}
-              color="#1A1A1A"
-            />
-          }
-          label="Request Account Deletion"
-          onPress={() => {}}
-        />
-      </View>
-    </ScrollView>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#86A5BB"
+        secureTextEntry={secureTextEntry}
+        autoCapitalize={autoCapitalize}
+        keyboardType={keyboardType}
+        style={{
+          backgroundColor: "#F3F9FE",
+          borderRadius: 20,
+          minHeight: 52,
+          paddingHorizontal: 18,
+          paddingVertical: 14,
+          fontSize: 16,
+          color: "#204968",
+        }}
+      />
+    </View>
   );
 }
 
@@ -191,9 +532,10 @@ function ActionCard({ icon, label, onPress }) {
       style={{
         backgroundColor: "#DCEBF7",
         borderRadius: 30,
-        height: 58,
+        minHeight: 58,
         marginBottom: 22,
         paddingHorizontal: 28,
+        paddingVertical: 16,
         flexDirection: "row",
         alignItems: "center",
         shadowColor: "#000",
@@ -211,6 +553,69 @@ function ActionCard({ icon, label, onPress }) {
           fontSize: 16,
           fontWeight: "700",
           color: "#111111",
+          flexShrink: 1,
+        }}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+function PrimaryButton({ label, onPress, disabled }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={{
+        flex: 1,
+        minHeight: 52,
+        borderRadius: 26,
+        backgroundColor: disabled ? "#8CB3D2" : "#4F86B9",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 18,
+      }}
+    >
+      {disabled ? (
+        <ActivityIndicator color="#FFFFFF" />
+      ) : (
+        <Text
+          style={{
+            color: "#FFFFFF",
+            fontSize: 16,
+            fontWeight: "700",
+          }}
+        >
+          {label}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+function SecondaryButton({ label, onPress, disabled }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={{
+        flex: 1,
+        minHeight: 52,
+        borderRadius: 26,
+        backgroundColor: "#F3F9FE",
+        borderWidth: 1,
+        borderColor: "#8FB5D4",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 18,
+      }}
+    >
+      <Text
+        style={{
+          color: "#2D5E86",
+          fontSize: 16,
+          fontWeight: "700",
         }}
       >
         {label}
