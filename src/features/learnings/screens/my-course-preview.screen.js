@@ -1,7 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Animated, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useTheme } from "styled-components/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
@@ -41,50 +47,52 @@ export const MyCoursePreviewScreen = ({ route }) => {
     ? `${COURSE_PROGRESS_KEY_PREFIX}:${courseId}`
     : null;
 
-  useEffect(() => {
-    let isActive = true;
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-    const loadProgress = async () => {
-      setHasLoadedProgress(false);
+      const loadProgress = async () => {
+        setHasLoadedProgress(false);
 
-      if (!progressStorageKey) {
-        if (isActive) {
-          setViewedContentIds([]);
-          setHasLoadedProgress(true);
+        if (!progressStorageKey) {
+          if (isActive) {
+            setViewedContentIds([]);
+            setHasLoadedProgress(true);
+          }
+          return;
         }
-        return;
-      }
 
-      try {
-        const storedValue = await AsyncStorage.getItem(progressStorageKey);
-        const parsedIds = storedValue ? JSON.parse(storedValue) : [];
-        const allowedIds = new Set(
-          (courseContent ?? []).map((content) => content?.contentId)
-        );
-        const sanitizedIds = Array.isArray(parsedIds)
-          ? parsedIds.filter((id) => allowedIds.has(id))
-          : [];
+        try {
+          const storedValue = await AsyncStorage.getItem(progressStorageKey);
+          const parsedIds = storedValue ? JSON.parse(storedValue) : [];
+          const allowedIds = new Set(
+            (courseContent ?? []).map((content) => content?.contentId)
+          );
+          const sanitizedIds = Array.isArray(parsedIds)
+            ? parsedIds.filter((id) => allowedIds.has(id))
+            : [];
 
-        if (isActive) {
-          setViewedContentIds(sanitizedIds);
+          if (isActive) {
+            setViewedContentIds(sanitizedIds);
+          }
+        } catch {
+          if (isActive) {
+            setViewedContentIds([]);
+          }
+        } finally {
+          if (isActive) {
+            setHasLoadedProgress(true);
+          }
         }
-      } catch {
-        if (isActive) {
-          setViewedContentIds([]);
-        }
-      } finally {
-        if (isActive) {
-          setHasLoadedProgress(true);
-        }
-      }
-    };
+      };
 
-    loadProgress();
+      loadProgress();
 
-    return () => {
-      isActive = false;
-    };
-  }, [courseContent, progressStorageKey]);
+      return () => {
+        isActive = false;
+      };
+    }, [courseContent, progressStorageKey])
+  );
 
   useEffect(() => {
     if (!hasLoadedProgress || !progressStorageKey) {
@@ -196,18 +204,19 @@ export const MyCoursePreviewScreen = ({ route }) => {
                   item?.contentType ?? item?.fileFormat
                 );
 
-                setViewedContentIds((previousIds) =>
-                  previousIds.includes(contentId)
-                    ? previousIds
-                    : [...previousIds, contentId]
-                );
-
                 if (contentType === "video") {
                   navigation.navigate("CoursePlayer", {
                     course,
                     contentItem: item,
                   });
+                  return;
                 }
+
+                setViewedContentIds((previousIds) =>
+                  previousIds.includes(contentId)
+                    ? previousIds
+                    : [...previousIds, contentId]
+                );
               }}
             />
           ) : null}

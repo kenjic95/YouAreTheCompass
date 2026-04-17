@@ -3,10 +3,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Video } from "expo-av";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
 
+const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
 const bottomActions = [
   { id: "back", icon: "chevron-back-outline" },
   { id: "rewind", icon: "play-back" },
@@ -17,7 +20,9 @@ const bottomActions = [
 
 export const CourseVideoPlayerScreen = ({ route }) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const videoRef = useRef(null);
+  const course = route?.params?.course;
   const contentItem = route?.params?.contentItem;
   const fallbackDurationSeconds = useMemo(() => {
     const parsedSeconds = parseDurationLabelToSeconds(
@@ -79,8 +84,35 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     await videoRef.current.playAsync();
   };
 
+  const markCurrentContentViewed = async () => {
+    const courseId = course?.id;
+    const contentId = contentItem?.contentId;
+    if (!courseId || !contentId) {
+      return;
+    }
+
+    const progressStorageKey = `${COURSE_PROGRESS_KEY_PREFIX}:${courseId}`;
+
+    try {
+      const storedValue = await AsyncStorage.getItem(progressStorageKey);
+      const parsedIds = storedValue ? JSON.parse(storedValue) : [];
+      const viewedIds = Array.isArray(parsedIds) ? parsedIds : [];
+
+      if (viewedIds.includes(contentId)) {
+        return;
+      }
+
+      await AsyncStorage.setItem(
+        progressStorageKey,
+        JSON.stringify([...viewedIds, contentId])
+      );
+    } catch {
+      // Ignore persistence errors in player controls.
+    }
+  };
+
   return (
-    <SafeArea style={styles.safeArea}>
+    <SafeArea edges={["top"]} style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.videoPlaceholder}>
           <Video
@@ -92,6 +124,9 @@ export const CourseVideoPlayerScreen = ({ route }) => {
             useNativeControls={false}
             onPlaybackStatusUpdate={(status) => {
               setPlaybackStatus(status);
+              if (status?.didJustFinish) {
+                markCurrentContentViewed();
+              }
             }}
           />
         </View>
@@ -118,7 +153,12 @@ export const CourseVideoPlayerScreen = ({ route }) => {
           </View>
         </View>
 
-        <View style={styles.bottomBar}>
+        <View
+          style={[
+            styles.bottomBar,
+            { paddingBottom: Math.max(12, insets.bottom) },
+          ]}
+        >
           {bottomActions.map((action) => (
             <TouchableOpacity
               key={action.id}
@@ -139,6 +179,9 @@ export const CourseVideoPlayerScreen = ({ route }) => {
                 }
                 if (action.id === "forward") {
                   seekBySeconds(10);
+                }
+                if (action.id === "next") {
+                  markCurrentContentViewed();
                 }
               }}
             >
