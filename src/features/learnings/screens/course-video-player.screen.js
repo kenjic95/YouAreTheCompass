@@ -5,16 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import {
-  Animated,
-  Easing,
-  Pressable,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Animated, Easing, Pressable, View } from "react-native";
 import { Audio, Video } from "expo-av";
 import { Asset } from "expo-asset";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,22 +14,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
-import { normalizeCoursePreviewType } from "../../../services/learnings/course-preview.mock";
-
-const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
-const AUTO_HIDE_DELAY_MS = 2200;
-const HIDDEN_TRANSLATE_Y = 180;
-const MOCK_VIDEO_MODULES = [
-  require("../../../../assets/TestVideo.mp4"),
-  require("../../../../assets/testvid2.mp4"),
-];
-const bottomActions = [
-  { id: "back", icon: "chevron-back-outline" },
-  { id: "rewind", icon: "play-back" },
-  { id: "playPause" },
-  { id: "forward", icon: "play-forward" },
-  { id: "next", icon: "list-sharp" },
-];
+import { CourseVideoPlayerControls } from "../components/course-video-player-controls.component";
+import { styles } from "./course-video-player.styles";
+import {
+  AUTO_HIDE_DELAY_MS,
+  COURSE_PROGRESS_KEY_PREFIX,
+  getSelectedVideoModule,
+  HIDDEN_TRANSLATE_Y,
+} from "./course-video-player.utils";
 
 export const CourseVideoPlayerScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -46,36 +30,30 @@ export const CourseVideoPlayerScreen = ({ route }) => {
   const hideControlsTimerRef = useRef(null);
   const hasShownInitialControlsRef = useRef(false);
   const controlsAnimation = useRef(new Animated.Value(0)).current;
+
   const course = route?.params?.course;
   const contentItem = route?.params?.contentItem;
-  const selectedVideoModule = useMemo(() => {
-    const courseContent = course?.courseContent ?? [];
-    const videoItems = courseContent.filter((item) => {
-      const contentType = normalizeCoursePreviewType(
-        item?.contentType ?? item?.fileFormat
-      );
-      return contentType === "video";
-    });
 
-    const currentVideoIndex = videoItems.findIndex(
-      (item) => item?.contentId === contentItem?.contentId
-    );
-    const resolvedIndex =
-      currentVideoIndex >= 0
-        ? Math.min(currentVideoIndex, MOCK_VIDEO_MODULES.length - 1)
-        : 0;
+  const selectedVideoModule = useMemo(
+    () => getSelectedVideoModule(course, contentItem),
+    [contentItem, course]
+  );
 
-    return MOCK_VIDEO_MODULES[resolvedIndex];
-  }, [contentItem?.contentId, course?.courseContent]);
   const fallbackDurationSeconds = useMemo(() => {
     const parsedSeconds = parseDurationLabelToSeconds(
       contentItem?.contentDuration
     );
     return parsedSeconds > 0 ? parsedSeconds : 8 * 60 + 3;
   }, [contentItem?.contentDuration]);
+
   const [playbackStatus, setPlaybackStatus] = useState({});
   const [videoErrorMessage, setVideoErrorMessage] = useState("");
   const [videoSource, setVideoSource] = useState(null);
+  const [progressTrackWidth, setProgressTrackWidth] = useState(0);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [scrubPositionSeconds, setScrubPositionSeconds] = useState(null);
+  const [areControlsVisible, setAreControlsVisible] = useState(false);
+
   const currentTimeSeconds = Math.max(
     0,
     (playbackStatus?.positionMillis ?? 0) / 1000
@@ -86,24 +64,20 @@ export const CourseVideoPlayerScreen = ({ route }) => {
       : fallbackDurationSeconds;
   const isPlaying = Boolean(playbackStatus?.isPlaying);
   const isLoaded = Boolean(playbackStatus?.isLoaded);
-  const [areControlsVisible, setAreControlsVisible] = useState(false);
+  const displayedTimeSeconds =
+    isScrubbing && scrubPositionSeconds !== null
+      ? scrubPositionSeconds
+      : currentTimeSeconds;
   const progressPercent = Math.min(
     1,
-    totalDurationSeconds > 0 ? currentTimeSeconds / totalDurationSeconds : 0
+    totalDurationSeconds > 0 ? displayedTimeSeconds / totalDurationSeconds : 0
   );
+
   const controlsOpacity = controlsAnimation;
   const controlsTranslateY = controlsAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: [HIDDEN_TRANSLATE_Y, 0],
   });
-
-  const formatClock = (seconds) => {
-    const safeSeconds = Math.max(0, Math.round(seconds));
-    const minutes = Math.floor(safeSeconds / 60);
-    const remainingSeconds = safeSeconds % 60;
-
-    return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
-  };
 
   const seekBySeconds = async (deltaSeconds) => {
     if (!playbackStatus?.isLoaded || !videoRef.current) {
@@ -274,6 +248,96 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     }
   };
 
+  const getSecondsFromTrackX = useCallback(
+    (locationX) => {
+      if (!progressTrackWidth || totalDurationSeconds <= 0) {
+        return 0;
+      }
+
+      const clampedX = Math.max(0, Math.min(locationX, progressTrackWidth));
+      const progressRatio = clampedX / progressTrackWidth;
+      return progressRatio * totalDurationSeconds;
+    },
+    [progressTrackWidth, totalDurationSeconds]
+  );
+
+  const commitScrubToVideo = useCallback(
+    async (nextSeconds) => {
+      if (!playbackStatus?.isLoaded || !videoRef.current) {
+        return;
+      }
+
+      const nextPositionMillis = Math.max(0, Math.round(nextSeconds * 1000));
+      await videoRef.current.setPositionAsync(nextPositionMillis);
+    },
+    [playbackStatus?.isLoaded]
+  );
+
+  const handleProgressTrackLayout = useCallback((event) => {
+    const nextWidth = event?.nativeEvent?.layout?.width ?? 0;
+    setProgressTrackWidth(nextWidth);
+  }, []);
+
+  const handleScrubGrant = useCallback(
+    (event) => {
+      showControls();
+      const nextSeconds = getSecondsFromTrackX(event.nativeEvent.locationX);
+      setIsScrubbing(true);
+      setScrubPositionSeconds(nextSeconds);
+    },
+    [getSecondsFromTrackX, showControls]
+  );
+
+  const handleScrubMove = useCallback(
+    (event) => {
+      if (!isScrubbing) {
+        return;
+      }
+
+      const nextSeconds = getSecondsFromTrackX(event.nativeEvent.locationX);
+      setScrubPositionSeconds(nextSeconds);
+    },
+    [getSecondsFromTrackX, isScrubbing]
+  );
+
+  const handleScrubRelease = useCallback(async () => {
+    const finalSeconds =
+      scrubPositionSeconds !== null ? scrubPositionSeconds : currentTimeSeconds;
+    setIsScrubbing(false);
+    setScrubPositionSeconds(null);
+    await commitScrubToVideo(finalSeconds);
+
+    if (isPlaying) {
+      scheduleAutoHide();
+    }
+  }, [
+    commitScrubToVideo,
+    currentTimeSeconds,
+    isPlaying,
+    scheduleAutoHide,
+    scrubPositionSeconds,
+  ]);
+
+  const handleControlActionPress = (actionId) => {
+    showControls();
+
+    if (actionId === "back") {
+      navigation.goBack();
+    }
+    if (actionId === "rewind") {
+      seekBySeconds(-10);
+    }
+    if (actionId === "playPause") {
+      togglePlayPause();
+    }
+    if (actionId === "forward") {
+      seekBySeconds(10);
+    }
+    if (actionId === "next") {
+      markCurrentContentViewed();
+    }
+  };
+
   return (
     <SafeArea edges={["top"]} style={styles.safeArea}>
       <Pressable
@@ -332,190 +396,22 @@ export const CourseVideoPlayerScreen = ({ route }) => {
           </View>
         ) : null}
 
-        <Animated.View
-          pointerEvents={areControlsVisible ? "auto" : "none"}
-          style={[
-            styles.controlsOverlay,
-            {
-              opacity: controlsOpacity,
-              transform: [{ translateY: controlsTranslateY }],
-            },
-          ]}
-        >
-          <View style={styles.timelineWrap}>
-            <Text variant="label" style={styles.timeLabel}>
-              {formatClock(currentTimeSeconds)} min /{" "}
-              {formatClock(totalDurationSeconds)} min
-            </Text>
-
-            <View style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${Math.max(0.02, progressPercent) * 100}%` },
-                ]}
-              />
-              <View
-                style={[
-                  styles.progressThumb,
-                  { left: `${progressPercent * 100}%` },
-                ]}
-              />
-            </View>
-          </View>
-
-          <View
-            style={[
-              styles.bottomBar,
-              { paddingBottom: Math.max(12, insets.bottom) },
-            ]}
-          >
-            {bottomActions.map((action) => (
-              <TouchableOpacity
-                key={action.id}
-                activeOpacity={0.8}
-                style={[
-                  styles.actionButton,
-                  action.id === "playPause" ? styles.actionButtonPrimary : null,
-                ]}
-                onPress={() => {
-                  showControls();
-                  if (action.id === "back") {
-                    navigation.goBack();
-                  }
-                  if (action.id === "rewind") {
-                    seekBySeconds(-10);
-                  }
-                  if (action.id === "playPause") {
-                    togglePlayPause();
-                  }
-                  if (action.id === "forward") {
-                    seekBySeconds(10);
-                  }
-                  if (action.id === "next") {
-                    markCurrentContentViewed();
-                  }
-                }}
-              >
-                <Ionicons
-                  name={
-                    action.id === "playPause"
-                      ? isPlaying
-                        ? "pause"
-                        : "play"
-                      : action.icon
-                  }
-                  size={action.id === "playPause" ? 46 : 30}
-                  color={action.id === "playPause" ? "#3D3D41" : "#424347"}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
+        <CourseVideoPlayerControls
+          areControlsVisible={areControlsVisible}
+          controlsOpacity={controlsOpacity}
+          controlsTranslateY={controlsTranslateY}
+          displayedTimeSeconds={displayedTimeSeconds}
+          totalDurationSeconds={totalDurationSeconds}
+          progressPercent={progressPercent}
+          handleProgressTrackLayout={handleProgressTrackLayout}
+          handleScrubGrant={handleScrubGrant}
+          handleScrubMove={handleScrubMove}
+          handleScrubRelease={handleScrubRelease}
+          insetsBottom={insets.bottom}
+          isPlaying={isPlaying}
+          onActionPress={handleControlActionPress}
+        />
       </Pressable>
     </SafeArea>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#132029",
-  },
-  videoContainer: {
-    flex: 1,
-    backgroundColor: "#0D1116",
-  },
-  video: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#000000",
-  },
-  loadingContainer: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#000000",
-  },
-  loadingText: {
-    color: "#DDE8F3",
-  },
-  errorContainer: {
-    position: "absolute",
-    left: 12,
-    right: 12,
-    top: 12,
-    backgroundColor: "rgba(0,0,0,0.65)",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  errorText: {
-    color: "#FFB4B4",
-    fontSize: 12,
-  },
-  controlsOverlay: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  timelineWrap: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    backgroundColor: "rgba(12, 20, 28, 0.42)",
-  },
-  timeLabel: {
-    width: "100%",
-    textAlign: "center",
-    color: "#FFFFFF",
-    fontSize: 20,
-    marginBottom: 12,
-  },
-  progressTrack: {
-    width: "100%",
-    height: 18,
-    borderRadius: 10,
-    backgroundColor: "#70757C",
-    overflow: "hidden",
-    justifyContent: "center",
-  },
-  progressFill: {
-    height: 18,
-    borderRadius: 10,
-    backgroundColor: "#FFFFFF",
-  },
-  progressThumb: {
-    position: "absolute",
-    marginLeft: -6,
-    width: 12,
-    height: 28,
-    borderRadius: 7,
-    backgroundColor: "#F0F3F6",
-  },
-  bottomBar: {
-    backgroundColor: "#B5D1E8",
-    paddingHorizontal: 10,
-    paddingTop: 14,
-    paddingBottom: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-  },
-  actionButton: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: "#F1F2F4",
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 4,
-  },
-  actionButtonPrimary: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#6DAFDE",
-    marginHorizontal: 6,
-  },
-});
