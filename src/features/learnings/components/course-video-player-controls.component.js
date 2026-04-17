@@ -2,7 +2,7 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Animated, TouchableOpacity, View } from "react-native";
 import { Text } from "../../../components/typography/text.component";
-import { styles } from "../screens/course-video-player.styles";
+import { styles } from "./course-video-player.styles";
 import { formatClock } from "../screens/course-video-player.utils";
 
 const bottomActions = [

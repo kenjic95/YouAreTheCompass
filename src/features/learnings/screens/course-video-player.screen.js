@@ -15,7 +15,7 @@ import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
 import { CourseVideoPlayerControls } from "../components/course-video-player-controls.component";
-import { styles } from "./course-video-player.styles";
+import { styles } from "../components/course-video-player.styles";
 import {
   AUTO_HIDE_DELAY_MS,
   COURSE_PROGRESS_KEY_PREFIX,
