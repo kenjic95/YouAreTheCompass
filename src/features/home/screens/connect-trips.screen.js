@@ -6,7 +6,7 @@ import { Text } from "../../../components/typography/text.component";
 
 const ScreenSafeArea = styled(SafeAreaView)`
   flex: 1;
-  background-color: #f4f8fb;
+  background-color: ${(props) => props.theme.colors.bg.primary};
 `;
 
 const ScreenContainer = styled.View`
