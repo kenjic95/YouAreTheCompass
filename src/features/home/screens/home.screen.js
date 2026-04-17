@@ -14,7 +14,7 @@ import {
   homeListColumnStyle,
 } from "../components/home-info-card.styles";
 
-export const HomeScreen = () => (
+export const HomeScreen = ({ navigation }) => (
   <SafeAreaProvider>
     <SafeArea>
       <HomeList
@@ -24,7 +24,7 @@ export const HomeScreen = () => (
         columnWrapperStyle={homeListColumnStyle}
         renderItem={({ item }) => (
           <HomeCardWrapper>
-            <HomeInfoCard home={item} />
+            <HomeInfoCard home={item} navigation={navigation} />
           </HomeCardWrapper>
         )}
         keyExtractor={(item) => item.id}

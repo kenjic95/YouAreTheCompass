@@ -52,10 +52,15 @@ export const HomeListHeader = () => (
   </WelcomeContainer>
 );
 
-export const HomeInfoCard = ({ home }) => {
-  const { name, photos, link, appLink } = home;
+export const HomeInfoCard = ({ home, navigation }) => {
+  const { id, name, photos, link, appLink } = home;
 
   const handlePress = async () => {
+    if (id === "connect") {
+      navigation.navigate("ConnectTrips");
+      return;
+    }
+
     if (!link) {
       return;
     }
@@ -76,8 +81,8 @@ export const HomeInfoCard = ({ home }) => {
   return (
     <HomeCard
       elevation={5}
-      onPress={link ? handlePress : undefined}
-      accessibilityRole={link ? "button" : undefined}
+      onPress={id === "connect" || link ? handlePress : undefined}
+      accessibilityRole={id === "connect" || link ? "button" : undefined}
     >
       <HomeCardCover key={name} source={{ uri: photos[0] }} />
       <Info>
