@@ -14,7 +14,7 @@ const LearningsStack = createStackNavigator();
 export const LearningsNavigator = () => {
   return (
     <PurchasedCoursesProvider>
-      <LearningsStack.Navigator headerMode="none">
+      <LearningsStack.Navigator>
         <LearningsStack.Screen name="Create" component={LearningsScreen} />
         <LearningsStack.Screen name="Courses" component={CoursesScreen} />
         <LearningsStack.Screen name="Course" component={CoursePreviewScreen} />
@@ -29,6 +29,7 @@ export const LearningsNavigator = () => {
         <LearningsStack.Screen
           name="CoursePlayer"
           component={CourseVideoPlayerScreen}
+          options={{ headerShown: false }}
         />
       </LearningsStack.Navigator>
     </PurchasedCoursesProvider>

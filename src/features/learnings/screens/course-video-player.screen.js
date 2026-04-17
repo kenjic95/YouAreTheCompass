@@ -1,22 +1,57 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
+import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
 
 const bottomActions = [
-  { id: "back", label: "Back", icon: "arrow-back" },
-  { id: "rewind", label: "-10s", icon: "play-back" },
-  { id: "playPause", label: "Play/Pause", icon: "pause-circle" },
-  { id: "forward", label: "+10s", icon: "play-forward" },
-  { id: "next", label: "Next", icon: "document-text-outline" },
+  { id: "back", icon: "chevron-back-outline" },
+  { id: "rewind", icon: "play-back" },
+  { id: "playPause" },
+  { id: "forward", icon: "play-forward" },
+  { id: "next", icon: "list" },
 ];
 
 export const CourseVideoPlayerScreen = ({ route }) => {
   const navigation = useNavigation();
   const course = route?.params?.course;
   const contentItem = route?.params?.contentItem;
+  const totalDurationSeconds = useMemo(() => {
+    const parsedSeconds = parseDurationLabelToSeconds(
+      contentItem?.contentDuration
+    );
+    return parsedSeconds > 0 ? parsedSeconds : 8 * 60 + 3;
+  }, [contentItem?.contentDuration]);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
+  const progressPercent = Math.min(
+    1,
+    totalDurationSeconds > 0 ? currentTimeSeconds / totalDurationSeconds : 0
+  );
+
+  useEffect(() => {
+    if (!isPlaying || currentTimeSeconds >= totalDurationSeconds) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCurrentTimeSeconds((previousSeconds) =>
+        Math.min(totalDurationSeconds, previousSeconds + 1)
+      );
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [currentTimeSeconds, isPlaying, totalDurationSeconds]);
+
+  const formatClock = (seconds) => {
+    const safeSeconds = Math.max(0, Math.round(seconds));
+    const minutes = Math.floor(safeSeconds / 60);
+    const remainingSeconds = safeSeconds % 60;
+
+    return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+  };
 
   return (
     <SafeArea style={styles.safeArea}>
@@ -31,20 +66,57 @@ export const CourseVideoPlayerScreen = ({ route }) => {
           </Text>
         </View>
 
+        <View style={styles.timelineWrap}>
+          <Text variant="label" style={styles.timeLabel}>
+            {formatClock(currentTimeSeconds)} min /{" "}
+            {formatClock(totalDurationSeconds)} min
+          </Text>
+
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${Math.max(0.02, progressPercent) * 100}%` },
+              ]}
+            />
+            <View
+              style={[
+                styles.progressThumb,
+                { left: `${progressPercent * 100}%` },
+              ]}
+            />
+          </View>
+        </View>
+
         <View style={styles.bottomBar}>
           {bottomActions.map((action) => (
             <TouchableOpacity
               key={action.id}
               activeOpacity={0.8}
-              style={styles.actionButton}
+              style={[
+                styles.actionButton,
+                action.id === "playPause" ? styles.actionButtonPrimary : null,
+              ]}
               onPress={() => {
                 if (action.id === "back") {
                   navigation.goBack();
                 }
+                if (action.id === "playPause") {
+                  setIsPlaying((previousValue) => !previousValue);
+                }
               }}
             >
-              <Ionicons name={action.icon} size={22} color="#EAF4FB" />
-              <Text style={styles.actionLabel}>{action.label}</Text>
+              <Ionicons
+                name={
+                  action.id === "playPause"
+                    ? isPlaying
+                      ? "pause"
+                      : "play"
+                    : action.icon
+                }
+                size={action.id === "playPause" ? 46 : 30}
+                color={action.id === "playPause" ? "#3D3D41" : "#424347"}
+              />
             </TouchableOpacity>
           ))}
         </View>
@@ -81,27 +153,61 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: "center",
   },
+  timelineWrap: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  timeLabel: {
+    width: "100%",
+    textAlign: "center",
+    color: "#FFFFFF",
+    fontSize: 20,
+    marginBottom: 12,
+  },
+  progressTrack: {
+    width: "100%",
+    height: 18,
+    borderRadius: 10,
+    backgroundColor: "#70757C",
+    overflow: "hidden",
+    justifyContent: "center",
+  },
+  progressFill: {
+    height: 18,
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+  },
+  progressThumb: {
+    position: "absolute",
+    marginLeft: -6,
+    width: 12,
+    height: 28,
+    borderRadius: 7,
+    backgroundColor: "#F0F3F6",
+  },
   bottomBar: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    backgroundColor: "#1E313E",
+    backgroundColor: "#B5D1E8",
     paddingHorizontal: 10,
-    paddingTop: 10,
-    paddingBottom: 14,
+    paddingTop: 14,
+    paddingBottom: 20,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
   },
   actionButton: {
-    flex: 1,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: "#F1F2F4",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
-    borderRadius: 12,
+    marginHorizontal: 4,
   },
-  actionLabel: {
-    color: "#EAF4FB",
-    fontSize: 11,
-    marginTop: 4,
+  actionButtonPrimary: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#6DAFDE",
+    marginHorizontal: 6,
   },
 });
