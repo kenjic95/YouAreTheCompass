@@ -1,30 +1,11 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { CommonActions } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 
 import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
 export default function LogoutScreen({ navigation }) {
-  const resetToWelcomeIfAvailable = () => {
-    const rootNavigation = navigation.getParent()?.getParent();
-    const rootState = rootNavigation?.getState?.();
-    const hasWelcomeRoute = rootState?.routeNames?.includes("Welcome");
-
-    if (rootNavigation && hasWelcomeRoute) {
-      rootNavigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: "Welcome" }],
-        })
-      );
-      return true;
-    }
-
-    return false;
-  };
-
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       {
@@ -47,14 +28,6 @@ export default function LogoutScreen({ navigation }) {
           } catch {
             Alert.alert("Logout failed", "Unable to logout right now.");
             return;
-          }
-
-          if (resetToWelcomeIfAvailable()) {
-            return;
-          }
-
-          if (navigation.canGoBack()) {
-            navigation.goBack();
           }
         },
       },

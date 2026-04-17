@@ -64,7 +64,6 @@ export const AppNavigator = () => {
               component={CreateAccountScreen}
             />
             <RootStack.Screen name="SignIn" component={SignInScreen} />
-            <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
           </>
         )}
       </RootStack.Navigator>
