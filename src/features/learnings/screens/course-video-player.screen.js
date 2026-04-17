@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Video } from "expo-av";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
@@ -11,39 +12,33 @@ const bottomActions = [
   { id: "rewind", icon: "play-back" },
   { id: "playPause" },
   { id: "forward", icon: "play-forward" },
-  { id: "next", icon: "list" },
+  { id: "next", icon: "list-sharp" },
 ];
 
 export const CourseVideoPlayerScreen = ({ route }) => {
   const navigation = useNavigation();
-  const course = route?.params?.course;
+  const videoRef = useRef(null);
   const contentItem = route?.params?.contentItem;
-  const totalDurationSeconds = useMemo(() => {
+  const fallbackDurationSeconds = useMemo(() => {
     const parsedSeconds = parseDurationLabelToSeconds(
       contentItem?.contentDuration
     );
     return parsedSeconds > 0 ? parsedSeconds : 8 * 60 + 3;
   }, [contentItem?.contentDuration]);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
+  const [playbackStatus, setPlaybackStatus] = useState({});
+  const currentTimeSeconds = Math.max(
+    0,
+    (playbackStatus?.positionMillis ?? 0) / 1000
+  );
+  const totalDurationSeconds =
+    playbackStatus?.durationMillis && playbackStatus.durationMillis > 0
+      ? playbackStatus.durationMillis / 1000
+      : fallbackDurationSeconds;
+  const isPlaying = Boolean(playbackStatus?.isPlaying);
   const progressPercent = Math.min(
     1,
     totalDurationSeconds > 0 ? currentTimeSeconds / totalDurationSeconds : 0
   );
-
-  useEffect(() => {
-    if (!isPlaying || currentTimeSeconds >= totalDurationSeconds) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setCurrentTimeSeconds((previousSeconds) =>
-        Math.min(totalDurationSeconds, previousSeconds + 1)
-      );
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [currentTimeSeconds, isPlaying, totalDurationSeconds]);
 
   const formatClock = (seconds) => {
     const safeSeconds = Math.max(0, Math.round(seconds));
@@ -53,17 +48,52 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
   };
 
+  const seekBySeconds = async (deltaSeconds) => {
+    if (!playbackStatus?.isLoaded || !videoRef.current) {
+      return;
+    }
+
+    const currentMillis = playbackStatus.positionMillis ?? 0;
+    const durationMillis =
+      playbackStatus.durationMillis ??
+      Math.round(fallbackDurationSeconds * 1000);
+    const deltaMillis = deltaSeconds * 1000;
+    const nextPositionMillis = Math.min(
+      Math.max(0, currentMillis + deltaMillis),
+      Math.max(0, durationMillis)
+    );
+
+    await videoRef.current.setPositionAsync(nextPositionMillis);
+  };
+
+  const togglePlayPause = async () => {
+    if (!playbackStatus?.isLoaded || !videoRef.current) {
+      return;
+    }
+
+    if (playbackStatus.isPlaying) {
+      await videoRef.current.pauseAsync();
+      return;
+    }
+
+    await videoRef.current.playAsync();
+  };
+
   return (
     <SafeArea style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.videoPlaceholder}>
-          <Ionicons name="videocam-outline" size={42} color="#F3F6F9" />
-          <Text variant="label" style={styles.placeholderTitle}>
-            {contentItem?.contentTitle ?? "Course Video"}
-          </Text>
-          <Text style={styles.placeholderSubtitle}>
-            {course?.courseTitle ?? "Course"} video player area
-          </Text>
+          <Video
+            ref={videoRef}
+            source={require("../../../../assets/SampleVideo.mov")}
+            style={styles.video}
+            resizeMode="contain"
+            shouldPlay={true}
+            useNativeControls={false}
+            onPlaybackStatusUpdate={(status) => {
+              setPlaybackStatus(status);
+            }}
+          />
         </View>
 
         <View style={styles.timelineWrap}>
@@ -101,8 +131,14 @@ export const CourseVideoPlayerScreen = ({ route }) => {
                 if (action.id === "back") {
                   navigation.goBack();
                 }
+                if (action.id === "rewind") {
+                  seekBySeconds(-10);
+                }
                 if (action.id === "playPause") {
-                  setIsPlaying((previousValue) => !previousValue);
+                  togglePlayPause();
+                }
+                if (action.id === "forward") {
+                  seekBySeconds(10);
                 }
               }}
             >
@@ -138,20 +174,14 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 16,
     borderRadius: 24,
-    backgroundColor: "#2B3D4A",
+    backgroundColor: "#0D1116",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
   },
-  placeholderTitle: {
-    color: "#F7FBFF",
-    marginTop: 12,
-    textAlign: "center",
-  },
-  placeholderSubtitle: {
-    color: "#D6E4EF",
-    marginTop: 6,
-    textAlign: "center",
+  video: {
+    width: "100%",
+    height: "100%",
   },
   timelineWrap: {
     paddingHorizontal: 16,
