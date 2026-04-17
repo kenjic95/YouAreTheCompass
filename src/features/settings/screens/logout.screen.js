@@ -7,6 +7,24 @@ import { signOut } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
 export default function LogoutScreen({ navigation }) {
+  const resetToWelcomeIfAvailable = () => {
+    const rootNavigation = navigation.getParent()?.getParent();
+    const rootState = rootNavigation?.getState?.();
+    const hasWelcomeRoute = rootState?.routeNames?.includes("Welcome");
+
+    if (rootNavigation && hasWelcomeRoute) {
+      rootNavigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Welcome" }],
+        })
+      );
+      return true;
+    }
+
+    return false;
+  };
+
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       {
@@ -31,19 +49,13 @@ export default function LogoutScreen({ navigation }) {
             return;
           }
 
-          const rootNavigation = navigation.getParent()?.getParent();
-
-          if (rootNavigation) {
-            rootNavigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: "Welcome" }],
-              })
-            );
+          if (resetToWelcomeIfAvailable()) {
             return;
           }
 
-          navigation.navigate("Welcome");
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          }
         },
       },
     ]);
