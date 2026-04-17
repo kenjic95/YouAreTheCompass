@@ -42,7 +42,7 @@ const variants = {
 
 export const Text = styled.Text`
   ${({ theme }) => defaultTextStyles(theme)}
-  ${({ variant, theme }) => variants[variant](theme)}
+  ${({ variant, theme }) => (variants[variant] ?? body)(theme)}
 `;
 
 Text.defaultProps = {

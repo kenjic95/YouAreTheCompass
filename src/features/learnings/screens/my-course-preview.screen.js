@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "styled-components/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
@@ -21,6 +22,7 @@ const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
 const READ_OR_VIEW_DURATION_SECONDS = 2 * 60;
 
 export const MyCoursePreviewScreen = ({ route }) => {
+  const navigation = useNavigation();
   const theme = useTheme();
   const course = route?.params?.course;
   const { cartCourses } = usePurchasedCourses();
@@ -29,7 +31,9 @@ export const MyCoursePreviewScreen = ({ route }) => {
   const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
-  const isInCart = cartCourses.some((cartCourse) => cartCourse.id === course?.id);
+  const isInCart = cartCourses.some(
+    (cartCourse) => cartCourse.id === course?.id
+  );
   const { courseContent: fallbackCourseContent } = coursePreviewMockContext;
   const courseContent = course?.courseContent ?? fallbackCourseContent;
   const courseId = course?.id;
@@ -87,9 +91,10 @@ export const MyCoursePreviewScreen = ({ route }) => {
       return;
     }
 
-    AsyncStorage.setItem(progressStorageKey, JSON.stringify(viewedContentIds)).catch(
-      () => {}
-    );
+    AsyncStorage.setItem(
+      progressStorageKey,
+      JSON.stringify(viewedContentIds)
+    ).catch(() => {});
   }, [hasLoadedProgress, progressStorageKey, viewedContentIds]);
 
   const progress = useMemo(() => {
@@ -148,7 +153,9 @@ export const MyCoursePreviewScreen = ({ route }) => {
       percent,
       totalDurationLabel: formatDurationFromSeconds(totalDurationSeconds),
       watchedDurationLabel: formatDurationFromSeconds(watchedDurationSeconds),
-      remainingDurationLabel: formatDurationFromSeconds(remainingDurationSeconds),
+      remainingDurationLabel: formatDurationFromSeconds(
+        remainingDurationSeconds
+      ),
     };
   }, [course?.courseDuration, courseContent, viewedContentIds]);
 
@@ -184,11 +191,23 @@ export const MyCoursePreviewScreen = ({ route }) => {
                 if (!contentId) {
                   return;
                 }
+
+                const contentType = normalizeCoursePreviewType(
+                  item?.contentType ?? item?.fileFormat
+                );
+
                 setViewedContentIds((previousIds) =>
                   previousIds.includes(contentId)
                     ? previousIds
                     : [...previousIds, contentId]
                 );
+
+                if (contentType === "video") {
+                  navigation.navigate("CoursePlayer", {
+                    course,
+                    contentItem: item,
+                  });
+                }
               }}
             />
           ) : null}

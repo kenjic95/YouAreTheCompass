@@ -1,6 +1,10 @@
 import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import {
+  DefaultTheme,
+  NavigationContainer,
+  getFocusedRouteNameFromRoute,
+} from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
@@ -77,7 +81,15 @@ const MainTabNavigator = () => (
     <Tab.Screen
       name="Create"
       component={LearningsNavigator}
-      options={{ headerShown: false }}
+      options={({ route }) => {
+        const nestedRouteName = getFocusedRouteNameFromRoute(route) ?? "Create";
+        const shouldHideTabBar = nestedRouteName === "CoursePlayer";
+
+        return {
+          headerShown: false,
+          tabBarStyle: shouldHideTabBar ? { display: "none" } : undefined,
+        };
+      }}
     />
     <Tab.Screen
       name="Trip Logs"
