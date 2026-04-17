@@ -93,7 +93,7 @@ const GuestLinkText = styled.Text`
 export const WelcomeScreen = ({ navigation }) => {
   const goToCreateAccount = () => navigation.navigate("CreateAccount");
   const goToSignIn = () => navigation.navigate("SignIn");
-  const goToHomeAsGuest = () => navigation.replace("MainTabs");
+  const goToHomeAsGuest = () => navigation.replace("GuestTabs");
 
   return (
     <Screen edges={["top", "right", "bottom", "left"]}>

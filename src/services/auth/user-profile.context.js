@@ -71,7 +71,14 @@ export const UserProfileProvider = ({ children }) => {
         return;
       }
 
-      setIsLoading(true);
+      setProfile({
+        ...DEFAULT_PROFILE,
+        uid: user.uid,
+        email: user.email ?? "",
+        displayName: getDisplayName(user),
+        photoURL: getPhotoURL(user),
+      });
+      setIsLoading(false);
 
       unsubscribeProfile = onSnapshot(
         doc(db, "users", user.uid),
