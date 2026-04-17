@@ -13,7 +13,7 @@ export const LearningsScreen = () => {
   const navigation = useNavigation();
   const { categories } = categoriesMockContext;
   const { courses } = courseContentMockContext;
-  const { purchasedCourses, cartCourses } = usePurchasedCourses();
+  const { purchasedCourses, cartCourses, removeFromCart } = usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
 
   const categoriesWithCourseCount = useMemo(
@@ -66,6 +66,7 @@ export const LearningsScreen = () => {
               course,
             })
           }
+          onRemoveCartCourse={(course) => removeFromCart(course?.id)}
         />
 
         <FlatList

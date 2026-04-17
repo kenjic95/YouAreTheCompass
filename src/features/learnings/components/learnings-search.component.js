@@ -18,6 +18,7 @@ export const LearningsSearch = ({
   onNavigateCourse,
   onNavigateMyCourse,
   onNavigateCartCourse,
+  onRemoveCartCourse,
 }) => {
   const [isMyCoursesOpen, setIsMyCoursesOpen] = useState(false);
   const [isAddToCartOpen, setIsAddToCartOpen] = useState(false);
@@ -60,6 +61,7 @@ export const LearningsSearch = ({
         <AddToCartBar
           courses={cartCourses}
           onNavigateCourse={onNavigateCartCourse ?? onNavigateCourse}
+          onRemoveCourse={onRemoveCartCourse}
         />
       ) : null}
     </View>

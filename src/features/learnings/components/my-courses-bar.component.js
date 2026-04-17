@@ -15,6 +15,23 @@ const Row = styled.View`
   align-items: center;
 `;
 
+const CartCourseCardWrapper = styled.View`
+  position: relative;
+`;
+
+const RemoveFromCartButton = styled.TouchableOpacity`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #d94b4b;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+`;
+
 const MyCoursesTitle = styled.Text`
   font-family: ${(props) => props.theme.fonts.title};
   font-size: ${(props) => props.theme.fontSizes.title};
@@ -80,7 +97,7 @@ export const MyCoursesBar = ({ courses, onNavigateCourse }) => {
   );
 };
 
-export const AddToCartBar = ({ courses, onNavigateCourse }) => {
+export const AddToCartBar = ({ courses, onNavigateCourse, onRemoveCourse }) => {
   return (
     <MyCoursesWrapper>
       <MyCoursesTitle>Add to Cart</MyCoursesTitle>
@@ -89,12 +106,20 @@ export const AddToCartBar = ({ courses, onNavigateCourse }) => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {courses.map((course) => (
               <Spacer key={course.id} position="right" size="small">
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => onNavigateCourse?.(course)}
-                >
-                  <CompactCourseInfo course={course} />
-                </TouchableOpacity>
+                <CartCourseCardWrapper>
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => onNavigateCourse?.(course)}
+                  >
+                    <CompactCourseInfo course={course} />
+                  </TouchableOpacity>
+                  <RemoveFromCartButton
+                    activeOpacity={0.85}
+                    onPress={() => onRemoveCourse?.(course)}
+                  >
+                    <Ionicons name="close" size={14} color="#fff" />
+                  </RemoveFromCartButton>
+                </CartCourseCardWrapper>
               </Spacer>
             ))}
           </ScrollView>
