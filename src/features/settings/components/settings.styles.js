@@ -76,6 +76,24 @@ export const PremiumButtonText = styled.Text`
   text-align: center;
 `;
 
+export const PremiumBadge = styled.View`
+  background-color: #3f79a8;
+  padding-vertical: 14px;
+  padding-horizontal: 18px;
+  border-radius: 22px;
+  min-width: 150px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+`;
+
+export const PremiumBadgeText = styled.Text`
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 6px;
+`;
+
 export const SectionTitle = styled.Text`
   font-size: 18px;
   font-weight: bold;

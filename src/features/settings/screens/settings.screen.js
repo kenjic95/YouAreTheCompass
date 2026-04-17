@@ -13,6 +13,8 @@ import {
   UserEmail,
   PremiumButton,
   PremiumButtonText,
+  PremiumBadge,
+  PremiumBadgeText,
   SectionTitle,
   MenuCard,
   MenuLeft,
@@ -26,7 +28,7 @@ const FALLBACK_NAME = "User Full Name";
 const FALLBACK_EMAIL = "user@email.com";
 
 export default function SettingsScreen({ navigation }) {
-  const { profile } = useUserProfile();
+  const { profile, isPremium } = useUserProfile();
   const [hasAvatarError, setHasAvatarError] = useState(false);
 
   const displayProfile = useMemo(() => {
@@ -73,9 +75,16 @@ export default function SettingsScreen({ navigation }) {
             </UserInfo>
           </ProfileLeft>
 
-          <PremiumButton onPress={() => navigation.navigate("Premium")}>
-            <PremiumButtonText>Upgrade to{"\n"}Premium</PremiumButtonText>
-          </PremiumButton>
+          {isPremium ? (
+            <PremiumBadge>
+              <MaterialCommunityIcons name="crown" size={18} color="#FFD700" />
+              <PremiumBadgeText>Premium User</PremiumBadgeText>
+            </PremiumBadge>
+          ) : (
+            <PremiumButton onPress={() => navigation.navigate("Premium")}>
+              <PremiumButtonText>Upgrade to{"\n"}Premium</PremiumButtonText>
+            </PremiumButton>
+          )}
         </ProfileSection>
 
         <SectionTitle>General</SectionTitle>
