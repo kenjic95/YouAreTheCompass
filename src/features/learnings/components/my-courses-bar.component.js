@@ -24,8 +24,8 @@ const CartCourseCardWrapper = styled.View`
 
 const RemoveFromCartButton = styled.TouchableOpacity`
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: 14px;
+  right: 14px;
   width: 24px;
   height: 24px;
   border-radius: 12px;
@@ -156,6 +156,8 @@ export const MyCoursesBar = ({ courses, onNavigateCourse }) => {
 };
 
 export const AddToCartBar = ({ courses, onNavigateCourse, onRemoveCourse }) => {
+  const [activeRemoveCourseId, setActiveRemoveCourseId] = useState(null);
+
   return (
     <MyCoursesWrapper>
       <MyCoursesTitle>Add to Cart</MyCoursesTitle>
@@ -167,16 +169,30 @@ export const AddToCartBar = ({ courses, onNavigateCourse, onRemoveCourse }) => {
                 <CartCourseCardWrapper>
                   <TouchableOpacity
                     activeOpacity={0.85}
-                    onPress={() => onNavigateCourse?.(course)}
+                    onLongPress={() => setActiveRemoveCourseId(course?.id)}
+                    delayLongPress={260}
+                    onPress={() => {
+                      if (activeRemoveCourseId === course?.id) {
+                        setActiveRemoveCourseId(null);
+                        return;
+                      }
+
+                      onNavigateCourse?.(course);
+                    }}
                   >
                     <CompactCourseInfo course={course} />
                   </TouchableOpacity>
-                  <RemoveFromCartButton
-                    activeOpacity={0.85}
-                    onPress={() => onRemoveCourse?.(course)}
-                  >
-                    <Ionicons name="close" size={14} color="#fff" />
-                  </RemoveFromCartButton>
+                  {activeRemoveCourseId === course?.id ? (
+                    <RemoveFromCartButton
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        onRemoveCourse?.(course);
+                        setActiveRemoveCourseId(null);
+                      }}
+                    >
+                      <Ionicons name="close" size={14} color="#fff" />
+                    </RemoveFromCartButton>
+                  ) : null}
                 </CartCourseCardWrapper>
               </Spacer>
             ))}
