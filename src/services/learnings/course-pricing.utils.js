@@ -19,5 +19,5 @@ export const applyDiscount = (price, discountPercent = 0) => {
   return Number(finalPrice.toFixed(2));
 };
 
-export const formatUsdPrice = (amount) =>
-  `$${(Number(amount) || 0).toFixed(2)}`;
+export const formatAudPrice = (amount) =>
+  `A$${(Number(amount) || 0).toFixed(2)}`;

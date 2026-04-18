@@ -83,7 +83,7 @@ const ActionText = styled.Text`
   font-size: 12px;
 `;
 
-export const ManageCoursesScreen = () => {
+export const ManageCoursesScreen = ({ navigation }) => {
   const { courses } = courseContentMockContext;
   const { authUser, role, isCreator } = useUserProfile();
   const currentUserId = authUser?.uid;
@@ -120,7 +120,7 @@ export const ManageCoursesScreen = () => {
       return;
     }
 
-    showSoon();
+    navigation.navigate("CreateCourse");
   };
 
   const subtitle =

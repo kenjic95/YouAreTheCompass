@@ -8,7 +8,7 @@ import { usePurchasedCourses } from "../../../services/learnings/purchased-cours
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 import {
   applyDiscount,
-  formatUsdPrice,
+  formatAudPrice,
   parseCoursePrice,
 } from "../../../services/learnings/course-pricing.utils";
 
@@ -28,8 +28,8 @@ export const CourseCheckoutScreen = ({ route }) => {
   const finalPrice = applyDiscount(basePrice, discountPercent);
   const hasDiscount =
     isPremium && discountPercent > 0 && finalPrice < basePrice;
-  const price = formatUsdPrice(finalPrice);
-  const originalPrice = hasDiscount ? formatUsdPrice(basePrice) : null;
+  const price = formatAudPrice(finalPrice);
+  const originalPrice = hasDiscount ? formatAudPrice(basePrice) : null;
   const discountLabel = hasDiscount
     ? `Premium discount (${discountPercent}%)`
     : null;

@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { HomeNavigator } from "./home.navigator";
 import { SettingsNavigator } from "./settings.navigator";
-import { ManageCoursesScreen } from "../../features/learnings/screens/manage-courses.screen";
+import { ManageCoursesNavigator } from "./manage-courses.navigator";
 import { createTabScreenOptions, CREATOR_TAB_ICON } from "./tab-screen-options";
 
 const Tab = createBottomTabNavigator();
@@ -16,7 +16,7 @@ export const CreatorTabNavigator = () => (
     />
     <Tab.Screen
       name="Manage Courses"
-      component={ManageCoursesScreen}
+      component={ManageCoursesNavigator}
       options={{ headerShown: false }}
     />
     <Tab.Screen
