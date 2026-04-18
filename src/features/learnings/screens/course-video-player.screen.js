@@ -15,6 +15,7 @@ import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
+import { normalizeCoursePreviewType } from "../../../services/learnings/course-preview.mock";
 import { CourseVideoPlayerControls } from "../components/course-video-player-controls.component";
 import { styles } from "../components/course-video-player.styles";
 import {
@@ -31,6 +32,7 @@ export const CourseVideoPlayerScreen = ({ route }) => {
   const hideControlsTimerRef = useRef(null);
   const hasShownInitialControlsRef = useRef(false);
   const hasSyncedDurationRef = useRef(false);
+  const hasAutoAdvancedRef = useRef(false);
   const controlsAnimation = useRef(new Animated.Value(0)).current;
   const { updateCourse } = useCourseCatalog();
 
@@ -272,6 +274,45 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     }
   };
 
+  const goToNextContent = useCallback(async () => {
+    await markCurrentContentViewed();
+
+    const courseContent = course?.courseContent ?? [];
+    if (!Array.isArray(courseContent) || courseContent.length === 0) {
+      navigation.goBack();
+      return;
+    }
+
+    const currentIndex = courseContent.findIndex(
+      (item) => item?.contentId === contentItem?.contentId
+    );
+
+    if (currentIndex < 0 || currentIndex >= courseContent.length - 1) {
+      navigation.goBack();
+      return;
+    }
+
+    const nextItem = courseContent[currentIndex + 1];
+    const nextType = normalizeCoursePreviewType(
+      nextItem?.contentType ?? nextItem?.fileFormat
+    );
+
+    if (nextType === "video") {
+      navigation.replace("CoursePlayer", {
+        course,
+        contentItem: nextItem,
+      });
+      return;
+    }
+
+    navigation.goBack();
+  }, [contentItem?.contentId, course, navigation]);
+
+  useEffect(() => {
+    hasAutoAdvancedRef.current = false;
+    hasSyncedDurationRef.current = false;
+  }, [contentItem?.contentId]);
+
   const syncVideoDurationToCourse = useCallback(
     (durationMillis) => {
       if (hasSyncedDurationRef.current) {
@@ -404,7 +445,7 @@ export const CourseVideoPlayerScreen = ({ route }) => {
       seekBySeconds(10);
     }
     if (actionId === "next") {
-      markCurrentContentViewed();
+      goToNextContent().catch(() => {});
     }
   };
 
@@ -450,7 +491,10 @@ export const CourseVideoPlayerScreen = ({ route }) => {
                 syncVideoDurationToCourse(status.durationMillis);
               }
               if (status?.didJustFinish) {
-                markCurrentContentViewed();
+                if (!hasAutoAdvancedRef.current) {
+                  hasAutoAdvancedRef.current = true;
+                  goToNextContent().catch(() => {});
+                }
               }
             }}
           />
