@@ -38,6 +38,11 @@ export const sumCourseVideoDurationSeconds = (courseContent = []) =>
       return total;
     }
 
+    const explicitDurationSeconds = Number(contentItem?.contentDurationSeconds);
+    if (Number.isFinite(explicitDurationSeconds) && explicitDurationSeconds > 0) {
+      return total + explicitDurationSeconds;
+    }
+
     return (
       total + parseDurationLabelToSeconds(contentItem?.contentDuration ?? "")
     );

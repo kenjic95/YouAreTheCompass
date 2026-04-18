@@ -2,9 +2,11 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { categoriesMock } from "./categories.mock";
 
 const CategoryCatalogContext = createContext({
@@ -12,8 +14,58 @@ const CategoryCatalogContext = createContext({
   addCategory: () => null,
 });
 
+const CATEGORY_CATALOG_STORAGE_KEY = "learnings-category-catalog-v1";
+
 export const CategoryCatalogProvider = ({ children }) => {
   const [categories, setCategories] = useState(categoriesMock);
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadPersistedCategories = async () => {
+      try {
+        const storedValue = await AsyncStorage.getItem(
+          CATEGORY_CATALOG_STORAGE_KEY
+        );
+        if (!storedValue) {
+          return;
+        }
+
+        const parsedCategories = JSON.parse(storedValue);
+        if (!Array.isArray(parsedCategories)) {
+          return;
+        }
+
+        if (isActive) {
+          setCategories(parsedCategories);
+        }
+      } catch {
+        // no-op: fallback to mock data
+      } finally {
+        if (isActive) {
+          setHasHydrated(true);
+        }
+      }
+    };
+
+    loadPersistedCategories();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
+    AsyncStorage.setItem(
+      CATEGORY_CATALOG_STORAGE_KEY,
+      JSON.stringify(categories)
+    ).catch(() => {});
+  }, [categories, hasHydrated]);
 
   const addCategory = useCallback(
     (categoryTitle, categoryPhoto) => {

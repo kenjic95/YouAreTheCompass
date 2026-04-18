@@ -7,6 +7,7 @@ import { CourseContentUploadForm } from "../components/course-content-upload-for
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
+import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
 
 const getAssetName = (asset, fallbackName) =>
   asset?.name || asset?.fileName || fallbackName;
@@ -22,6 +23,20 @@ const formatVideoDurationLabel = (durationSeconds) => {
   }
 
   return `${minutes}m ${seconds}s`;
+};
+
+const normalizeDurationToSeconds = (value) => {
+  const numericValue = Number(value) || 0;
+  if (numericValue <= 0) {
+    return 0;
+  }
+
+  // Some pickers return milliseconds while others return seconds.
+  if (numericValue > 1000) {
+    return numericValue / 1000;
+  }
+
+  return numericValue;
 };
 
 const getContentTypeConfig = (kind, asset = {}) => {
@@ -41,15 +56,19 @@ const getContentTypeConfig = (kind, asset = {}) => {
     };
   }
 
-  const durationFromPickerMillis = Number(asset?.duration ?? 0);
-  const durationSeconds = durationFromPickerMillis
-    ? durationFromPickerMillis / 1000
-    : Number(asset?.durationSeconds ?? 0);
+  const durationSeconds =
+    normalizeDurationToSeconds(asset?.durationSeconds) ||
+    normalizeDurationToSeconds(asset?.duration) ||
+    normalizeDurationToSeconds(asset?.durationMillis);
+  const safeDurationSeconds = Math.max(0, Math.round(durationSeconds));
 
   return {
     contentType: "video",
     contentDuration:
-      durationSeconds > 0 ? formatVideoDurationLabel(durationSeconds) : "0m 0s",
+      safeDurationSeconds > 0
+        ? formatVideoDurationLabel(safeDurationSeconds)
+        : "0m 0s",
+    contentDurationSeconds: safeDurationSeconds,
   };
 };
 
@@ -104,7 +123,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
           uri: part?.localUri || "",
           name: part?.localFileName || `${inferredKind}-${index + 1}`,
           mimeType: "",
-          durationSeconds: 0,
+          durationSeconds:
+            Number(part?.contentDurationSeconds) ||
+            parseDurationLabelToSeconds(part?.contentDuration),
         },
       };
     });
@@ -141,7 +162,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       name: getAssetName(asset, `video-${Date.now()}.mp4`),
       mimeType: asset.mimeType || "video/mp4",
       durationSeconds:
-        Number(asset?.duration ?? 0) > 0 ? Number(asset.duration) / 1000 : 0,
+        normalizeDurationToSeconds(asset?.duration) ||
+        normalizeDurationToSeconds(asset?.durationMillis) ||
+        normalizeDurationToSeconds(asset?.durationSeconds),
     });
   };
 

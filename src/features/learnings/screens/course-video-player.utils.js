@@ -17,6 +17,14 @@ export const formatClock = (seconds) => {
 };
 
 export const getSelectedVideoModule = (course, contentItem) => {
+  const uploadedVideoUri = contentItem?.localUri;
+  if (
+    typeof uploadedVideoUri === "string" &&
+    uploadedVideoUri.trim().length > 0
+  ) {
+    return { uri: uploadedVideoUri };
+  }
+
   const courseContent = course?.courseContent ?? [];
   const videoItems = courseContent.filter((item) => {
     const contentType = normalizeCoursePreviewType(

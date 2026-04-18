@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { coursesMock } from "./course-content.mock";
 
 const CourseCatalogContext = createContext({
@@ -15,8 +22,58 @@ const normalizeIdPart = (value) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+const COURSE_CATALOG_STORAGE_KEY = "learnings-course-catalog-v1";
+
 export const CourseCatalogProvider = ({ children }) => {
   const [courses, setCourses] = useState(coursesMock);
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadPersistedCourses = async () => {
+      try {
+        const storedValue = await AsyncStorage.getItem(
+          COURSE_CATALOG_STORAGE_KEY
+        );
+        if (!storedValue) {
+          return;
+        }
+
+        const parsedCourses = JSON.parse(storedValue);
+        if (!Array.isArray(parsedCourses)) {
+          return;
+        }
+
+        if (isActive) {
+          setCourses(parsedCourses);
+        }
+      } catch {
+        // no-op: fallback to mock data
+      } finally {
+        if (isActive) {
+          setHasHydrated(true);
+        }
+      }
+    };
+
+    loadPersistedCourses();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
+    AsyncStorage.setItem(
+      COURSE_CATALOG_STORAGE_KEY,
+      JSON.stringify(courses)
+    ).catch(() => {});
+  }, [courses, hasHydrated]);
 
   const addCourse = (courseDraft) => {
     if (!courseDraft?.courseTitle || !courseDraft?.categoryId) {

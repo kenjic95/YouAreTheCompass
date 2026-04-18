@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { CourseInfo } from "../components/course-card.components";
 import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
+import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { CoursePreviewBottomSheet } from "../components/course-preview.components";
 import { styles } from "../components/course-preview.styles";
 import {
@@ -30,13 +31,24 @@ const READ_OR_VIEW_DURATION_SECONDS = 2 * 60;
 export const MyCoursePreviewScreen = ({ route }) => {
   const navigation = useNavigation();
   const theme = useTheme();
-  const course = route?.params?.course;
+  const routeCourse = route?.params?.course;
+  const { courses } = useCourseCatalog();
   const { cartCourses } = usePurchasedCourses();
   const [screenHeight, setScreenHeight] = useState(0);
   const [viewedContentIds, setViewedContentIds] = useState([]);
   const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
   const panelTop = useRef(new Animated.Value(0)).current;
   const collapsedTop = Math.max(0, screenHeight / 3);
+  const course = useMemo(() => {
+    const routeCourseId = routeCourse?.id;
+    if (!routeCourseId) {
+      return routeCourse;
+    }
+
+    const canonicalCourse = courses.find((item) => item?.id === routeCourseId);
+    return canonicalCourse ?? routeCourse;
+  }, [courses, routeCourse]);
+
   const isInCart = cartCourses.some(
     (cartCourse) => cartCourse.id === course?.id
   );
@@ -114,6 +126,16 @@ export const MyCoursePreviewScreen = ({ route }) => {
       );
 
       if (contentType === "video") {
+        const explicitDurationSeconds = Number(
+          contentItem?.contentDurationSeconds
+        );
+        if (
+          Number.isFinite(explicitDurationSeconds) &&
+          explicitDurationSeconds > 0
+        ) {
+          return explicitDurationSeconds;
+        }
+
         return parseDurationLabelToSeconds(contentItem?.contentDuration);
       }
 

@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
+import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { CourseVideoPlayerControls } from "../components/course-video-player-controls.component";
 import { styles } from "../components/course-video-player.styles";
 import {
@@ -29,7 +30,9 @@ export const CourseVideoPlayerScreen = ({ route }) => {
   const videoRef = useRef(null);
   const hideControlsTimerRef = useRef(null);
   const hasShownInitialControlsRef = useRef(false);
+  const hasSyncedDurationRef = useRef(false);
   const controlsAnimation = useRef(new Animated.Value(0)).current;
+  const { updateCourse } = useCourseCatalog();
 
   const course = route?.params?.course;
   const contentItem = route?.params?.contentItem;
@@ -53,6 +56,19 @@ export const CourseVideoPlayerScreen = ({ route }) => {
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubPositionSeconds, setScrubPositionSeconds] = useState(null);
   const [areControlsVisible, setAreControlsVisible] = useState(false);
+
+  const formatVideoDurationLabel = useCallback((durationSeconds) => {
+    const safeSeconds = Math.max(0, Math.round(Number(durationSeconds) || 0));
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const seconds = safeSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    return `${minutes}m ${seconds}s`;
+  }, []);
 
   const currentTimeSeconds = Math.max(
     0,
@@ -169,6 +185,14 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     const prepareVideoSource = async () => {
       setVideoSource(null);
       setVideoErrorMessage("");
+
+      if (selectedVideoModule?.uri) {
+        if (isActive) {
+          setVideoSource(selectedVideoModule);
+        }
+        return;
+      }
+
       try {
         const localAsset = Asset.fromModule(selectedVideoModule);
         await localAsset.downloadAsync();
@@ -247,6 +271,52 @@ export const CourseVideoPlayerScreen = ({ route }) => {
       // Ignore persistence errors in player controls.
     }
   };
+
+  const syncVideoDurationToCourse = useCallback(
+    (durationMillis) => {
+      if (hasSyncedDurationRef.current) {
+        return;
+      }
+
+      const courseId = course?.id;
+      const contentId = contentItem?.contentId;
+      const existingSeconds =
+        Number(contentItem?.contentDurationSeconds) ||
+        parseDurationLabelToSeconds(contentItem?.contentDuration);
+      const nextSeconds = Math.max(0, Math.round((durationMillis || 0) / 1000));
+
+      if (!courseId || !contentId || existingSeconds > 0 || nextSeconds <= 0) {
+        return;
+      }
+
+      hasSyncedDurationRef.current = true;
+
+      const nextCourseContent = (course?.courseContent ?? []).map((item) => {
+        if (item?.contentId !== contentId) {
+          return item;
+        }
+
+        return {
+          ...item,
+          contentDuration: formatVideoDurationLabel(nextSeconds),
+          contentDurationSeconds: nextSeconds,
+        };
+      });
+
+      updateCourse(courseId, {
+        courseContent: nextCourseContent,
+      });
+    },
+    [
+      contentItem?.contentDuration,
+      contentItem?.contentDurationSeconds,
+      contentItem?.contentId,
+      course?.courseContent,
+      course?.id,
+      formatVideoDurationLabel,
+      updateCourse,
+    ]
+  );
 
   const getSecondsFromTrackX = useCallback(
     (locationX) => {
@@ -375,6 +445,9 @@ export const CourseVideoPlayerScreen = ({ route }) => {
               setPlaybackStatus(status);
               if (status?.error) {
                 setVideoErrorMessage(String(status.error));
+              }
+              if (status?.isLoaded && Number(status?.durationMillis) > 0) {
+                syncVideoDurationToCourse(status.durationMillis);
               }
               if (status?.didJustFinish) {
                 markCurrentContentViewed();

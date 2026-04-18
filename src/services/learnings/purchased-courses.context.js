@@ -1,11 +1,11 @@
 import React, {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCourseCatalog } from "./course-catalog.context";
 
 const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
 
@@ -18,78 +18,63 @@ const PurchasedCoursesContext = createContext({
 });
 
 export const PurchasedCoursesProvider = ({ children }) => {
-  const [purchasedCourses, setPurchasedCourses] = useState([]);
-  const [cartCourses, setCartCourses] = useState([]);
+  const { courses } = useCourseCatalog();
+  const [purchasedCourseIds, setPurchasedCourseIds] = useState([]);
+  const [cartCourseIds, setCartCourseIds] = useState([]);
 
-  useEffect(() => {
-    // Mock app cleanup: prevent old local test progress from affecting new runs.
-    const clearLegacyProgress = async () => {
-      try {
-        const keys = await AsyncStorage.getAllKeys();
-        const progressKeys = keys.filter((key) =>
-          key.startsWith(`${COURSE_PROGRESS_KEY_PREFIX}:`)
-        );
+  const purchasedCourses = useMemo(() => {
+    const purchasedSet = new Set(purchasedCourseIds);
+    return (courses ?? []).filter((course) => purchasedSet.has(course?.id));
+  }, [courses, purchasedCourseIds]);
 
-        if (progressKeys.length > 0) {
-          await AsyncStorage.multiRemove(progressKeys);
-        }
-      } catch {
-        // no-op
-      }
-    };
-
-    clearLegacyProgress();
-  }, []);
+  const cartCourses = useMemo(() => {
+    const purchasedSet = new Set(purchasedCourseIds);
+    const cartSet = new Set(cartCourseIds);
+    return (courses ?? []).filter(
+      (course) => cartSet.has(course?.id) && !purchasedSet.has(course?.id)
+    );
+  }, [cartCourseIds, courses, purchasedCourseIds]);
 
   const addPurchasedCourse = (course) => {
-    if (!course?.id) {
+    const courseId = course?.id;
+    if (!courseId) {
+      return;
+    }
+    if (purchasedCourseIds.includes(courseId)) {
       return;
     }
 
-    const isAlreadyPurchased = purchasedCourses.some(
-      (existingCourse) => existingCourse.id === course.id
+    setPurchasedCourseIds((previousIds) =>
+      previousIds.includes(courseId) ? previousIds : [...previousIds, courseId]
+    );
+    setCartCourseIds((previousIds) =>
+      previousIds.filter((existingId) => existingId !== courseId)
     );
 
-    if (isAlreadyPurchased) {
-      return;
-    }
-
-    setPurchasedCourses((previousCourses) => {
-      return [...previousCourses, course];
-    });
-
-    setCartCourses((previousCourses) =>
-      previousCourses.filter((existingCourse) => existingCourse.id !== course.id)
-    );
-
-    const progressStorageKey = `${COURSE_PROGRESS_KEY_PREFIX}:${course.id}`;
+    const progressStorageKey = `${COURSE_PROGRESS_KEY_PREFIX}:${courseId}`;
     AsyncStorage.setItem(progressStorageKey, JSON.stringify([])).catch(() => {});
   };
 
   const addToCart = (course) => {
-    if (!course?.id) {
+    const courseId = course?.id;
+    if (!courseId) {
       return;
     }
 
-    setCartCourses((previousCourses) => {
-      const isAlreadyInCart = previousCourses.some(
-        (existingCourse) => existingCourse.id === course.id
-      );
-      const isAlreadyPurchased = purchasedCourses.some(
-        (existingCourse) => existingCourse.id === course.id
-      );
-
+    setCartCourseIds((previousIds) => {
+      const isAlreadyInCart = previousIds.includes(courseId);
+      const isAlreadyPurchased = purchasedCourseIds.includes(courseId);
       if (isAlreadyInCart || isAlreadyPurchased) {
-        return previousCourses;
+        return previousIds;
       }
 
-      return [...previousCourses, course];
+      return [...previousIds, courseId];
     });
   };
 
   const removeFromCart = (courseId) => {
-    setCartCourses((previousCourses) =>
-      previousCourses.filter((existingCourse) => existingCourse.id !== courseId)
+    setCartCourseIds((previousIds) =>
+      previousIds.filter((existingId) => existingId !== courseId)
     );
   };
 
