@@ -41,18 +41,18 @@ export const CoursePreviewScreen = ({ route }) => {
     (purchasedCourse) => purchasedCourse.id === course?.id
   );
   const prerequisiteCourseId = course?.prerequisiteCourseId;
-  const isFoundationPurchased = purchasedCourses.some(
+  const isPrerequisitePurchased = purchasedCourses.some(
     (purchasedCourse) => purchasedCourse.id === prerequisiteCourseId
   );
   const isInCart = cartCourses.some(
     (cartCourse) => cartCourse.id === course?.id
   );
-  const foundationCourse = useMemo(
+  const prerequisiteCourse = useMemo(
     () => courses.find((item) => item?.id === prerequisiteCourseId),
     [courses, prerequisiteCourseId]
   );
-  const foundationCourseTitle =
-    foundationCourse?.courseTitle ?? "Required foundation course";
+  const prerequisiteCourseTitle =
+    prerequisiteCourse?.courseTitle ?? "Required prerequisite course";
 
   useEffect(() => {
     let isActive = true;
@@ -65,7 +65,7 @@ export const CoursePreviewScreen = ({ route }) => {
         return;
       }
 
-      if (!isFoundationPurchased) {
+      if (!isPrerequisitePurchased) {
         if (isActive) {
           setIsPrerequisiteComplete(false);
         }
@@ -74,7 +74,7 @@ export const CoursePreviewScreen = ({ route }) => {
 
       setIsPrerequisiteComplete(null);
 
-      const requiredContentIds = (foundationCourse?.courseContent ?? [])
+      const requiredContentIds = (prerequisiteCourse?.courseContent ?? [])
         .map((content) => content?.contentId)
         .filter(Boolean);
       const progressStorageKey = `${COURSE_PROGRESS_KEY_PREFIX}:${prerequisiteCourseId}`;
@@ -103,8 +103,8 @@ export const CoursePreviewScreen = ({ route }) => {
       isActive = false;
     };
   }, [
-    foundationCourse?.courseContent,
-    isFoundationPurchased,
+    isPrerequisitePurchased,
+    prerequisiteCourse?.courseContent,
     prerequisiteCourseId,
   ]);
 
@@ -117,8 +117,8 @@ export const CoursePreviewScreen = ({ route }) => {
   const isLocked =
     !isPurchased && (isCheckingPrerequisite || isLockedByPrerequisite);
   const prerequisiteLockMessage = isCheckingPrerequisite
-    ? "Checking foundation course progress..."
-    : `Complete the foundation course: ${foundationCourseTitle}`;
+    ? "Checking prerequisite course progress..."
+    : `Complete the prerequisite course: ${prerequisiteCourseTitle}`;
 
   const handleLayout = ({ nativeEvent }) => {
     const nextHeight = nativeEvent.layout.height;

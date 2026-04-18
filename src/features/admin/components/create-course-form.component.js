@@ -11,12 +11,20 @@ import {
   Inner,
   KeyboardContainer,
   Label,
+  PhotoMeta,
+  PhotoPickerButton,
+  PhotoPickerButtonText,
+  PhotoPreview,
+  PhotoPreviewCard,
   PrimaryButton,
   PrimaryButtonText,
   Screen,
   Subtitle,
   TextInput,
   Title,
+  TypeOptionButton,
+  TypeOptionText,
+  TypeSelectorRow,
 } from "./create-course.styles";
 
 export const CreateCourseForm = ({
@@ -29,6 +37,15 @@ export const CreateCourseForm = ({
   onSelectCategory,
   originalPrice,
   onChangeOriginalPrice,
+  coursePhoto,
+  onPickCoursePhoto,
+  courseType,
+  onSelectCourseType,
+  selectedPrerequisiteCourse,
+  isPrerequisiteOpen,
+  onTogglePrerequisite,
+  prerequisiteCourses,
+  onSelectPrerequisiteCourse,
   onSubmit,
 }) => (
   <Screen>
@@ -48,6 +65,81 @@ export const CreateCourseForm = ({
             placeholder="e.g. Intro to Coastal Boating"
             placeholderTextColor="#8ba0b2"
           />
+
+          <Label>Course Photo</Label>
+          <PhotoPickerButton activeOpacity={0.85} onPress={onPickCoursePhoto}>
+            <PhotoPickerButtonText>Upload Course Photo</PhotoPickerButtonText>
+          </PhotoPickerButton>
+          {coursePhoto?.uri ? (
+            <PhotoPreviewCard>
+              <PhotoPreview
+                source={{ uri: coursePhoto.uri }}
+                resizeMode="cover"
+              />
+              <PhotoMeta>{coursePhoto?.name ?? "Selected photo"}</PhotoMeta>
+            </PhotoPreviewCard>
+          ) : null}
+
+          <Label>Course Type</Label>
+          <TypeSelectorRow>
+            <TypeOptionButton
+              activeOpacity={0.85}
+              isActive={courseType === "standard"}
+              onPress={() => onSelectCourseType("standard")}
+            >
+              <TypeOptionText isActive={courseType === "standard"}>
+                Standard
+              </TypeOptionText>
+            </TypeOptionButton>
+            <TypeOptionButton
+              activeOpacity={0.85}
+              isActive={courseType === "foundation"}
+              onPress={() => onSelectCourseType("foundation")}
+            >
+              <TypeOptionText isActive={courseType === "foundation"}>
+                Foundation
+              </TypeOptionText>
+            </TypeOptionButton>
+            <TypeOptionButton
+              activeOpacity={0.85}
+              isActive={courseType === "prerequisite"}
+              onPress={() => onSelectCourseType("prerequisite")}
+            >
+              <TypeOptionText isActive={courseType === "prerequisite"}>
+                Prerequisite
+              </TypeOptionText>
+            </TypeOptionButton>
+          </TypeSelectorRow>
+
+          {courseType === "prerequisite" ? (
+            <CategorySection isOpen={isPrerequisiteOpen}>
+              <Label>Prerequisite Course</Label>
+              <CategoryButton
+                activeOpacity={0.85}
+                onPress={onTogglePrerequisite}
+              >
+                <CategoryButtonText isPlaceholder={!selectedPrerequisiteCourse}>
+                  {selectedPrerequisiteCourse?.courseTitle ??
+                    "Select prerequisite course"}
+                </CategoryButtonText>
+              </CategoryButton>
+
+              {isPrerequisiteOpen ? (
+                <CategoryList>
+                  {prerequisiteCourses.map((item, index) => (
+                    <CategoryRow
+                      key={item.id}
+                      activeOpacity={0.85}
+                      onPress={() => onSelectPrerequisiteCourse(item)}
+                      hasDivider={index < prerequisiteCourses.length - 1}
+                    >
+                      <CategoryRowText>{item.courseTitle}</CategoryRowText>
+                    </CategoryRow>
+                  ))}
+                </CategoryList>
+              ) : null}
+            </CategorySection>
+          ) : null}
 
           <CategorySection isOpen={isCategoryOpen}>
             <Label>Category</Label>

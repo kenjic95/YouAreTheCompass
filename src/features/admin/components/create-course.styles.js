@@ -51,6 +51,60 @@ export const TextInput = styled.TextInput`
   color: #173851;
 `;
 
+export const PhotoPickerButton = styled.TouchableOpacity`
+  border-radius: 12px;
+  padding: 12px 14px;
+  background-color: #e5f0fb;
+  align-items: center;
+`;
+
+export const PhotoPickerButtonText = styled.Text`
+  color: #31628a;
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 14px;
+`;
+
+export const PhotoPreviewCard = styled.View`
+  margin-top: 10px;
+  border-radius: 12px;
+  border-width: 1px;
+  border-color: #d7e6f3;
+  background-color: #ffffff;
+  padding: 10px;
+`;
+
+export const PhotoPreview = styled.Image`
+  width: 100%;
+  height: 150px;
+  border-radius: 10px;
+`;
+
+export const PhotoMeta = styled.Text`
+  margin-top: 8px;
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 13px;
+  color: #4b6780;
+`;
+
+export const TypeSelectorRow = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+`;
+
+export const TypeOptionButton = styled.TouchableOpacity`
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background-color: ${(props) => (props.isActive ? "#4f9fe2" : "#e5f0fb")};
+`;
+
+export const TypeOptionText = styled.Text`
+  color: ${(props) => (props.isActive ? "#ffffff" : "#31628a")};
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 13px;
+`;
+
 export const CategoryButton = styled.TouchableOpacity`
   border-radius: 12px;
   padding: 12px 14px;

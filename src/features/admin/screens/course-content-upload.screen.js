@@ -228,9 +228,15 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       watchers: "0",
       rating: "New",
       coursePhoto:
+        courseDraft?.coursePhotoUri ||
         "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80",
       courseContent: mappedCourseContent,
       ownerId: authUser?.uid ?? "creator-local",
+      isFoundationCourse: courseDraft?.courseType === "foundation",
+      prerequisiteCourseId:
+        courseDraft?.courseType === "prerequisite"
+          ? courseDraft?.prerequisiteCourseId
+          : null,
     });
 
     if (!createdCourse) {
