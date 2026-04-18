@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 import { categoriesMockContext } from "../../../services/learnings/categories.mock";
 import { CreateCourseForm } from "../components/create-course-form.component";
 
-export const CreateCourseScreen = () => {
+export const CreateCourseScreen = ({ navigation }) => {
   const { categories } = categoriesMockContext;
   const [title, setTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -29,10 +29,13 @@ export const CreateCourseScreen = () => {
       return;
     }
 
-    Alert.alert(
-      "Course draft captured",
-      "This form is ready. Save/upload integration will be added next."
-    );
+    navigation.navigate("CourseContentUpload", {
+      courseDraft: {
+        title: normalizedTitle,
+        category: selectedCategory,
+        originalPrice: normalizedPrice,
+      },
+    });
   };
 
   return (

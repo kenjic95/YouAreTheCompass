@@ -1,16 +1,16 @@
 import React, { useMemo } from "react";
 import { Alert } from "react-native";
 
-import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 import { ManageCoursesContent } from "../components/manage-courses-content.component";
+import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 
 const DEV_FORCE_CREATOR_UI =
   String(process.env.EXPO_PUBLIC_DEV_FORCE_CREATOR_UI ?? "").toLowerCase() ===
   "true";
 
 export const ManageCoursesScreen = ({ navigation }) => {
-  const { courses } = courseContentMockContext;
+  const { courses } = useCourseCatalog();
   const { authUser, role, isCreator } = useUserProfile();
   const currentUserId = authUser?.uid;
   const canAccessCreator = DEV_FORCE_CREATOR_UI || isCreator;

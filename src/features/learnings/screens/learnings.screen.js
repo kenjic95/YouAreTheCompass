@@ -5,15 +5,16 @@ import { useNavigation } from "@react-navigation/native";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
 import { categoriesMockContext } from "../../../services/learnings/categories.mock";
-import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
 import { LearningsSearch } from "../components/learnings-search.component";
 import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
+import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 
 export const LearningsScreen = () => {
   const navigation = useNavigation();
   const { categories } = categoriesMockContext;
-  const { courses } = courseContentMockContext;
-  const { purchasedCourses, cartCourses, removeFromCart } = usePurchasedCourses();
+  const { courses } = useCourseCatalog();
+  const { purchasedCourses, cartCourses, removeFromCart } =
+    usePurchasedCourses();
   const [searchQuery, setSearchQuery] = useState("");
 
   const categoriesWithCourseCount = useMemo(

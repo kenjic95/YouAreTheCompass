@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { CourseInfo } from "../components/course-card.components";
 import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
-import { courseContentMockContext } from "../../../services/learnings/course-content.mock";
+import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import {
   CoursePreviewActionBar,
   CoursePreviewBottomSheet,
@@ -21,7 +21,7 @@ export const CoursePreviewScreen = ({ route }) => {
   const theme = useTheme();
   const routeCourse = route?.params?.course;
   const selectedCategory = route?.params?.category;
-  const { courses } = courseContentMockContext;
+  const { courses } = useCourseCatalog();
   const { purchasedCourses, cartCourses, addToCart } = usePurchasedCourses();
   const [screenHeight, setScreenHeight] = useState(0);
   const [isPrerequisiteComplete, setIsPrerequisiteComplete] = useState(null);
@@ -44,7 +44,9 @@ export const CoursePreviewScreen = ({ route }) => {
   const isFoundationPurchased = purchasedCourses.some(
     (purchasedCourse) => purchasedCourse.id === prerequisiteCourseId
   );
-  const isInCart = cartCourses.some((cartCourse) => cartCourse.id === course?.id);
+  const isInCart = cartCourses.some(
+    (cartCourse) => cartCourse.id === course?.id
+  );
   const foundationCourse = useMemo(
     () => courses.find((item) => item?.id === prerequisiteCourseId),
     [courses, prerequisiteCourseId]
@@ -100,7 +102,11 @@ export const CoursePreviewScreen = ({ route }) => {
     return () => {
       isActive = false;
     };
-  }, [foundationCourse?.courseContent, isFoundationPurchased, prerequisiteCourseId]);
+  }, [
+    foundationCourse?.courseContent,
+    isFoundationPurchased,
+    prerequisiteCourseId,
+  ]);
 
   const isCheckingPrerequisite =
     Boolean(prerequisiteCourseId) && isPrerequisiteComplete === null;
@@ -108,7 +114,8 @@ export const CoursePreviewScreen = ({ route }) => {
     Boolean(prerequisiteCourseId) &&
     !isCheckingPrerequisite &&
     !isPrerequisiteComplete;
-  const isLocked = !isPurchased && (isCheckingPrerequisite || isLockedByPrerequisite);
+  const isLocked =
+    !isPurchased && (isCheckingPrerequisite || isLockedByPrerequisite);
   const prerequisiteLockMessage = isCheckingPrerequisite
     ? "Checking foundation course progress..."
     : `Complete the foundation course: ${foundationCourseTitle}`;
@@ -137,7 +144,9 @@ export const CoursePreviewScreen = ({ route }) => {
               screenHeight={screenHeight}
               collapsedTop={collapsedTop}
               isContentLocked={isLocked}
-              lockMessage={isLockedByPrerequisite ? prerequisiteLockMessage : ""}
+              lockMessage={
+                isLockedByPrerequisite ? prerequisiteLockMessage : ""
+              }
             />
           ) : null}
 
