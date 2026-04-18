@@ -1,13 +1,21 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { CreateCourseForm } from "../components/create-course-form.component";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 
-export const CreateCourseScreen = ({ navigation }) => {
+const normalizePriceInput = (value) => String(value ?? "").replace(/[^0-9.]/g, "");
+
+export const CreateCourseScreen = ({ navigation, route }) => {
   const { categories } = useCategoryCatalog();
-  const { courses } = useCourseCatalog();
+  const { courses, updateCourse } = useCourseCatalog();
+  const editCourseId = route?.params?.editCourseId;
+  const courseToEdit = useMemo(
+    () => (editCourseId ? courses.find((course) => course?.id === editCourseId) : null),
+    [courses, editCourseId]
+  );
+  const isEditMode = Boolean(courseToEdit?.id);
   const [title, setTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [originalPrice, setOriginalPrice] = useState("");
@@ -30,11 +38,46 @@ export const CreateCourseScreen = ({ navigation }) => {
 
   const orderedPrerequisiteCourses = useMemo(
     () =>
-      [...(courses ?? [])].sort((a, b) =>
-        String(a?.courseTitle ?? "").localeCompare(String(b?.courseTitle ?? ""))
-      ),
-    [courses]
+      [...(courses ?? [])]
+        .filter((course) => course?.id !== courseToEdit?.id)
+        .sort((a, b) =>
+          String(a?.courseTitle ?? "").localeCompare(String(b?.courseTitle ?? ""))
+        ),
+    [courses, courseToEdit]
   );
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+
+    const matchedCategory = (categories ?? []).find(
+      (category) => String(category?.id) === String(courseToEdit?.categoryId)
+    );
+    const matchedPrerequisiteCourse = (courses ?? []).find(
+      (course) =>
+        String(course?.id) === String(courseToEdit?.prerequisiteCourseId)
+    );
+
+    setTitle(courseToEdit?.courseTitle ?? "");
+    setSelectedCategory(matchedCategory ?? null);
+    setOriginalPrice(
+      normalizePriceInput(courseToEdit?.priceNumber ?? courseToEdit?.priceValue ?? "")
+    );
+    setCoursePhoto(
+      courseToEdit?.photoUrl
+        ? { uri: courseToEdit.photoUrl, name: courseToEdit.photoName || "Course photo" }
+        : null
+    );
+    if (courseToEdit?.isFoundationCourse) {
+      setCourseType("foundation");
+    } else if (courseToEdit?.prerequisiteCourseId) {
+      setCourseType("prerequisite");
+    } else {
+      setCourseType("standard");
+    }
+    setSelectedPrerequisiteCourse(matchedPrerequisiteCourse ?? null);
+  }, [categories, courses, courseToEdit, isEditMode]);
 
   const handlePickCoursePhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -89,6 +132,29 @@ export const CreateCourseScreen = ({ navigation }) => {
       return;
     }
 
+    if (isEditMode) {
+      const updatedCourse = updateCourse(courseToEdit.id, {
+        courseTitle: normalizedTitle,
+        categoryId: selectedCategory.id,
+        categoryTitle: selectedCategory.categoryTitle,
+        priceValue: `$${normalizedPrice}`,
+        priceNumber: Number(normalizedPrice),
+        photoUrl: coursePhoto?.uri ?? "",
+        photoName: coursePhoto?.name ?? "",
+        isFoundationCourse: courseType === "foundation",
+        prerequisiteCourseId:
+          courseType === "prerequisite" ? selectedPrerequisiteCourse?.id : null,
+      });
+
+      if (!updatedCourse) {
+        Alert.alert("Update failed", "Course could not be updated.");
+        return;
+      }
+
+      navigation.goBack();
+      return;
+    }
+
     navigation.navigate("CourseContentUpload", {
       courseDraft: {
         title: normalizedTitle,
@@ -138,6 +204,13 @@ export const CreateCourseScreen = ({ navigation }) => {
         setIsPrerequisiteOpen(false);
       }}
       onSubmit={handleSubmit}
+      heading={isEditMode ? "Edit Course" : "Create Course"}
+      subtitle={
+        isEditMode
+          ? "Update course details and save changes."
+          : "Fill in the basic course details. Content upload fields will be added next."
+      }
+      submitLabel={isEditMode ? "Save Changes" : "Create Course"}
     />
   );
 };

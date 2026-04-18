@@ -4,6 +4,8 @@ import { coursesMock } from "./course-content.mock";
 const CourseCatalogContext = createContext({
   courses: [],
   addCourse: () => null,
+  updateCourse: () => null,
+  deleteCourse: () => false,
 });
 
 const normalizeIdPart = (value) =>
@@ -32,10 +34,55 @@ export const CourseCatalogProvider = ({ children }) => {
     return newCourse;
   };
 
+  const updateCourse = (courseId, updates) => {
+    if (!courseId || !updates) {
+      return null;
+    }
+
+    let updatedCourse = null;
+    setCourses((previous) =>
+      previous.map((course) => {
+        if (course?.id !== courseId) {
+          return course;
+        }
+
+        updatedCourse = {
+          ...course,
+          ...updates,
+        };
+        return updatedCourse;
+      })
+    );
+
+    return updatedCourse;
+  };
+
+  const deleteCourse = (courseId) => {
+    if (!courseId) {
+      return false;
+    }
+
+    let didDelete = false;
+    setCourses((previous) => {
+      const nextCourses = previous.filter((course) => {
+        const shouldKeep = course?.id !== courseId;
+        if (!shouldKeep) {
+          didDelete = true;
+        }
+        return shouldKeep;
+      });
+      return nextCourses;
+    });
+
+    return didDelete;
+  };
+
   const value = useMemo(
     () => ({
       courses,
       addCourse,
+      updateCourse,
+      deleteCourse,
     }),
     [courses]
   );

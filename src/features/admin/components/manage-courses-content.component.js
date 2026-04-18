@@ -35,7 +35,8 @@ export const ManageCoursesContent = ({
   onUploadPress,
   onAddCategory,
   onEditPress,
-  onViewAnalyticsPress,
+  onEditContentPress,
+  onDeletePress,
 }) => {
   const coursesListRef = useRef(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
@@ -227,11 +228,14 @@ export const ManageCoursesContent = ({
             <CourseMeta>Owner ID: {item.ownerId}</CourseMeta>
             <CourseMeta>{item.priceValue}</CourseMeta>
             <Row>
-              <Action onPress={onEditPress}>
+              <Action onPress={() => onEditPress?.(item)}>
                 <ActionText>Edit</ActionText>
               </Action>
-              <Action onPress={onViewAnalyticsPress}>
-                <ActionText>View Analytics</ActionText>
+              <Action onPress={() => onEditContentPress?.(item)}>
+                <ActionText>Edit Content</ActionText>
+              </Action>
+              <Action variant="danger" onPress={() => onDeletePress?.(item)}>
+                <ActionText variant="danger">Delete</ActionText>
               </Action>
             </Row>
           </CourseCard>

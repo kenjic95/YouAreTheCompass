@@ -16,7 +16,9 @@ export const ManageCoursesNavigator = () => (
     <ManageCoursesStack.Screen
       name="CreateCourse"
       component={CreateCourseScreen}
-      options={{ title: "Create Course" }}
+      options={({ route }) => ({
+        title: route?.params?.editCourseId ? "Edit Course" : "Create Course",
+      })}
     />
     <ManageCoursesStack.Screen
       name="CourseContentUpload"

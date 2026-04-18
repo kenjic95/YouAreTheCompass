@@ -47,16 +47,16 @@ export const CreateCourseForm = ({
   prerequisiteCourses,
   onSelectPrerequisiteCourse,
   onSubmit,
+  heading = "Create Course",
+  subtitle = "Fill in the basic course details. Content upload fields will be added next.",
+  submitLabel = "Create Course",
 }) => (
   <Screen>
     <KeyboardContainer behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Content keyboardShouldPersistTaps="handled">
         <Inner>
-          <Title>Create Course</Title>
-          <Subtitle>
-            Fill in the basic course details. Content upload fields will be
-            added next.
-          </Subtitle>
+          <Title>{heading}</Title>
+          <Subtitle>{subtitle}</Subtitle>
 
           <Label>Course Title</Label>
           <TextInput
@@ -175,7 +175,7 @@ export const CreateCourseForm = ({
           />
 
           <PrimaryButton activeOpacity={0.9} onPress={onSubmit}>
-            <PrimaryButtonText>Create Course</PrimaryButtonText>
+            <PrimaryButtonText>{submitLabel}</PrimaryButtonText>
           </PrimaryButton>
         </Inner>
       </Content>

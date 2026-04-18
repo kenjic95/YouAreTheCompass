@@ -1,10 +1,13 @@
 import React from "react";
+import { View } from "react-native";
 import {
   Content,
   ContentIdBadge,
   ContentIdBadgeText,
   DeleteButton,
   DeleteButtonText,
+  EditButton,
+  EditButtonText,
   DraftCard,
   DraftText,
   Inner,
@@ -30,7 +33,7 @@ import {
 } from "./course-content-upload.styles";
 
 export const CourseContentUploadForm = ({
-  courseDraft,
+  courseInfo,
   contentTitle,
   onChangeContentTitle,
   selectedAsset,
@@ -41,25 +44,25 @@ export const CourseContentUploadForm = ({
   contentParts,
   onDeleteContentPart,
   onUploadCourse,
+  onStartEditContentPart,
+  onCancelEditPart,
+  editingPartId,
+  heading = "Upload Course Content",
+  subtitle = "Add each part one by one with a title and one file (video/pdf/image).",
+  uploadCourseLabel = "Upload Course",
 }) => (
   <Screen>
     <Content keyboardShouldPersistTaps="handled">
       <Inner>
-        <Title>Upload Course Content</Title>
-        <Subtitle>
-          Add each part one by one with a title and one file (video/pdf/image).
-        </Subtitle>
+        <Title>{heading}</Title>
+        <Subtitle>{subtitle}</Subtitle>
 
         <DraftCard>
+          <DraftText>Course: {courseInfo?.title ?? "Untitled course"}</DraftText>
           <DraftText>
-            Course: {courseDraft?.title ?? "Untitled course"}
+            Category: {courseInfo?.categoryTitle ?? "Not selected"}
           </DraftText>
-          <DraftText>
-            Category: {courseDraft?.category?.categoryTitle ?? "Not selected"}
-          </DraftText>
-          <DraftText>
-            Original Price: A${courseDraft?.originalPrice ?? "0.00"}
-          </DraftText>
+          <DraftText>Original Price: A${courseInfo?.originalPrice ?? "0.00"}</DraftText>
         </DraftCard>
 
         <Label>Content Title</Label>
@@ -93,8 +96,15 @@ export const CourseContentUploadForm = ({
         ) : null}
 
         <PrimaryButton onPress={onAddContentPart}>
-          <PrimaryButtonText>Add Content Part</PrimaryButtonText>
+          <PrimaryButtonText>
+            {editingPartId ? "Save Content Part" : "Add Content Part"}
+          </PrimaryButtonText>
         </PrimaryButton>
+        {editingPartId ? (
+          <UploadButton onPress={onCancelEditPart}>
+            <UploadButtonText>Cancel Edit</UploadButtonText>
+          </UploadButton>
+        ) : null}
 
         <SectionTitle>Added Parts ({contentParts.length})</SectionTitle>
         {contentParts.map((part, index) => (
@@ -105,9 +115,14 @@ export const CourseContentUploadForm = ({
                   Content ID: {part.contentId ?? index + 1}
                 </ContentIdBadgeText>
               </ContentIdBadge>
-              <DeleteButton onPress={() => onDeleteContentPart?.(part.id)}>
-                <DeleteButtonText>Delete</DeleteButtonText>
-              </DeleteButton>
+              <View style={{ flexDirection: "row" }}>
+                <EditButton onPress={() => onStartEditContentPart?.(part)}>
+                  <EditButtonText>Edit</EditButtonText>
+                </EditButton>
+                <DeleteButton onPress={() => onDeleteContentPart?.(part.id)}>
+                  <DeleteButtonText>Delete</DeleteButtonText>
+                </DeleteButton>
+              </View>
             </PartHeaderRow>
             <PartTitle>{part.title}</PartTitle>
             <PartMeta>Type: {part.asset.kind.toUpperCase()}</PartMeta>
@@ -119,7 +134,7 @@ export const CourseContentUploadForm = ({
           onPress={onUploadCourse}
           disabled={contentParts.length === 0}
         >
-          <UploadCourseButtonText>Upload Course</UploadCourseButtonText>
+          <UploadCourseButtonText>{uploadCourseLabel}</UploadCourseButtonText>
         </UploadCourseButton>
       </Inner>
     </Content>

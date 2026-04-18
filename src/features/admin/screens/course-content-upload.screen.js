@@ -5,6 +5,7 @@ import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { CourseContentUploadForm } from "../components/course-content-upload-form.component";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
+import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 
 const getAssetName = (asset, fallbackName) =>
@@ -64,11 +65,50 @@ const toPriceLabel = (value) => {
 
 export const CourseContentUploadScreen = ({ route, navigation }) => {
   const courseDraft = route?.params?.courseDraft ?? {};
-  const { addCourse } = useCourseCatalog();
+  const editCourseId = route?.params?.editCourseId;
+  const { courses, addCourse, updateCourse } = useCourseCatalog();
+  const { categories } = useCategoryCatalog();
   const { authUser, profile } = useUserProfile();
+  const courseToEdit = (courses ?? []).find(
+    (course) => String(course?.id) === String(editCourseId)
+  );
+  const isEditMode = Boolean(courseToEdit?.id);
   const [contentTitle, setContentTitle] = useState("");
   const [selectedAsset, setSelectedAsset] = useState(null);
-  const [contentParts, setContentParts] = useState([]);
+  const [editingPartId, setEditingPartId] = useState(null);
+  const [contentParts, setContentParts] = useState(() => {
+    if (!isEditMode) {
+      return [];
+    }
+
+    return (courseToEdit?.courseContent ?? []).map((part, index) => {
+      const normalizedType = String(
+        part?.contentType ?? part?.fileFormat ?? "video"
+      ).toLowerCase();
+      const inferredKind =
+        normalizedType === "pdf"
+          ? "pdf"
+          : normalizedType === "jpg" ||
+            normalizedType === "jpeg" ||
+            normalizedType === "png" ||
+            normalizedType === "webp"
+          ? "image"
+          : "video";
+
+      return {
+        id: `${courseToEdit.id}-${index + 1}-${Date.now()}`,
+        contentId: Number(part?.contentId) || index + 1,
+        title: part?.contentTitle || `Part ${index + 1}`,
+        asset: {
+          kind: inferredKind,
+          uri: part?.localUri || "",
+          name: part?.localFileName || `${inferredKind}-${index + 1}`,
+          mimeType: "",
+          durationSeconds: 0,
+        },
+      };
+    });
+  });
 
   const pickVideo = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -184,15 +224,37 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
   const handleAddContentPart = () => {
     const normalizedTitle = contentTitle.trim();
 
-    if (!normalizedTitle || !selectedAsset) {
+    if (!normalizedTitle) {
       Alert.alert(
         "Required fields",
-        "Add content title and choose a file before adding the part."
+        "Add content title before saving this part."
+      );
+      return;
+    }
+
+    if (!editingPartId && !selectedAsset) {
+      Alert.alert(
+        "Required fields",
+        "Choose a file before adding a new content part."
       );
       return;
     }
 
     setContentParts((previous) => {
+      if (editingPartId) {
+        return previous.map((part) => {
+          if (String(part.id) !== String(editingPartId)) {
+            return part;
+          }
+
+          return {
+            ...part,
+            title: normalizedTitle,
+            asset: selectedAsset || part.asset,
+          };
+        });
+      }
+
       const nextContentId =
         previous.length > 0
           ? Math.max(...previous.map((part) => Number(part.contentId) || 0)) + 1
@@ -211,6 +273,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
 
     setContentTitle("");
     setSelectedAsset(null);
+    setEditingPartId(null);
   };
 
   const handleDeleteContentPart = (partId) => {
@@ -224,13 +287,43 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
         contentId: index + 1,
       }));
     });
+
+    if (String(editingPartId) === String(partId)) {
+      setEditingPartId(null);
+      setContentTitle("");
+      setSelectedAsset(null);
+    }
+  };
+
+  const handleStartEditContentPart = (part) => {
+    if (!part?.id) {
+      return;
+    }
+
+    setEditingPartId(part.id);
+    setContentTitle(part.title ?? "");
+    setSelectedAsset(part.asset ?? null);
+  };
+
+  const handleCancelEditPart = () => {
+    setEditingPartId(null);
+    setContentTitle("");
+    setSelectedAsset(null);
   };
 
   const handleUploadCourse = () => {
+    if (isEditMode && !courseToEdit?.id) {
+      Alert.alert(
+        "Course not found",
+        "The selected course no longer exists. Please go back and try again."
+      );
+      return;
+    }
+
     const normalizedCourseTitle = String(courseDraft?.title ?? "").trim();
     const categoryId = courseDraft?.category?.id;
 
-    if (!normalizedCourseTitle || !categoryId) {
+    if (!isEditMode && (!normalizedCourseTitle || !categoryId)) {
       Alert.alert(
         "Missing draft details",
         "Course title or category is missing. Please go back and complete the draft."
@@ -256,6 +349,22 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
         localFileName: part?.asset?.name,
       };
     });
+
+    if (isEditMode) {
+      const updatedCourse = updateCourse(courseToEdit.id, {
+        courseContent: mappedCourseContent,
+        courseDuration: `${mappedCourseContent.length} parts`,
+      });
+
+      if (!updatedCourse) {
+        Alert.alert("Update failed", "Unable to update content right now.");
+        return;
+      }
+
+      Alert.alert("Content saved", "Course content has been updated.");
+      navigation.navigate("ManageCoursesHome");
+      return;
+    }
 
     const createdCourse = addCourse({
       categoryId,
@@ -292,9 +401,29 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
     navigation.navigate("ManageCoursesHome");
   };
 
+  const courseInfo = isEditMode
+    ? {
+        title: courseToEdit?.courseTitle,
+        categoryTitle:
+          courseToEdit?.categoryTitle ||
+          (categories ?? []).find(
+            (category) =>
+              String(category?.id) === String(courseToEdit?.categoryId)
+          )?.categoryTitle,
+        originalPrice: String(courseToEdit?.priceNumber ?? "0.00").replace(
+          /[^0-9.]/g,
+          ""
+        ),
+      }
+    : {
+        title: courseDraft?.title,
+        categoryTitle: courseDraft?.category?.categoryTitle,
+        originalPrice: courseDraft?.originalPrice,
+      };
+
   return (
     <CourseContentUploadForm
-      courseDraft={courseDraft}
+      courseInfo={courseInfo}
       contentTitle={contentTitle}
       onChangeContentTitle={setContentTitle}
       selectedAsset={selectedAsset}
@@ -305,6 +434,16 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       contentParts={contentParts}
       onDeleteContentPart={handleDeleteContentPart}
       onUploadCourse={handleUploadCourse}
+      onStartEditContentPart={handleStartEditContentPart}
+      onCancelEditPart={handleCancelEditPart}
+      editingPartId={editingPartId}
+      heading={isEditMode ? "Edit Course Content" : "Upload Course Content"}
+      subtitle={
+        isEditMode
+          ? "Update each part title/file. You can add and delete parts before saving."
+          : "Add each part one by one with a title and one file (video/pdf/image)."
+      }
+      uploadCourseLabel={isEditMode ? "Save Content Changes" : "Upload Course"}
     />
   );
 };

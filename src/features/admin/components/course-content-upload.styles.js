@@ -184,3 +184,16 @@ export const DeleteButtonText = styled.Text`
   font-family: ${(props) => props.theme.fonts.heading};
   font-size: 13px;
 `;
+
+export const EditButton = styled.TouchableOpacity`
+  margin-right: 8px;
+  border-radius: 10px;
+  padding: 8px 14px;
+  background-color: #4f9fe2;
+`;
+
+export const EditButtonText = styled.Text`
+  color: #ffffff;
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 13px;
+`;

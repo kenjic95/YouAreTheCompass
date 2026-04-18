@@ -150,6 +150,11 @@ export const CourseCard = styled.View`
   padding: 14px;
   border-radius: 14px;
   background-color: #ffffff;
+  shadow-color: #0f2f4a;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.12;
+  shadow-radius: 8px;
+  elevation: 4;
 `;
 
 export const CourseTitle = styled.Text`
@@ -168,17 +173,19 @@ export const CourseMeta = styled.Text`
 export const Row = styled.View`
   margin-top: 12px;
   flex-direction: row;
+  flex-wrap: wrap;
 `;
 
 export const Action = styled.TouchableOpacity`
   margin-right: 10px;
   border-radius: 10px;
   padding: 9px 12px;
-  background-color: #e5f0fb;
+  background-color: ${(props) =>
+    props.variant === "danger" ? "#fee8e8" : "#e5f0fb"};
 `;
 
 export const ActionText = styled.Text`
-  color: #31628a;
+  color: ${(props) => (props.variant === "danger" ? "#b53b3b" : "#31628a")};
   font-family: ${(props) => props.theme.fonts.heading};
   font-size: 12px;
 `;

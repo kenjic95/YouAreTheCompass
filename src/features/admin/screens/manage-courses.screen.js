@@ -12,7 +12,7 @@ const DEV_FORCE_CREATOR_UI =
 
 export const ManageCoursesScreen = ({ navigation }) => {
   const { categories, addCategory } = useCategoryCatalog();
-  const { courses } = useCourseCatalog();
+  const { courses, deleteCourse } = useCourseCatalog();
   const { authUser, role, isCreator } = useUserProfile();
   const currentUserId = authUser?.uid;
   const canAccessCreator = DEV_FORCE_CREATOR_UI || isCreator;
@@ -54,12 +54,6 @@ export const ManageCoursesScreen = ({ navigation }) => {
       .sort((a, b) => String(a.title).localeCompare(String(b.title)));
   }, [categories, visibleCourses]);
 
-  const showSoon = (
-    message = "Upload and edit flow will be connected next."
-  ) => {
-    Alert.alert("Coming soon", message);
-  };
-
   const handleUploadPress = () => {
     if (!canAccessCreator) {
       Alert.alert(
@@ -76,6 +70,47 @@ export const ManageCoursesScreen = ({ navigation }) => {
     role === "teacher"
       ? "No courses assigned to this teacher account yet."
       : "No courses found.";
+
+  const handleEditCourse = (course) => {
+    if (!course?.id) {
+      return;
+    }
+
+    navigation.navigate("CreateCourse", {
+      editCourseId: course.id,
+    });
+  };
+
+  const handleDeleteCourse = (course) => {
+    if (!course?.id) {
+      return;
+    }
+
+    Alert.alert(
+      "Delete course",
+      `Delete "${course.courseTitle}"? This will remove it from student course lists.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteCourse(course.id);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEditCourseContent = (course) => {
+    if (!course?.id) {
+      return;
+    }
+
+    navigation.navigate("CourseContentUpload", {
+      editCourseId: course.id,
+    });
+  };
 
   return (
     <ManageCoursesContent
@@ -95,10 +130,9 @@ export const ManageCoursesScreen = ({ navigation }) => {
         }
         return true;
       }}
-      onEditPress={() => showSoon("Course edit flow will be connected next.")}
-      onViewAnalyticsPress={() =>
-        showSoon("Course analytics dashboard will be connected next.")
-      }
+      onEditPress={handleEditCourse}
+      onEditContentPress={handleEditCourseContent}
+      onDeletePress={handleDeleteCourse}
     />
   );
 };
