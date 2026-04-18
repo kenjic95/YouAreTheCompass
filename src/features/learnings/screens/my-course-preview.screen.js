@@ -219,6 +219,13 @@ export const MyCoursePreviewScreen = ({ route }) => {
                   });
                 }
 
+                if (contentType === "pdf") {
+                  navigation.navigate("CoursePdfViewer", {
+                    course,
+                    contentItem: item,
+                  });
+                }
+
                 setViewedContentIds((previousIds) =>
                   previousIds.includes(contentId)
                     ? previousIds

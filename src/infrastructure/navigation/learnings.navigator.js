@@ -8,6 +8,7 @@ import { MyCoursePreviewScreen } from "../../features/learnings/screens/my-cours
 import { CourseCheckoutScreen } from "../../features/learnings/screens/course-checkout.screen";
 import { CourseVideoPlayerScreen } from "../../features/learnings/screens/course-video-player.screen";
 import { CourseImageViewerScreen } from "../../features/learnings/screens/course-image-viewer.screen";
+import { CoursePdfViewerScreen } from "../../features/learnings/screens/course-pdf-viewer.screen";
 import { PurchasedCoursesProvider } from "../../services/learnings/purchased-courses.context";
 
 const LearningsStack = createStackNavigator();
@@ -36,6 +37,11 @@ export const LearningsNavigator = () => {
           name="CourseImageViewer"
           component={CourseImageViewerScreen}
           options={{ title: "Image Viewer" }}
+        />
+        <LearningsStack.Screen
+          name="CoursePdfViewer"
+          component={CoursePdfViewerScreen}
+          options={{ title: "PDF Viewer" }}
         />
       </LearningsStack.Navigator>
     </PurchasedCoursesProvider>

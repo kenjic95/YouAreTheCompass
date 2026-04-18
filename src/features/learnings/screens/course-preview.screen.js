@@ -115,11 +115,18 @@ export const CoursePreviewScreen = ({ route }) => {
     Boolean(prerequisiteCourseId) &&
     !isCheckingPrerequisite &&
     !isPrerequisiteComplete;
-  const isLocked =
-    !isPurchased && (isCheckingPrerequisite || isLockedByPrerequisite);
+  const isCheckoutLocked = isCheckingPrerequisite || isLockedByPrerequisite;
+  const isContentLocked =
+    !isPurchased || isCheckingPrerequisite || isLockedByPrerequisite;
   const prerequisiteLockMessage = isCheckingPrerequisite
     ? "Checking prerequisite course progress..."
-    : `Complete the prerequisite course: ${prerequisiteCourseTitle}`;
+    : `Finish "${prerequisiteCourseTitle}" to unlock and buy this course.`;
+  const contentLockMessage =
+    isCheckingPrerequisite || isLockedByPrerequisite
+      ? prerequisiteLockMessage
+      : !isPurchased
+      ? "Buy this course to access its content."
+      : "";
 
   const handleLayout = ({ nativeEvent }) => {
     const nextHeight = nativeEvent.layout.height;
@@ -144,10 +151,8 @@ export const CoursePreviewScreen = ({ route }) => {
               backgroundColor={theme.colors.brand.secondary}
               screenHeight={screenHeight}
               collapsedTop={collapsedTop}
-              isContentLocked={isLocked}
-              lockMessage={
-                isLockedByPrerequisite ? prerequisiteLockMessage : ""
-              }
+              isContentLocked={isContentLocked}
+              lockMessage={contentLockMessage}
               onContentPress={(item) => {
                 const contentType = normalizeCoursePreviewType(
                   item?.contentType ?? item?.fileFormat
@@ -166,6 +171,14 @@ export const CoursePreviewScreen = ({ route }) => {
                     course,
                     contentItem: item,
                   });
+                  return;
+                }
+
+                if (contentType === "pdf") {
+                  navigation.navigate("CoursePdfViewer", {
+                    course,
+                    contentItem: item,
+                  });
                 }
               }}
             />
@@ -177,11 +190,13 @@ export const CoursePreviewScreen = ({ route }) => {
             buyTextColor={theme.colors.text.inverse}
             isPurchased={isPurchased}
             isInCart={isInCart}
-            isLocked={isLocked}
-            onAddToCart={() => !isPurchased && !isLocked && addToCart(course)}
+            isLocked={isCheckoutLocked}
+            onAddToCart={() =>
+              !isPurchased && !isCheckoutLocked && addToCart(course)
+            }
             onBuyNow={() =>
               !isPurchased &&
-              !isLocked &&
+              !isCheckoutLocked &&
               navigation.navigate("Checkout", {
                 course,
                 category: selectedCategory,

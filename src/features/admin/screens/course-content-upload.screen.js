@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Alert } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { CourseContentUploadForm } from "../components/course-content-upload-form.component";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
@@ -9,7 +10,20 @@ import { useUserProfile } from "../../../services/auth/user-profile.context";
 const getAssetName = (asset, fallbackName) =>
   asset?.name || asset?.fileName || fallbackName;
 
-const getContentTypeConfig = (kind) => {
+const formatVideoDurationLabel = (durationSeconds) => {
+  const safeSeconds = Math.max(0, Math.round(Number(durationSeconds) || 0));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  return `${minutes}m ${seconds}s`;
+};
+
+const getContentTypeConfig = (kind, asset = {}) => {
   if (kind === "pdf") {
     return {
       contentType: "pdf",
@@ -26,9 +40,15 @@ const getContentTypeConfig = (kind) => {
     };
   }
 
+  const durationFromPickerMillis = Number(asset?.duration ?? 0);
+  const durationSeconds = durationFromPickerMillis
+    ? durationFromPickerMillis / 1000
+    : Number(asset?.durationSeconds ?? 0);
+
   return {
     contentType: "video",
-    contentDuration: "Uploaded video",
+    contentDuration:
+      durationSeconds > 0 ? formatVideoDurationLabel(durationSeconds) : "0m 0s",
   };
 };
 
@@ -80,6 +100,8 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       uri: asset.uri,
       name: getAssetName(asset, `video-${Date.now()}.mp4`),
       mimeType: asset.mimeType || "video/mp4",
+      durationSeconds:
+        Number(asset?.duration ?? 0) > 0 ? Number(asset.duration) / 1000 : 0,
     });
   };
 
@@ -137,9 +159,23 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       return;
     }
 
+    let resolvedPdfUri = asset.uri;
+    try {
+      const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      if (base64) {
+        resolvedPdfUri = `data:${
+          asset.mimeType || "application/pdf"
+        };base64,${base64}`;
+      }
+    } catch {
+      // Fallback to file URI when base64 conversion is unavailable.
+    }
+
     setSelectedAsset({
       kind: "pdf",
-      uri: asset.uri,
+      uri: resolvedPdfUri,
       name: getAssetName(asset, `document-${Date.now()}.pdf`),
       mimeType: asset.mimeType || "application/pdf",
     });
@@ -211,7 +247,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
     }
 
     const mappedCourseContent = contentParts.map((part, index) => {
-      const typeConfig = getContentTypeConfig(part?.asset?.kind);
+      const typeConfig = getContentTypeConfig(part?.asset?.kind, part?.asset);
       return {
         contentId: index + 1,
         contentTitle: part.title,
