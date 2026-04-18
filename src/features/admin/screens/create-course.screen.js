@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { categoriesMockContext } from "../../../services/learnings/categories.mock";
 import { CreateCourseForm } from "../components/create-course-form.component";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
+import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 
 export const CreateCourseScreen = ({ navigation }) => {
-  const { categories } = categoriesMockContext;
+  const { categories } = useCategoryCatalog();
   const { courses } = useCourseCatalog();
   const [title, setTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);

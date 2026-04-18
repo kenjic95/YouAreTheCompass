@@ -4,14 +4,14 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { CategoryInfo } from "../components/category-card.components";
-import { categoriesMockContext } from "../../../services/learnings/categories.mock";
 import { LearningsSearch } from "../components/learnings-search.component";
 import { usePurchasedCourses } from "../../../services/learnings/purchased-courses.context";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
+import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 
 export const LearningsScreen = () => {
   const navigation = useNavigation();
-  const { categories } = categoriesMockContext;
+  const { categories } = useCategoryCatalog();
   const { courses } = useCourseCatalog();
   const { purchasedCourses, cartCourses, removeFromCart } =
     usePurchasedCourses();

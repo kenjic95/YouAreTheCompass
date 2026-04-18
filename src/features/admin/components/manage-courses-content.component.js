@@ -3,6 +3,12 @@ import { FlatList, ScrollView, StyleSheet } from "react-native";
 import {
   Action,
   ActionText,
+  AddCategoryAction,
+  AddCategoryActionText,
+  AddCategoryInput,
+  AddCategoryRow,
+  AddCategoryChip,
+  AddCategoryChipText,
   CategoryChip,
   CategoryChipText,
   CourseCard,
@@ -25,10 +31,13 @@ export const ManageCoursesContent = ({
   visibleCourses,
   categoryGroups,
   onUploadPress,
+  onAddCategory,
   onEditPress,
   onViewAnalyticsPress,
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryTitle, setNewCategoryTitle] = useState("");
 
   const filteredCourses = useMemo(() => {
     if (selectedCategoryId === "all") {
@@ -69,6 +78,12 @@ export const ManageCoursesContent = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.categoryListContent}
       >
+        <AddCategoryChip
+          activeOpacity={0.85}
+          onPress={() => setIsAddingCategory((previous) => !previous)}
+        >
+          <AddCategoryChipText>+</AddCategoryChipText>
+        </AddCategoryChip>
         <CategoryChip
           activeOpacity={0.85}
           isActive={selectedCategoryId === "all"}
@@ -93,6 +108,41 @@ export const ManageCoursesContent = ({
           </CategoryChip>
         ))}
       </ScrollView>
+
+      {isAddingCategory ? (
+        <AddCategoryRow>
+          <AddCategoryInput
+            value={newCategoryTitle}
+            onChangeText={setNewCategoryTitle}
+            placeholder="New category title"
+            placeholderTextColor="#8ba0b2"
+          />
+          <AddCategoryAction
+            activeOpacity={0.85}
+            onPress={() => {
+              const didAdd = onAddCategory?.(newCategoryTitle);
+              if (didAdd) {
+                setNewCategoryTitle("");
+                setIsAddingCategory(false);
+              }
+            }}
+          >
+            <AddCategoryActionText>Add</AddCategoryActionText>
+          </AddCategoryAction>
+          <AddCategoryAction
+            variant="cancel"
+            activeOpacity={0.85}
+            onPress={() => {
+              setNewCategoryTitle("");
+              setIsAddingCategory(false);
+            }}
+          >
+            <AddCategoryActionText variant="cancel">
+              Cancel
+            </AddCategoryActionText>
+          </AddCategoryAction>
+        </AddCategoryRow>
+      ) : null}
 
       <FlatList
         data={filteredCourses}

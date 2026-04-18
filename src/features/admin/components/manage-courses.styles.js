@@ -53,6 +53,57 @@ export const CategoryChipText = styled.Text`
   font-size: 13px;
 `;
 
+export const AddCategoryChip = styled.TouchableOpacity`
+  margin-right: 8px;
+  border-radius: 20px;
+  min-height: 38px;
+  min-width: 38px;
+  padding-horizontal: 12px;
+  background-color: #2f7fc2;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+`;
+
+export const AddCategoryChipText = styled.Text`
+  color: #ffffff;
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 18px;
+  line-height: 18px;
+`;
+
+export const AddCategoryRow = styled.View`
+  margin: 0 18px 10px;
+  flex-direction: row;
+  align-items: center;
+`;
+
+export const AddCategoryInput = styled.TextInput`
+  flex: 1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background-color: #ffffff;
+  border-width: 1px;
+  border-color: #d7e6f3;
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 14px;
+  color: #173851;
+`;
+
+export const AddCategoryAction = styled.TouchableOpacity`
+  margin-left: 8px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background-color: ${(props) =>
+    props.variant === "cancel" ? "#e9eff5" : "#4f9fe2"};
+`;
+
+export const AddCategoryActionText = styled.Text`
+  color: ${(props) => (props.variant === "cancel" ? "#3b6080" : "#ffffff")};
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 13px;
+`;
+
 export const CourseListHeading = styled.Text`
   margin: 0 18px 10px;
   font-family: ${(props) => props.theme.fonts.heading};
