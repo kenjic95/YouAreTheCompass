@@ -4,7 +4,7 @@ export const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
 export const AUTO_HIDE_DELAY_MS = 2200;
 export const HIDDEN_TRANSLATE_Y = 180;
 export const MOCK_VIDEO_MODULES = [
-  require("../../../../assets/TestVideo.mp4"),
+  require("../../../../assets/TestVideo1.mp4"),
   require("../../../../assets/testvid2.mp4"),
 ];
 
