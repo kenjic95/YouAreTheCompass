@@ -10,7 +10,7 @@ const bottomActions = [
   { id: "rewind", icon: "play-back" },
   { id: "playPause" },
   { id: "forward", icon: "play-forward" },
-  { id: "next", icon: "list-sharp" },
+  { id: "next", icon: "chevron-forward-outline" },
 ];
 
 export const CourseVideoPlayerControls = ({
