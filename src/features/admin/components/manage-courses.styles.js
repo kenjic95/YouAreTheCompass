@@ -5,6 +5,13 @@ export const Screen = styled.SafeAreaView`
   background-color: #f6fbff;
 `;
 
+export const AccessMessage = styled.Text`
+  margin: 20px;
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 14px;
+  color: #4b6780;
+`;
+
 export const Header = styled.View`
   padding: 20px 18px 14px;
 `;
@@ -23,7 +30,7 @@ export const Subtitle = styled.Text`
 `;
 
 export const UploadButton = styled.TouchableOpacity`
-  margin: 8px 18px 16px;
+  margin: 8px 18px 22px;
   background-color: #4f9fe2;
   border-radius: 16px;
   padding: 14px;

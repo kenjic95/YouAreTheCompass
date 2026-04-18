@@ -72,15 +72,6 @@ export const ManageCoursesScreen = ({ navigation }) => {
     navigation.navigate("CreateCourse");
   };
 
-  const subtitle =
-    role === "admin"
-      ? "Admin workspace with access to all courses."
-      : role === "teacher"
-      ? "Teacher workspace with access to your own courses only."
-      : DEV_FORCE_CREATOR_UI
-      ? "Creator workspace preview (dev override enabled)."
-      : "Teacher workspace with access to your own courses only.";
-
   const emptyMessage =
     role === "teacher"
       ? "No courses assigned to this teacher account yet."
@@ -89,7 +80,6 @@ export const ManageCoursesScreen = ({ navigation }) => {
   return (
     <ManageCoursesContent
       canAccessCreator={canAccessCreator}
-      subtitle={subtitle}
       emptyMessage={emptyMessage}
       visibleCourses={visibleCourses}
       categoryGroups={categoryGroups}

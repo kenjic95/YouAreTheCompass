@@ -3,6 +3,7 @@ import { FlatList, ScrollView, StyleSheet } from "react-native";
 import {
   Action,
   ActionText,
+  AccessMessage,
   AddCategoryAction,
   AddCategoryActionText,
   AddCategoryInput,
@@ -15,18 +16,14 @@ import {
   CourseListHeading,
   CourseMeta,
   CourseTitle,
-  Header,
   Row,
   Screen,
-  Subtitle,
-  Title,
   UploadButton,
   UploadButtonText,
 } from "./manage-courses.styles";
 
 export const ManageCoursesContent = ({
   canAccessCreator,
-  subtitle,
   emptyMessage,
   visibleCourses,
   categoryGroups,
@@ -52,23 +49,15 @@ export const ManageCoursesContent = ({
   if (!canAccessCreator) {
     return (
       <Screen>
-        <Header>
-          <Title>Course Creator</Title>
-          <Subtitle>
-            Access denied. This area is only for teacher/admin accounts.
-          </Subtitle>
-        </Header>
+        <AccessMessage>
+          Access denied. This area is only for teacher/admin accounts.
+        </AccessMessage>
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <Header>
-        <Title>Course Creator</Title>
-        <Subtitle>{subtitle}</Subtitle>
-      </Header>
-
       <UploadButton onPress={onUploadPress}>
         <UploadButtonText>Upload New Course</UploadButtonText>
       </UploadButton>
@@ -177,6 +166,7 @@ export const ManageCoursesContent = ({
 const styles = StyleSheet.create({
   categoryListContent: {
     paddingHorizontal: 18,
+    paddingTop: 4,
     paddingBottom: 10,
     alignItems: "center",
   },
