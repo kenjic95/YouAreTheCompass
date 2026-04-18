@@ -49,6 +49,7 @@ export const CreateCourseScreen = ({ navigation }) => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
       quality: 1,
     });
 
@@ -61,8 +62,12 @@ export const CreateCourseScreen = ({ navigation }) => {
       return;
     }
 
+    const resolvedImageUri = asset?.base64
+      ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`
+      : asset.uri;
+
     setCoursePhoto({
-      uri: asset.uri,
+      uri: resolvedImageUri,
       name: asset.fileName || asset.name || `course-photo-${Date.now()}.jpg`,
     });
   };

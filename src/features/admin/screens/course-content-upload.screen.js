@@ -96,6 +96,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
       quality: 1,
     });
 
@@ -108,9 +109,13 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       return;
     }
 
+    const resolvedImageUri = asset?.base64
+      ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`
+      : asset.uri;
+
     setSelectedAsset({
       kind: "image",
-      uri: asset.uri,
+      uri: resolvedImageUri,
       name: getAssetName(asset, `image-${Date.now()}.jpg`),
       mimeType: asset.mimeType || "image/jpeg",
     });

@@ -13,6 +13,7 @@ import {
   CoursePreviewBottomSheet,
 } from "../components/course-preview.components";
 import { styles } from "../components/course-preview.styles";
+import { normalizeCoursePreviewType } from "../../../services/learnings/course-preview.mock";
 
 const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
 
@@ -147,6 +148,26 @@ export const CoursePreviewScreen = ({ route }) => {
               lockMessage={
                 isLockedByPrerequisite ? prerequisiteLockMessage : ""
               }
+              onContentPress={(item) => {
+                const contentType = normalizeCoursePreviewType(
+                  item?.contentType ?? item?.fileFormat
+                );
+
+                if (contentType === "video") {
+                  navigation.navigate("CoursePlayer", {
+                    course,
+                    contentItem: item,
+                  });
+                  return;
+                }
+
+                if (contentType === "image") {
+                  navigation.navigate("CourseImageViewer", {
+                    course,
+                    contentItem: item,
+                  });
+                }
+              }}
             />
           ) : null}
 
