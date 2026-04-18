@@ -36,6 +36,30 @@ export const UploadButtonText = styled.Text`
   font-size: 16px;
 `;
 
+export const CategoryChip = styled.TouchableOpacity`
+  margin-right: 8px;
+  border-radius: 20px;
+  min-height: 38px;
+  padding-vertical: 8px;
+  padding-horizontal: 12px;
+  background-color: ${(props) => (props.isActive ? "#4f9fe2" : "#e5f0fb")};
+  justify-content: center;
+  align-self: center;
+`;
+
+export const CategoryChipText = styled.Text`
+  color: ${(props) => (props.isActive ? "#ffffff" : "#31628a")};
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 13px;
+`;
+
+export const CourseListHeading = styled.Text`
+  margin: 0 18px 10px;
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 16px;
+  color: #1f4d72;
+`;
+
 export const CourseCard = styled.View`
   margin: 0 18px 12px;
   padding: 14px;

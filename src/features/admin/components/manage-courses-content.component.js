@@ -1,9 +1,12 @@
-import React from "react";
-import { FlatList } from "react-native";
+import React, { useMemo, useState } from "react";
+import { FlatList, ScrollView, StyleSheet } from "react-native";
 import {
   Action,
   ActionText,
+  CategoryChip,
+  CategoryChipText,
   CourseCard,
+  CourseListHeading,
   CourseMeta,
   CourseTitle,
   Header,
@@ -20,10 +23,23 @@ export const ManageCoursesContent = ({
   subtitle,
   emptyMessage,
   visibleCourses,
+  categoryGroups,
   onUploadPress,
   onEditPress,
   onViewAnalyticsPress,
 }) => {
+  const [selectedCategoryId, setSelectedCategoryId] = useState("all");
+
+  const filteredCourses = useMemo(() => {
+    if (selectedCategoryId === "all") {
+      return visibleCourses;
+    }
+
+    return (visibleCourses ?? []).filter(
+      (course) => String(course?.categoryId) === String(selectedCategoryId)
+    );
+  }, [selectedCategoryId, visibleCourses]);
+
   if (!canAccessCreator) {
     return (
       <Screen>
@@ -48,10 +64,45 @@ export const ManageCoursesContent = ({
         <UploadButtonText>Upload New Course</UploadButtonText>
       </UploadButton>
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryListContent}
+      >
+        <CategoryChip
+          activeOpacity={0.85}
+          isActive={selectedCategoryId === "all"}
+          onPress={() => setSelectedCategoryId("all")}
+        >
+          <CategoryChipText isActive={selectedCategoryId === "all"}>
+            All ({visibleCourses.length})
+          </CategoryChipText>
+        </CategoryChip>
+        {(categoryGroups ?? []).map((category) => (
+          <CategoryChip
+            key={String(category.id)}
+            activeOpacity={0.85}
+            isActive={String(selectedCategoryId) === String(category.id)}
+            onPress={() => setSelectedCategoryId(category.id)}
+          >
+            <CategoryChipText
+              isActive={String(selectedCategoryId) === String(category.id)}
+            >
+              {category.title} ({category.count})
+            </CategoryChipText>
+          </CategoryChip>
+        ))}
+      </ScrollView>
+
       <FlatList
-        data={visibleCourses}
+        data={filteredCourses}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<CourseMeta>{emptyMessage}</CourseMeta>}
+        ListHeaderComponent={
+          <CourseListHeading>
+            {selectedCategoryId === "all" ? "All Courses" : "Courses"}
+          </CourseListHeading>
+        }
         renderItem={({ item }) => (
           <CourseCard>
             <CourseTitle>{item.courseTitle}</CourseTitle>
@@ -72,3 +123,11 @@ export const ManageCoursesContent = ({
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  categoryListContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 10,
+    alignItems: "center",
+  },
+});
