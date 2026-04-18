@@ -212,6 +212,13 @@ export const MyCoursePreviewScreen = ({ route }) => {
                   return;
                 }
 
+                if (contentType === "image") {
+                  navigation.navigate("CourseImageViewer", {
+                    course,
+                    contentItem: item,
+                  });
+                }
+
                 setViewedContentIds((previousIds) =>
                   previousIds.includes(contentId)
                     ? previousIds
