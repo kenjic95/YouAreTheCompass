@@ -84,8 +84,8 @@ export const ManageCoursesScreen = ({ navigation }) => {
       visibleCourses={visibleCourses}
       categoryGroups={categoryGroups}
       onUploadPress={handleUploadPress}
-      onAddCategory={(title) => {
-        const createdCategory = addCategory(title);
+      onAddCategory={(title, photoUri) => {
+        const createdCategory = addCategory(title, photoUri);
         if (!createdCategory) {
           Alert.alert(
             "Category not added",

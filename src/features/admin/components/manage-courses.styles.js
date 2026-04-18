@@ -43,6 +43,10 @@ export const UploadButtonText = styled.Text`
   font-size: 16px;
 `;
 
+export const ControlsContainer = styled.View`
+  padding-top: 8px;
+`;
+
 export const CategoryChip = styled.TouchableOpacity`
   margin-right: 8px;
   border-radius: 20px;
@@ -109,6 +113,29 @@ export const AddCategoryActionText = styled.Text`
   color: ${(props) => (props.variant === "cancel" ? "#3b6080" : "#ffffff")};
   font-family: ${(props) => props.theme.fonts.heading};
   font-size: 13px;
+`;
+
+export const AddCategoryPhotoButton = styled.TouchableOpacity`
+  margin: 0 18px 8px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background-color: #e5f0fb;
+  align-items: center;
+`;
+
+export const AddCategoryPhotoButtonText = styled.Text`
+  color: #31628a;
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 13px;
+`;
+
+export const AddCategoryPhotoPreview = styled.Image`
+  margin: 0 18px 8px;
+  width: 100%;
+  max-width: 220px;
+  height: 120px;
+  border-radius: 10px;
+  align-self: flex-start;
 `;
 
 export const CourseListHeading = styled.Text`

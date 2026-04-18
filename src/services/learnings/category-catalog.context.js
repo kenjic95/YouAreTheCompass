@@ -16,7 +16,7 @@ export const CategoryCatalogProvider = ({ children }) => {
   const [categories, setCategories] = useState(categoriesMock);
 
   const addCategory = useCallback(
-    (categoryTitle) => {
+    (categoryTitle, categoryPhoto) => {
       const normalizedTitle = String(categoryTitle ?? "").trim();
       if (!normalizedTitle) {
         return null;
@@ -40,6 +40,7 @@ export const CategoryCatalogProvider = ({ children }) => {
         id: maxCategoryId + 1,
         categoryTitle: normalizedTitle,
         categoryPhoto:
+          categoryPhoto ||
           "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80",
       };
 

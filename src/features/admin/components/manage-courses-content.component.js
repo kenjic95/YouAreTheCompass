@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
-import { FlatList, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Alert, FlatList, ScrollView, StyleSheet } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import {
   Action,
   ActionText,
@@ -7,11 +8,15 @@ import {
   AddCategoryAction,
   AddCategoryActionText,
   AddCategoryInput,
+  AddCategoryPhotoButton,
+  AddCategoryPhotoButtonText,
+  AddCategoryPhotoPreview,
   AddCategoryRow,
   AddCategoryChip,
   AddCategoryChipText,
   CategoryChip,
   CategoryChipText,
+  ControlsContainer,
   CourseCard,
   CourseListHeading,
   CourseMeta,
@@ -32,9 +37,11 @@ export const ManageCoursesContent = ({
   onEditPress,
   onViewAnalyticsPress,
 }) => {
+  const coursesListRef = useRef(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryTitle, setNewCategoryTitle] = useState("");
+  const [newCategoryPhoto, setNewCategoryPhoto] = useState(null);
 
   const filteredCourses = useMemo(() => {
     if (selectedCategoryId === "all") {
@@ -45,6 +52,49 @@ export const ManageCoursesContent = ({
       (course) => String(course?.categoryId) === String(selectedCategoryId)
     );
   }, [selectedCategoryId, visibleCourses]);
+
+  useEffect(() => {
+    coursesListRef.current?.scrollToOffset?.({
+      offset: 0,
+      animated: false,
+    });
+  }, [selectedCategoryId]);
+
+  const handlePickCategoryPhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission?.granted) {
+      Alert.alert(
+        "Permission needed",
+        "Allow photo library permission to choose a category photo."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
+      quality: 1,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    const asset = result.assets?.[0];
+    if (!asset?.uri) {
+      return;
+    }
+
+    const resolvedImageUri = asset?.base64
+      ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`
+      : asset.uri;
+
+    setNewCategoryPhoto({
+      uri: resolvedImageUri,
+      name: asset.fileName || asset.name || "Selected category photo",
+    });
+  };
 
   if (!canAccessCreator) {
     return (
@@ -58,90 +108,118 @@ export const ManageCoursesContent = ({
 
   return (
     <Screen>
-      <UploadButton onPress={onUploadPress}>
-        <UploadButtonText>Upload New Course</UploadButtonText>
-      </UploadButton>
+      <ControlsContainer>
+        <UploadButton onPress={onUploadPress}>
+          <UploadButtonText>Upload New Course</UploadButtonText>
+        </UploadButton>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoryListContent}
-      >
-        <AddCategoryChip
-          activeOpacity={0.85}
-          onPress={() => setIsAddingCategory((previous) => !previous)}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryListContent}
         >
-          <AddCategoryChipText>+</AddCategoryChipText>
-        </AddCategoryChip>
-        <CategoryChip
-          activeOpacity={0.85}
-          isActive={selectedCategoryId === "all"}
-          onPress={() => setSelectedCategoryId("all")}
-        >
-          <CategoryChipText isActive={selectedCategoryId === "all"}>
-            All ({visibleCourses.length})
-          </CategoryChipText>
-        </CategoryChip>
-        {(categoryGroups ?? []).map((category) => (
-          <CategoryChip
-            key={String(category.id)}
+          <AddCategoryChip
             activeOpacity={0.85}
-            isActive={String(selectedCategoryId) === String(category.id)}
-            onPress={() => setSelectedCategoryId(category.id)}
+            onPress={() => setIsAddingCategory((previous) => !previous)}
           >
-            <CategoryChipText
-              isActive={String(selectedCategoryId) === String(category.id)}
-            >
-              {category.title} ({category.count})
+            <AddCategoryChipText>+</AddCategoryChipText>
+          </AddCategoryChip>
+          <CategoryChip
+            activeOpacity={0.85}
+            isActive={selectedCategoryId === "all"}
+            onPress={() => setSelectedCategoryId("all")}
+          >
+            <CategoryChipText isActive={selectedCategoryId === "all"}>
+              All ({visibleCourses.length})
             </CategoryChipText>
           </CategoryChip>
-        ))}
-      </ScrollView>
+          {(categoryGroups ?? []).map((category) => (
+            <CategoryChip
+              key={String(category.id)}
+              activeOpacity={0.85}
+              isActive={String(selectedCategoryId) === String(category.id)}
+              onPress={() => setSelectedCategoryId(category.id)}
+            >
+              <CategoryChipText
+                isActive={String(selectedCategoryId) === String(category.id)}
+              >
+                {category.title} ({category.count})
+              </CategoryChipText>
+            </CategoryChip>
+          ))}
+        </ScrollView>
 
-      {isAddingCategory ? (
-        <AddCategoryRow>
-          <AddCategoryInput
-            value={newCategoryTitle}
-            onChangeText={setNewCategoryTitle}
-            placeholder="New category title"
-            placeholderTextColor="#8ba0b2"
-          />
-          <AddCategoryAction
-            activeOpacity={0.85}
-            onPress={() => {
-              const didAdd = onAddCategory?.(newCategoryTitle);
-              if (didAdd) {
-                setNewCategoryTitle("");
-                setIsAddingCategory(false);
-              }
-            }}
-          >
-            <AddCategoryActionText>Add</AddCategoryActionText>
-          </AddCategoryAction>
-          <AddCategoryAction
-            variant="cancel"
-            activeOpacity={0.85}
-            onPress={() => {
-              setNewCategoryTitle("");
-              setIsAddingCategory(false);
-            }}
-          >
-            <AddCategoryActionText variant="cancel">
-              Cancel
-            </AddCategoryActionText>
-          </AddCategoryAction>
-        </AddCategoryRow>
-      ) : null}
+        {isAddingCategory ? (
+          <>
+            <AddCategoryPhotoButton
+              activeOpacity={0.85}
+              onPress={handlePickCategoryPhoto}
+            >
+              <AddCategoryPhotoButtonText>
+                {newCategoryPhoto?.uri
+                  ? "Change Category Photo"
+                  : "Attach Category Photo"}
+              </AddCategoryPhotoButtonText>
+            </AddCategoryPhotoButton>
+            {newCategoryPhoto?.uri ? (
+              <AddCategoryPhotoPreview
+                source={{ uri: newCategoryPhoto.uri }}
+                resizeMode="cover"
+              />
+            ) : null}
+
+            <AddCategoryRow>
+              <AddCategoryInput
+                value={newCategoryTitle}
+                onChangeText={setNewCategoryTitle}
+                placeholder="New category title"
+                placeholderTextColor="#8ba0b2"
+              />
+              <AddCategoryAction
+                activeOpacity={0.85}
+                onPress={() => {
+                  const didAdd = onAddCategory?.(
+                    newCategoryTitle,
+                    newCategoryPhoto?.uri
+                  );
+                  if (didAdd) {
+                    setNewCategoryTitle("");
+                    setNewCategoryPhoto(null);
+                    setIsAddingCategory(false);
+                  }
+                }}
+              >
+                <AddCategoryActionText>Add</AddCategoryActionText>
+              </AddCategoryAction>
+              <AddCategoryAction
+                variant="cancel"
+                activeOpacity={0.85}
+                onPress={() => {
+                  setNewCategoryTitle("");
+                  setNewCategoryPhoto(null);
+                  setIsAddingCategory(false);
+                }}
+              >
+                <AddCategoryActionText variant="cancel">
+                  Cancel
+                </AddCategoryActionText>
+              </AddCategoryAction>
+            </AddCategoryRow>
+          </>
+        ) : null}
+
+        <CourseListHeading>
+          {selectedCategoryId === "all" ? "All Courses" : "Courses"}
+        </CourseListHeading>
+      </ControlsContainer>
 
       <FlatList
+        key={`course-list-${selectedCategoryId}`}
+        ref={coursesListRef}
         data={filteredCourses}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={<CourseMeta>{emptyMessage}</CourseMeta>}
-        ListHeaderComponent={
-          <CourseListHeading>
-            {selectedCategoryId === "all" ? "All Courses" : "Courses"}
-          </CourseListHeading>
-        }
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <CourseCard>
             <CourseTitle>{item.courseTitle}</CourseTitle>
@@ -167,7 +245,10 @@ const styles = StyleSheet.create({
   categoryListContent: {
     paddingHorizontal: 18,
     paddingTop: 4,
-    paddingBottom: 10,
+    paddingBottom: 6,
     alignItems: "center",
+  },
+  listContent: {
+    paddingBottom: 12,
   },
 });
