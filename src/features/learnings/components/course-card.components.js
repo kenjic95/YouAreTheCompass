@@ -45,6 +45,22 @@ export const CourseInfo = ({
 } = {}) => {
   const theme = useTheme();
 
+  const formatCardPrice = (value) => {
+    const normalized = String(value ?? "")
+      .replace(/^A\$/i, "$")
+      .trim();
+    const parsed = Number(normalized.replace(/[^0-9.]/g, ""));
+    if (!Number.isFinite(parsed)) {
+      return normalized || "$0";
+    }
+
+    if (Number.isInteger(parsed)) {
+      return `$${parsed}`;
+    }
+
+    return `$${parsed.toFixed(2)}`;
+  };
+
   const {
     courseTitle = "Mindfulness and Meditation",
     author = "John Doe",
@@ -68,7 +84,7 @@ export const CourseInfo = ({
     totalVideoDurationSeconds > 0
       ? formatDurationFromSeconds(totalVideoDurationSeconds)
       : courseDuration;
-  const displayPriceValue = priceValue ?? price ?? "$20";
+  const displayPriceValue = formatCardPrice(priceValue ?? price ?? "$20");
   const progressPercent = Math.max(
     0,
     Math.min(100, Math.round(progress?.percent ?? 0)),
