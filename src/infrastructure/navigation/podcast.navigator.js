@@ -8,9 +8,16 @@ const PodcastStack = createStackNavigator();
 
 export const PodcastNavigator = () => {
   return (
-    <PodcastStack.Navigator headerMode="none">
+    <PodcastStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
       <PodcastStack.Screen name="Podcast" component={AlbumScreen} />
-      <PodcastStack.Screen name="PodcastPlayer" component={PodcastPlayerScreen} />
+      <PodcastStack.Screen
+        name="PodcastPlayer"
+        component={PodcastPlayerScreen}
+      />
     </PodcastStack.Navigator>
   );
 };

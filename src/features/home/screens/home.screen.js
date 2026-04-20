@@ -1,8 +1,7 @@
 import React from "react";
+import styled from "styled-components/native";
 
-import { SafeAreaProvider } from "react-native-safe-area-context";
-
-import { SafeArea } from "../../../components/utility/safe-area.component";
+import { TabHeader } from "../../../components/utility/tab-header.component";
 import {
   HomeInfoCard,
   HomeListHeader,
@@ -14,9 +13,15 @@ import {
   homeListColumnStyle,
 } from "../components/home-info-card.styles";
 
+const Screen = styled.View`
+  flex: 1;
+  background-color: #69aee6;
+`;
+
 export const HomeScreen = ({ navigation }) => (
-  <SafeAreaProvider>
-    <SafeArea>
+  <Screen>
+    <TabHeader title="Home" />
+    <Screen>
       <HomeList
         data={homeData}
         ListHeaderComponent={HomeListHeader}
@@ -29,6 +34,6 @@ export const HomeScreen = ({ navigation }) => (
         )}
         keyExtractor={(item) => item.id}
       />
-    </SafeArea>
-  </SafeAreaProvider>
+    </Screen>
+  </Screen>
 );

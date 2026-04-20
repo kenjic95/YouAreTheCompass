@@ -1,6 +1,9 @@
 import styled from "styled-components/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export const Container = styled.SafeAreaView`
+export const Container = styled(SafeAreaView).attrs({
+  edges: ["left", "right", "bottom"],
+})`
   flex: 1;
   background-color: #6da8d6;
 `;
