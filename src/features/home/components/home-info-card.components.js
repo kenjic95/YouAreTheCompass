@@ -47,7 +47,7 @@ export const HomeListHeader = () => (
   <WelcomeContainer>
     <WelcomeImage source={headerLogo} />
     <Spacer position="top" size="small">
-      <WelcomeMessage>{"Creates\nConnect\nInspire"}</WelcomeMessage>
+      <WelcomeMessage>{"Create\nConnect\nInspire"}</WelcomeMessage>
     </Spacer>
   </WelcomeContainer>
 );
