@@ -15,6 +15,8 @@ import {
   AddCategoryChip,
   AddCategoryChipText,
   CategoryChip,
+  CategoryDeleteButton,
+  CategoryDeleteButtonText,
   CategoryChipText,
   ControlsContainer,
   CourseCard,
@@ -37,9 +39,11 @@ export const ManageCoursesContent = ({
   onEditPress,
   onEditContentPress,
   onDeletePress,
+  onDeleteCategory,
 }) => {
   const coursesListRef = useRef(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
+  const [deleteArmedCategoryId, setDeleteArmedCategoryId] = useState(null);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryTitle, setNewCategoryTitle] = useState("");
   const [newCategoryPhoto, setNewCategoryPhoto] = useState(null);
@@ -60,6 +64,20 @@ export const ManageCoursesContent = ({
       animated: false,
     });
   }, [selectedCategoryId]);
+
+  useEffect(() => {
+    if (selectedCategoryId === "all") {
+      return;
+    }
+
+    const isSelectedCategoryAvailable = (categoryGroups ?? []).some(
+      (category) => String(category?.id) === String(selectedCategoryId)
+    );
+
+    if (!isSelectedCategoryAvailable) {
+      setSelectedCategoryId("all");
+    }
+  }, [categoryGroups, selectedCategoryId]);
 
   const handlePickCategoryPhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -128,26 +146,52 @@ export const ManageCoursesContent = ({
           <CategoryChip
             activeOpacity={0.85}
             isActive={selectedCategoryId === "all"}
-            onPress={() => setSelectedCategoryId("all")}
+            onPress={() => {
+              setDeleteArmedCategoryId(null);
+              setSelectedCategoryId("all");
+            }}
           >
             <CategoryChipText isActive={selectedCategoryId === "all"}>
               All ({visibleCourses.length})
             </CategoryChipText>
           </CategoryChip>
-          {(categoryGroups ?? []).map((category) => (
-            <CategoryChip
-              key={String(category.id)}
-              activeOpacity={0.85}
-              isActive={String(selectedCategoryId) === String(category.id)}
-              onPress={() => setSelectedCategoryId(category.id)}
-            >
-              <CategoryChipText
-                isActive={String(selectedCategoryId) === String(category.id)}
+          {(categoryGroups ?? []).map((category) => {
+            const isActive = String(selectedCategoryId) === String(category.id);
+            const isDeleteArmed =
+              String(deleteArmedCategoryId) === String(category.id);
+
+            return (
+              <CategoryChip
+                key={String(category.id)}
+                activeOpacity={0.85}
+                disabled={isDeleteArmed}
+                isActive={isActive}
+                onLongPress={() => setDeleteArmedCategoryId(category.id)}
+                onPress={() => {
+                  setDeleteArmedCategoryId(null);
+                  setSelectedCategoryId(category.id);
+                }}
               >
-                {category.title} ({category.count})
-              </CategoryChipText>
-            </CategoryChip>
-          ))}
+                <CategoryChipText isActive={isActive}>
+                  {category.title} ({category.count})
+                </CategoryChipText>
+                {isDeleteArmed ? (
+                  <CategoryDeleteButton
+                    activeOpacity={0.85}
+                    isActive={isActive}
+                    onPress={() => {
+                      setDeleteArmedCategoryId(null);
+                      onDeleteCategory?.(category);
+                    }}
+                  >
+                    <CategoryDeleteButtonText isActive={isActive}>
+                      ✕
+                    </CategoryDeleteButtonText>
+                  </CategoryDeleteButton>
+                ) : null}
+              </CategoryChip>
+            );
+          })}
         </ScrollView>
 
         {isAddingCategory ? (

@@ -55,6 +55,8 @@ export const CategoryChip = styled.TouchableOpacity`
   padding-horizontal: 12px;
   background-color: ${(props) => (props.isActive ? "#4f9fe2" : "#e5f0fb")};
   justify-content: center;
+  flex-direction: row;
+  align-items: center;
   align-self: center;
 `;
 
@@ -62,6 +64,24 @@ export const CategoryChipText = styled.Text`
   color: ${(props) => (props.isActive ? "#ffffff" : "#31628a")};
   font-family: ${(props) => props.theme.fonts.heading};
   font-size: 13px;
+`;
+
+export const CategoryDeleteButton = styled.TouchableOpacity`
+  margin-left: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: ${(props) => (props.isActive ? "#ffffff" : "#31628a")};
+  align-items: center;
+  justify-content: center;
+`;
+
+export const CategoryDeleteButtonText = styled.Text`
+  color: ${(props) => (props.isActive ? "#4f9fe2" : "#ffffff")};
+  font-size: 15px;
+  line-height: 15px;
+  font-weight: 700;
+  margin-top: 0px;
 `;
 
 export const AddCategoryChip = styled.TouchableOpacity`

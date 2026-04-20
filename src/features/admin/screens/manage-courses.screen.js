@@ -11,7 +11,7 @@ const DEV_FORCE_CREATOR_UI =
   "true";
 
 export const ManageCoursesScreen = ({ navigation }) => {
-  const { categories, addCategory } = useCategoryCatalog();
+  const { categories, addCategory, deleteCategory } = useCategoryCatalog();
   const { courses, deleteCourse } = useCourseCatalog();
   const { authUser, role, isCreator } = useUserProfile();
   const currentUserId = authUser?.uid;
@@ -112,6 +112,31 @@ export const ManageCoursesScreen = ({ navigation }) => {
     });
   };
 
+  const handleDeleteCategory = (category) => {
+    if (!category?.id) {
+      return;
+    }
+
+    if (Number(category?.count) > 0) {
+      Alert.alert(
+        "Category in use",
+        `You can't delete "${category.title}" while it has ${category.count} course(s).`
+      );
+      return;
+    }
+
+    Alert.alert("Delete category", `Delete "${category.title}" from filters?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          deleteCategory(category.id);
+        },
+      },
+    ]);
+  };
+
   return (
     <ManageCoursesContent
       canAccessCreator={canAccessCreator}
@@ -133,6 +158,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
       onEditPress={handleEditCourse}
       onEditContentPress={handleEditCourseContent}
       onDeletePress={handleDeleteCourse}
+      onDeleteCategory={handleDeleteCategory}
     />
   );
 };

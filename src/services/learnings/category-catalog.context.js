@@ -12,6 +12,7 @@ import { categoriesMock } from "./categories.mock";
 const CategoryCatalogContext = createContext({
   categories: [],
   addCategory: () => null,
+  deleteCategory: () => false,
 });
 
 const CATEGORY_CATALOG_STORAGE_KEY = "learnings-category-catalog-v1";
@@ -102,12 +103,37 @@ export const CategoryCatalogProvider = ({ children }) => {
     [categories]
   );
 
+  const deleteCategory = useCallback(
+    (categoryId) => {
+      if (!categoryId) {
+        return false;
+      }
+
+      const didExist = (categories ?? []).some(
+        (category) => String(category?.id) === String(categoryId)
+      );
+
+      if (!didExist) {
+        return false;
+      }
+
+      setCategories((previous) =>
+        (previous ?? []).filter(
+          (category) => String(category?.id) !== String(categoryId)
+        )
+      );
+      return true;
+    },
+    [categories]
+  );
+
   const value = useMemo(
     () => ({
       categories,
       addCategory,
+      deleteCategory,
     }),
-    [addCategory, categories]
+    [addCategory, categories, deleteCategory]
   );
 
   return (
