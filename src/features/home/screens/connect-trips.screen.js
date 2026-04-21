@@ -1,8 +1,9 @@
 import React from "react";
-import { FlatList, Linking } from "react-native";
+import { FlatList, Linking, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Text } from "../../../components/typography/text.component";
+import { useTripCatalog } from "../../../services/trips/trip-catalog.context";
 
 const ScreenSafeArea = styled(SafeAreaView)`
   flex: 1;
@@ -77,30 +78,9 @@ const TripLinkLabel = styled(Text)`
   font-size: 13px;
 `;
 
-const tripLinks = [
-  {
-    id: "kili-adventure",
-    title: "Climb Atop the Roof of Africa - Tanzania Adventure Trip",
-    location: "Tanzania",
-    description:
-      "Climb Mount Kilimanjaro with local guides and experience the highest peak in Africa. Includes full logistics, acclimatization days, and photo-worthy summit views.",
-    link: "https://www.joinmytrip.com/en/trips/climb-atop-the-roof-of-africa--tanzania-adventure-trip-UgpH",
-    duration: "9 days",
-    price: "$2,900",
-  },
-  {
-    id: "blue-mountains",
-    title: "Blue Mountains Wilderness Expedition",
-    location: "Australia",
-    description:
-      "Explore scenic trails, waterfalls, and ridge top views while staying in comfortable mountain lodges. Perfect for hikers and nature lovers.",
-    link: "https://www.joinmytrip.com/en/trips/blue-mountains-wilderness-expedition-example",
-    duration: "6 days",
-    price: "$1,450",
-  },
-];
-
 export const ConnectTripsScreen = () => {
+  const { trips } = useTripCatalog();
+
   const openTripLink = async (url) => {
     const supported = await Linking.canOpenURL(url).catch(() => false);
     if (supported) {
@@ -110,10 +90,18 @@ export const ConnectTripsScreen = () => {
 
   const renderTrip = ({ item }) => (
     <TripCard>
-      <TripImage source={{ uri: `https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=900&q=80` }} />
+      <TripImage
+        source={{
+          uri:
+            item.image ||
+            "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=900&q=80",
+        }}
+      />
       <TripContent>
         <TripTitle>{item.title}</TripTitle>
-        <TripDetails>{item.location} • {item.duration}</TripDetails>
+        <TripDetails>
+          {item.location} • {item.duration}
+        </TripDetails>
         <TripDescription>{item.description}</TripDescription>
         <ActionRow>
           <TripLinkLabel>Price: {item.price}</TripLinkLabel>
@@ -129,13 +117,19 @@ export const ConnectTripsScreen = () => {
     <ScreenSafeArea>
       <ScreenContainer>
         <FlatList
-          data={tripLinks}
+          data={trips}
           keyExtractor={(item) => item.id}
           renderItem={renderTrip}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 30 }}
+          contentContainerStyle={styles.listContent}
         />
       </ScreenContainer>
     </ScreenSafeArea>
   );
 };
+
+const styles = StyleSheet.create({
+  listContent: {
+    paddingBottom: 30,
+  },
+});
