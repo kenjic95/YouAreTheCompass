@@ -3,7 +3,7 @@ import { FlatList, Linking, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Text } from "../../../components/typography/text.component";
-import { useTripCatalog } from "../../../services/trips/trip-catalog.context";
+import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 
 const ScreenSafeArea = styled(SafeAreaView)`
   flex: 1;

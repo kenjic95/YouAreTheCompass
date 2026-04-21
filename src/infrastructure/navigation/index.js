@@ -5,7 +5,7 @@ import { AppNavigator } from "./app.navigator";
 import { UserProfileProvider } from "../../services/auth/user-profile.context";
 import { CourseCatalogProvider } from "../../services/learnings/course-catalog.context";
 import { CategoryCatalogProvider } from "../../services/learnings/category-catalog.context";
-import { TripCatalogProvider } from "../../services/trips/trip-catalog.context";
+import { TripCatalogProvider } from "../../services/connect-trips/trip-catalog.context";
 
 export const Navigation = () => (
   <SafeAreaProvider>
