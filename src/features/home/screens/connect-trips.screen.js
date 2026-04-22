@@ -63,7 +63,7 @@ const ActionRow = styled.View`
 `;
 
 const OpenLinkButton = styled.TouchableOpacity`
-  background-color: #3a6e97;
+  background-color: #1c5d8f;
   padding: 12px 18px;
   border-radius: 16px;
 `;
