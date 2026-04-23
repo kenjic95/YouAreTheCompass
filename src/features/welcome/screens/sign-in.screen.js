@@ -4,7 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  confirmPasswordReset,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
@@ -158,9 +157,7 @@ export const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
-  const [hasSentResetCode, setHasSentResetCode] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [hasSentResetEmail, setHasSentResetEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getSignInErrorMessage = (code) => {
@@ -226,8 +223,11 @@ export const SignInScreen = ({ navigation }) => {
 
     try {
       await sendPasswordResetEmail(auth, normalizedEmail);
-      setHasSentResetCode(true);
-      Alert.alert("Code sent", "Check your email for the password reset code.");
+      setHasSentResetEmail(true);
+      Alert.alert(
+        "Reset email sent",
+        "Check your email and open the password reset link to choose a new password."
+      );
     } catch (error) {
       if (error?.code === "auth/invalid-email") {
         Alert.alert("Reset failed", "Please enter a valid email address.");
@@ -242,90 +242,15 @@ export const SignInScreen = ({ navigation }) => {
     }
   };
 
-  const handleConfirmPasswordReset = async () => {
-    if (!isFirebaseConfigured || !auth) {
-      Alert.alert(
-        "Auth disabled",
-        "Firebase is not configured yet. Add Firebase keys in .env to enable password reset."
-      );
-      return;
-    }
-
-    const trimmedCode = verificationCode.trim();
-
-    if (!trimmedCode || !newPassword) {
-      Alert.alert(
-        "Missing fields",
-        "Please enter the verification code and your new password."
-      );
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      Alert.alert(
-        "Weak password",
-        "Your new password must be at least 6 characters."
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await confirmPasswordReset(auth, trimmedCode, newPassword);
-      Alert.alert(
-        "Password reset",
-        "Your password has been updated. You can now sign in."
-      );
-      setIsForgotPasswordMode(false);
-      setHasSentResetCode(false);
-      setVerificationCode("");
-      setNewPassword("");
-      setPassword("");
-    } catch (error) {
-      switch (error?.code) {
-        case "auth/expired-action-code":
-          Alert.alert(
-            "Code expired",
-            "That reset code has expired. Please request a new one."
-          );
-          break;
-        case "auth/invalid-action-code":
-          Alert.alert(
-            "Invalid code",
-            "That verification code is invalid. Please check the email and try again."
-          );
-          break;
-        case "auth/weak-password":
-          Alert.alert(
-            "Weak password",
-            "Your new password must be at least 6 characters."
-          );
-          break;
-        default:
-          Alert.alert(
-            "Reset failed",
-            "Unable to reset your password right now. Please try again."
-          );
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleToggleForgotPassword = () => {
     setIsForgotPasswordMode(true);
-    setHasSentResetCode(false);
-    setVerificationCode("");
-    setNewPassword("");
+    setHasSentResetEmail(false);
     setPassword("");
   };
 
   const handleBackToSignIn = () => {
     setIsForgotPasswordMode(false);
-    setHasSentResetCode(false);
-    setVerificationCode("");
-    setNewPassword("");
+    setHasSentResetEmail(false);
     setPassword("");
   };
 
@@ -342,7 +267,7 @@ export const SignInScreen = ({ navigation }) => {
 
           <FieldGroup>
             <Label>Email</Label>
-            {hasSentResetCode ? (
+            {hasSentResetEmail ? (
               <ReadOnlyInput value={email} />
             ) : (
               <Input
@@ -355,14 +280,15 @@ export const SignInScreen = ({ navigation }) => {
           </FieldGroup>
 
           {isForgotPasswordMode ? (
-            hasSentResetCode ? (
+            hasSentResetEmail ? (
               <>
                 <HelperText>
-                  Check your email and enter the code we sent in the box below.
+                  Check your email and open the password reset link we sent to
+                  choose a new password.
                 </HelperText>
 
                 <InlineRow>
-                  <InlineText>Didn&apos;t see the code? </InlineText>
+                  <InlineText>Didn&apos;t get the email? </InlineText>
                   <TextButton
                     activeOpacity={0.8}
                     onPress={handlePasswordReset}
@@ -371,30 +297,11 @@ export const SignInScreen = ({ navigation }) => {
                     <InlineLink>Re-send now</InlineLink>
                   </TextButton>
                 </InlineRow>
-
-                <FieldGroup>
-                  <Label>Verification code</Label>
-                  <Input
-                    value={verificationCode}
-                    onChangeText={setVerificationCode}
-                    autoCapitalize="none"
-                  />
-                </FieldGroup>
-
-                <FieldGroup>
-                  <Label>New Password</Label>
-                  <Input
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    secureTextEntry
-                    autoCapitalize="none"
-                  />
-                </FieldGroup>
               </>
             ) : (
               <HelperText>
                 Enter a valid email address associated with your account to
-                reset your password.
+                receive a password reset link.
               </HelperText>
             )
           ) : (
@@ -412,13 +319,7 @@ export const SignInScreen = ({ navigation }) => {
           <ButtonsSection>
             <SubmitButton
               activeOpacity={0.9}
-              onPress={
-                isForgotPasswordMode
-                  ? hasSentResetCode
-                    ? handleConfirmPasswordReset
-                    : handlePasswordReset
-                  : handleSignIn
-              }
+              onPress={isForgotPasswordMode ? handlePasswordReset : handleSignIn}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -426,9 +327,9 @@ export const SignInScreen = ({ navigation }) => {
               ) : (
                 <SubmitLabel>
                   {isForgotPasswordMode
-                    ? hasSentResetCode
-                      ? "Reset Password"
-                      : "Send Code"
+                    ? hasSentResetEmail
+                      ? "Send Again"
+                      : "Send Reset Link"
                     : "Sign In"}
                 </SubmitLabel>
               )}
