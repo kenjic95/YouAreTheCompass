@@ -58,7 +58,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
     if (!canAccessCreator) {
       Alert.alert(
         "Access denied",
-        "Only admin or teacher accounts can upload."
+        "Only admin or teacher accounts can upload.",
       );
       return;
     }
@@ -98,7 +98,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
             deleteCourse(course.id);
           },
         },
-      ]
+      ],
     );
   };
 
@@ -120,21 +120,25 @@ export const ManageCoursesScreen = ({ navigation }) => {
     if (Number(category?.count) > 0) {
       Alert.alert(
         "Category in use",
-        `You can't delete "${category.title}" while it has ${category.count} course(s).`
+        `You can't delete "${category.title}" while it has ${category.count} course(s).`,
       );
       return;
     }
 
-    Alert.alert("Delete category", `Delete "${category.title}" from filters?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          deleteCategory(category.id);
+    Alert.alert(
+      "Delete category",
+      `Delete "${category.title}" from categories?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteCategory(category.id);
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   return (
@@ -149,7 +153,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
         if (!createdCategory) {
           Alert.alert(
             "Category not added",
-            "Please use a unique category title."
+            "Please use a unique category title.",
           );
           return false;
         }
