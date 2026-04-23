@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
-import { SafeArea } from "../../../components/utility/safe-area.component";
+import { TabHeader } from "../../../components/utility/tab-header.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { Search } from "../components/search.component";
 import { AlbumInfoCard } from "../components/album-info-card.components";
@@ -12,6 +12,13 @@ import {
   fetchPodcastAlbums,
   filterAlbumsByKeyword,
 } from "../services/podcast.service";
+
+const ScreenSafeArea = styled(SafeAreaView).attrs({
+  edges: ["left", "right", "bottom"],
+})`
+  flex: 1;
+  background-color: #69aee6;
+`;
 
 const AlbumList = styled(FlatList).attrs({
   contentContainerStyle: {
@@ -45,8 +52,9 @@ export const AlbumScreen = () => {
   }, [albums, keyword]);
 
   return (
-    <SafeAreaProvider>
-      <SafeArea>
+    <>
+      <TabHeader title="Podcast" />
+      <ScreenSafeArea>
         <Search keyword={keyword} onChangeKeyword={setKeyword} />
         {isLoading ? (
           <ActivityIndicator />
@@ -81,7 +89,7 @@ export const AlbumScreen = () => {
             />
           </Spacer>
         ) : null}
-      </SafeArea>
-    </SafeAreaProvider>
+      </ScreenSafeArea>
+    </>
   );
 };
