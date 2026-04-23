@@ -8,25 +8,25 @@ import { useTripLogs } from "../../../services/triplogs/journals.context";
 
 const ScreenContainer = styled.View`
   flex: 1;
-  background-color: #ddd9d9;
-  padding: 20px;
+  background-color: #ffffff;
+  padding: 20px 20px 0px;
 `;
 
 const ScreenSafeArea = styled(SafeAreaView).attrs({
   edges: ["left", "right", "bottom"],
 })`
   flex: 1;
-  background-color: #ddd9d9;
+  background-color: #ffffff;
 `;
 
 const CreateButton = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
   background-color: #d7e6f1;
-  width: 290px;
-  padding: 18px 20px;
-  border-radius: 35px;
-  margin-top: 30px;
+  width: 250px;
+  padding: 15px 18px;
+  border-radius: 30px;
+  margin-top: 24px;
   margin-bottom: 35px;
   shadow-color: #000;
   shadow-offset: 0px 4px;
@@ -38,7 +38,7 @@ const CreateButton = styled.TouchableOpacity`
 const CreateButtonText = styled.Text`
   font-size: 18px;
   color: #3a6e97;
-  margin-left: 14px;
+  margin-left: 12px;
 `;
 
 const Title = styled.Text`
@@ -55,9 +55,9 @@ const Divider = styled.View`
 
 const JournalCard = styled.TouchableOpacity`
   background-color: ${(props) => (props.light ? "#d7e6f1" : "#97c9ef")};
-  padding: 28px 30px;
-  border-radius: 35px;
-  margin-bottom: 25px;
+  padding: 22px 24px;
+  border-radius: 20px;
+  margin-bottom: 20px;
   shadow-color: #000;
   shadow-offset: 0px 4px;
   shadow-opacity: 0.25;
@@ -66,15 +66,15 @@ const JournalCard = styled.TouchableOpacity`
 `;
 
 const JournalText = styled.Text`
-  font-size: 18px;
+  font-size: 16px;
   color: #3a6e97;
 `;
 
 const JournalDate = styled.Text`
-  font-size: 14px;
+  font-size: 13px;
   color: #3a6e97;
   opacity: 0.85;
-  margin-top: 8px;
+  margin-top: 6px;
 `;
 
 export const TripLogsScreen = ({ navigation }) => {
@@ -95,6 +95,7 @@ export const TripLogsScreen = ({ navigation }) => {
 
           <FlatList
             data={journals}
+            contentContainerStyle={{ paddingBottom: 56 }}
             keyExtractor={(item) => item.id}
             renderItem={({ item, index }) => (
               <JournalCard
