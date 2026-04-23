@@ -14,12 +14,14 @@ const HeaderContent = styled.View`
   padding-horizontal: 20px;
   border-bottom-width: 1px;
   border-bottom-color: #e8edf2;
+  align-items: center;
 `;
 
 const HeaderTitle = styled.Text`
   font-size: 18px;
   font-weight: 700;
   color: #2f2f2f;
+  text-align: center;
 `;
 
 export const TabHeader = ({ title }) => (
