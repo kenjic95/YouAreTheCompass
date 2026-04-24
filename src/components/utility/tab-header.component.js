@@ -18,7 +18,7 @@ const HeaderContent = styled.View`
 `;
 
 const HeaderTitle = styled.Text`
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #2f2f2f;
   text-align: center;

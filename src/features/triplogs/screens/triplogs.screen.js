@@ -8,7 +8,7 @@ import { useTripLogs } from "../../../services/triplogs/journals.context";
 
 const ScreenContainer = styled.View`
   flex: 1;
-  background-color: #ffffff;
+  background-color: transparent;
   padding: 20px 20px 0px;
 `;
 
@@ -16,7 +16,7 @@ const ScreenSafeArea = styled(SafeAreaView).attrs({
   edges: ["left", "right", "bottom"],
 })`
   flex: 1;
-  background-color: #ffffff;
+  background-color: transparent;
 `;
 
 const CreateButton = styled.TouchableOpacity`

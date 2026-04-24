@@ -16,7 +16,13 @@ const LearningsStack = createStackNavigator();
 export const LearningsNavigator = () => {
   return (
     <PurchasedCoursesProvider>
-      <LearningsStack.Navigator>
+      <LearningsStack.Navigator
+        screenOptions={{
+          headerTitleStyle: {
+            fontSize: 17,
+          },
+        }}
+      >
         <LearningsStack.Screen name="Create" component={LearningsScreen} />
         <LearningsStack.Screen name="Courses" component={CoursesScreen} />
         <LearningsStack.Screen name="Course" component={CoursePreviewScreen} />
