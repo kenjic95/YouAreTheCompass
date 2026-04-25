@@ -14,10 +14,11 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useEffect } from "react";
 
 import { categoriesMock } from "./categories.mock";
-import { auth, db, isFirebaseConfigured } from "../auth/firebase";
+import { auth, db, isFirebaseConfigured, storage } from "../auth/firebase";
 
 const CategoryCatalogContext = createContext({
   categories: [],
@@ -40,6 +41,38 @@ const normalizeCategory = (category = {}) => ({
   categoryTitle: String(category?.categoryTitle ?? "").trim(),
   categoryPhoto: category?.categoryPhoto || DEFAULT_CATEGORY_PHOTO,
 });
+
+const isRemoteHttpUrl = (value) => /^https?:\/\//i.test(String(value ?? ""));
+
+const getImageExtensionFromUri = (uri) => {
+  const normalized = String(uri ?? "").split("?")[0];
+  const extension = normalized.split(".").pop()?.toLowerCase();
+
+  if (!extension || extension === normalized.toLowerCase()) {
+    return "jpg";
+  }
+
+  if (extension === "jpeg") {
+    return "jpg";
+  }
+
+  return extension;
+};
+
+const getContentTypeFromExtension = (extension) => {
+  switch (extension) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "heic":
+      return "image/heic";
+    case "heif":
+      return "image/heif";
+    default:
+      return "image/jpeg";
+  }
+};
 
 const getSeedCategories = () =>
   (categoriesMock ?? []).map((category) =>
@@ -133,16 +166,39 @@ export const CategoryCatalogProvider = ({ children }) => {
         categoryTitle: normalizedTitle,
         categoryPhoto,
       });
+      const rawPhotoValue = String(nextCategory.categoryPhoto ?? "").trim();
 
       try {
+        let persistedCategoryPhoto = nextCategory.categoryPhoto;
+
+        if (rawPhotoValue && !isRemoteHttpUrl(rawPhotoValue)) {
+          if (!storage) {
+            return null;
+          }
+
+          const extension = getImageExtensionFromUri(rawPhotoValue);
+          const filePath = `categories/${auth.currentUser.uid}/${nextCategoryId}.${extension}`;
+          const storageRef = ref(storage, filePath);
+          const response = await fetch(rawPhotoValue);
+          const blob = await response.blob();
+
+          await uploadBytes(storageRef, blob, {
+            contentType: getContentTypeFromExtension(extension),
+          });
+          persistedCategoryPhoto = await getDownloadURL(storageRef);
+        }
+
         await setDoc(doc(db, "categories", nextCategoryId), {
           categoryTitle: nextCategory.categoryTitle,
-          categoryPhoto: nextCategory.categoryPhoto,
+          categoryPhoto: persistedCategoryPhoto,
           createdBy: auth.currentUser.uid,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        return nextCategory;
+        return {
+          ...nextCategory,
+          categoryPhoto: persistedCategoryPhoto,
+        };
       } catch (error) {
         console.warn("Unable to create Firestore category.", {
           code: error?.code,

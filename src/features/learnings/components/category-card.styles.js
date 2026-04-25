@@ -1,20 +1,17 @@
 import styled from "styled-components/native";
-import { Card } from "react-native-paper";
 
-export const CategoryCard = styled(Card)`
+export const CategoryCard = styled.TouchableOpacity`
   position: relative;
   aspect-ratio: 1;
+  min-height: 160px;
   border-radius: 20px;
   overflow: hidden;
   background-color: ${(props) => props.theme.colors.ui.quaternary};
 `;
 
 export const CategoryCardCover = styled.Image`
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: ${(props) => props.theme.space[4]};
+  width: 100%;
+  height: 100%;
   background-color: ${(props) => props.theme.colors.ui.quaternary};
 `;
 
