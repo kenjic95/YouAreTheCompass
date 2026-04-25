@@ -93,7 +93,6 @@ export const ManageCoursesContent = ({
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
       quality: 1,
     });
 
@@ -106,12 +105,8 @@ export const ManageCoursesContent = ({
       return;
     }
 
-    const resolvedImageUri = asset?.base64
-      ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`
-      : asset.uri;
-
     setNewCategoryPhoto({
-      uri: resolvedImageUri,
+      uri: asset.uri,
       name: asset.fileName || asset.name || "Selected category photo",
     });
   };
@@ -230,8 +225,8 @@ export const ManageCoursesContent = ({
               />
               <AddCategoryAction
                 activeOpacity={0.85}
-                onPress={() => {
-                  const didAdd = onAddCategory?.(
+                onPress={async () => {
+                  const didAdd = await onAddCategory?.(
                     newCategoryTitle,
                     newCategoryPhoto?.uri
                   );

@@ -247,7 +247,7 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     }
   }, [areControlsVisible, isLoaded, isPlaying, scheduleAutoHide, showControls]);
 
-  const markCurrentContentViewed = async () => {
+  const markCurrentContentViewed = useCallback(async () => {
     const courseId = course?.id;
     const contentId = contentItem?.contentId;
     if (!courseId || !contentId) {
@@ -272,7 +272,7 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     } catch {
       // Ignore persistence errors in player controls.
     }
-  };
+  }, [contentItem?.contentId, course?.id]);
 
   const goToNextContent = useCallback(async () => {
     await markCurrentContentViewed();
@@ -306,7 +306,7 @@ export const CourseVideoPlayerScreen = ({ route }) => {
     }
 
     navigation.goBack();
-  }, [contentItem?.contentId, course, navigation]);
+  }, [contentItem?.contentId, course, markCurrentContentViewed, navigation]);
 
   useEffect(() => {
     hasAutoAdvancedRef.current = false;
@@ -344,9 +344,13 @@ export const CourseVideoPlayerScreen = ({ route }) => {
         };
       });
 
-      updateCourse(courseId, {
-        courseContent: nextCourseContent,
-      });
+      updateCourse(
+        courseId,
+        {
+          courseContent: nextCourseContent,
+        },
+        { persist: false }
+      );
     },
     [
       contentItem?.contentDuration,

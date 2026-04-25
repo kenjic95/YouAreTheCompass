@@ -1,18 +1,28 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
+
 import { coursesMock } from "./course-content.mock";
+import { auth, db, isFirebaseConfigured } from "../auth/firebase";
 
 const CourseCatalogContext = createContext({
   courses: [],
-  addCourse: () => null,
-  updateCourse: () => null,
-  deleteCourse: () => false,
+  addCourse: async () => null,
+  updateCourse: async () => null,
+  deleteCourse: async () => false,
 });
 
 const normalizeIdPart = (value) =>
@@ -22,117 +32,218 @@ const normalizeIdPart = (value) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const COURSE_CATALOG_STORAGE_KEY = "learnings-course-catalog-v1";
+const DEFAULT_COURSE_PHOTO =
+  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80";
+
+const normalizeCourse = (course = {}) => ({
+  ...course,
+  id: String(course?.id ?? ""),
+  categoryId: String(course?.categoryId ?? ""),
+  categoryTitle: String(course?.categoryTitle ?? "").trim(),
+  courseTitle: String(course?.courseTitle ?? "").trim(),
+  author: String(course?.author ?? "Course Creator").trim(),
+  priceValue: String(course?.priceValue ?? "$0").trim(),
+  coursePhoto: course?.coursePhoto || course?.photoUrl || DEFAULT_COURSE_PHOTO,
+  ownerId: String(course?.ownerId ?? ""),
+  courseContent: Array.isArray(course?.courseContent)
+    ? course.courseContent
+    : [],
+});
+
+const getSeedCourses = () =>
+  (coursesMock ?? []).map((course) =>
+    normalizeCourse({
+      ...course,
+      id: String(course?.id ?? ""),
+      categoryId: String(course?.categoryId ?? ""),
+    })
+  );
+
+const sortCourses = (courseList = []) =>
+  [...courseList].sort((a, b) => {
+    const aTitle = String(a?.courseTitle ?? "").toLowerCase();
+    const bTitle = String(b?.courseTitle ?? "").toLowerCase();
+    return aTitle.localeCompare(bTitle);
+  });
 
 export const CourseCatalogProvider = ({ children }) => {
-  const [courses, setCourses] = useState(coursesMock);
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const [courses, setCourses] = useState(getSeedCourses());
 
   useEffect(() => {
-    let isActive = true;
-
-    const loadPersistedCourses = async () => {
-      try {
-        const storedValue = await AsyncStorage.getItem(
-          COURSE_CATALOG_STORAGE_KEY
-        );
-        if (!storedValue) {
-          return;
-        }
-
-        const parsedCourses = JSON.parse(storedValue);
-        if (!Array.isArray(parsedCourses)) {
-          return;
-        }
-
-        if (isActive) {
-          setCourses(parsedCourses);
-        }
-      } catch {
-        // no-op: fallback to mock data
-      } finally {
-        if (isActive) {
-          setHasHydrated(true);
-        }
-      }
-    };
-
-    loadPersistedCourses();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hasHydrated) {
-      return;
+    if (!isFirebaseConfigured || !db) {
+      setCourses(getSeedCourses());
+      return undefined;
     }
 
-    AsyncStorage.setItem(
-      COURSE_CATALOG_STORAGE_KEY,
-      JSON.stringify(courses)
-    ).catch(() => {});
-  }, [courses, hasHydrated]);
+    const unsubscribe = onSnapshot(
+      collection(db, "courses"),
+      (snapshot) => {
+        const mappedCourses = snapshot.docs
+          .map((document) =>
+            normalizeCourse({
+              id: document.id,
+              ...document.data(),
+            })
+          )
+          .filter(
+            (course) => course.id && course.courseTitle && course.categoryId
+          );
 
-  const addCourse = (courseDraft) => {
+        setCourses(sortCourses(mappedCourses));
+      },
+      (error) => {
+        console.warn("Unable to subscribe to Firestore courses.", {
+          code: error?.code,
+          message: error?.message,
+        });
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  const addCourse = useCallback(async (courseDraft) => {
     if (!courseDraft?.courseTitle || !courseDraft?.categoryId) {
       return null;
     }
 
     const idBase = normalizeIdPart(courseDraft.courseTitle) || "new-course";
     const nextId = `${idBase}-${Date.now()}`;
-    const newCourse = {
+    const newCourse = normalizeCourse({
       ...courseDraft,
       id: nextId,
-    };
+      categoryId: String(courseDraft?.categoryId ?? ""),
+    });
 
-    setCourses((previous) => [newCourse, ...previous]);
-    return newCourse;
-  };
+    if (!isFirebaseConfigured || !db) {
+      setCourses((previous) => sortCourses([newCourse, ...previous]));
+      return newCourse;
+    }
 
-  const updateCourse = (courseId, updates) => {
-    if (!courseId || !updates) {
+    if (!auth?.currentUser?.uid) {
       return null;
     }
 
-    let updatedCourse = null;
-    setCourses((previous) =>
-      previous.map((course) => {
-        if (course?.id !== courseId) {
-          return course;
-        }
-
-        updatedCourse = {
-          ...course,
-          ...updates,
-        };
-        return updatedCourse;
-      })
-    );
-
-    return updatedCourse;
-  };
-
-  const deleteCourse = (courseId) => {
-    if (!courseId) {
-      return false;
-    }
-
-    let didDelete = false;
-    setCourses((previous) => {
-      const nextCourses = previous.filter((course) => {
-        const shouldKeep = course?.id !== courseId;
-        if (!shouldKeep) {
-          didDelete = true;
-        }
-        return shouldKeep;
+    try {
+      await setDoc(doc(db, "courses", nextId), {
+        ...newCourse,
+        createdBy: auth.currentUser.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
-      return nextCourses;
-    });
+      return newCourse;
+    } catch (error) {
+      console.warn("Unable to create Firestore course.", {
+        code: error?.code,
+        message: error?.message,
+      });
+      return null;
+    }
+  }, []);
 
-    return didDelete;
-  };
+  const updateCourse = useCallback(
+    async (courseId, updates, options = {}) => {
+      if (!courseId || !updates) {
+        return null;
+      }
+
+      const normalizedCourseId = String(courseId);
+      const previousCourse = (courses ?? []).find(
+        (course) => String(course?.id) === normalizedCourseId
+      );
+
+      if (!previousCourse) {
+        return null;
+      }
+
+      const updatedCourse = normalizeCourse({
+        ...previousCourse,
+        ...updates,
+        id: normalizedCourseId,
+      });
+
+      const shouldPersist = options?.persist !== false;
+
+      setCourses((previous) =>
+        sortCourses(
+          previous.map((course) =>
+            String(course?.id) === normalizedCourseId ? updatedCourse : course
+          )
+        )
+      );
+
+      if (!shouldPersist) {
+        return updatedCourse;
+      }
+
+      if (!isFirebaseConfigured || !db) {
+        return updatedCourse;
+      }
+
+      if (!auth?.currentUser?.uid) {
+        return null;
+      }
+
+      try {
+        await setDoc(
+          doc(db, "courses", normalizedCourseId),
+          {
+            ...updatedCourse,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+        return updatedCourse;
+      } catch (error) {
+        console.warn("Unable to update Firestore course.", {
+          code: error?.code,
+          message: error?.message,
+        });
+        return null;
+      }
+    },
+    [courses]
+  );
+
+  const deleteCourse = useCallback(
+    async (courseId) => {
+      if (!courseId) {
+        return false;
+      }
+
+      const normalizedCourseId = String(courseId);
+      const didExist = (courses ?? []).some(
+        (course) => String(course?.id) === normalizedCourseId
+      );
+
+      if (!didExist) {
+        return false;
+      }
+
+      if (!isFirebaseConfigured || !db) {
+        setCourses((previous) =>
+          previous.filter((course) => String(course?.id) !== normalizedCourseId)
+        );
+        return true;
+      }
+
+      if (!auth?.currentUser?.uid) {
+        return false;
+      }
+
+      try {
+        await deleteDoc(doc(db, "courses", normalizedCourseId));
+        return true;
+      } catch (error) {
+        console.warn("Unable to delete Firestore course.", {
+          code: error?.code,
+          message: error?.message,
+        });
+        return false;
+      }
+    },
+    [courses]
+  );
 
   const value = useMemo(
     () => ({
@@ -141,7 +252,7 @@ export const CourseCatalogProvider = ({ children }) => {
       updateCourse,
       deleteCourse,
     }),
-    [courses]
+    [addCourse, courses, deleteCourse, updateCourse]
   );
 
   return (

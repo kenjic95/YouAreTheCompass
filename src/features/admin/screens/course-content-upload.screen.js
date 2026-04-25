@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Alert } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { CourseContentUploadForm } from "../components/course-content-upload-form.component";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
@@ -181,7 +180,6 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
       quality: 1,
     });
 
@@ -194,13 +192,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       return;
     }
 
-    const resolvedImageUri = asset?.base64
-      ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`
-      : asset.uri;
-
     setSelectedAsset({
       kind: "image",
-      uri: resolvedImageUri,
+      uri: asset.uri,
       name: getAssetName(asset, `image-${Date.now()}.jpg`),
       mimeType: asset.mimeType || "image/jpeg",
     });
@@ -222,23 +216,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       return;
     }
 
-    let resolvedPdfUri = asset.uri;
-    try {
-      const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      if (base64) {
-        resolvedPdfUri = `data:${
-          asset.mimeType || "application/pdf"
-        };base64,${base64}`;
-      }
-    } catch {
-      // Fallback to file URI when base64 conversion is unavailable.
-    }
-
     setSelectedAsset({
       kind: "pdf",
-      uri: resolvedPdfUri,
+      uri: asset.uri,
       name: getAssetName(asset, `document-${Date.now()}.pdf`),
       mimeType: asset.mimeType || "application/pdf",
     });
@@ -334,7 +314,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
     setSelectedAsset(null);
   };
 
-  const handleUploadCourse = () => {
+  const handleUploadCourse = async () => {
     if (isEditMode && !courseToEdit?.id) {
       Alert.alert(
         "Course not found",
@@ -374,7 +354,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
     });
 
     if (isEditMode) {
-      const updatedCourse = updateCourse(courseToEdit.id, {
+      const updatedCourse = await updateCourse(courseToEdit.id, {
         courseContent: mappedCourseContent,
         courseDuration: `${mappedCourseContent.length} parts`,
       });
@@ -389,8 +369,8 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       return;
     }
 
-    const createdCourse = addCourse({
-      categoryId,
+    const createdCourse = await addCourse({
+      categoryId: String(categoryId),
       courseTitle: normalizedCourseTitle,
       author:
         profile?.displayName?.trim() ||
@@ -413,7 +393,10 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
     });
 
     if (!createdCourse) {
-      Alert.alert("Upload failed", "Unable to create course right now.");
+      Alert.alert(
+        "Upload failed",
+        "Unable to create course right now. Please check Firestore rules and try again."
+      );
       return;
     }
 

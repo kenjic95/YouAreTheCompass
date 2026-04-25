@@ -5,14 +5,18 @@ import { CreateCourseForm } from "../components/create-course-form.component";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 
-const normalizePriceInput = (value) => String(value ?? "").replace(/[^0-9.]/g, "");
+const normalizePriceInput = (value) =>
+  String(value ?? "").replace(/[^0-9.]/g, "");
 
 export const CreateCourseScreen = ({ navigation, route }) => {
   const { categories } = useCategoryCatalog();
   const { courses, updateCourse } = useCourseCatalog();
   const editCourseId = route?.params?.editCourseId;
   const courseToEdit = useMemo(
-    () => (editCourseId ? courses.find((course) => course?.id === editCourseId) : null),
+    () =>
+      editCourseId
+        ? courses.find((course) => course?.id === editCourseId)
+        : null,
     [courses, editCourseId]
   );
   const isEditMode = Boolean(courseToEdit?.id);
@@ -41,7 +45,9 @@ export const CreateCourseScreen = ({ navigation, route }) => {
       [...(courses ?? [])]
         .filter((course) => course?.id !== courseToEdit?.id)
         .sort((a, b) =>
-          String(a?.courseTitle ?? "").localeCompare(String(b?.courseTitle ?? ""))
+          String(a?.courseTitle ?? "").localeCompare(
+            String(b?.courseTitle ?? "")
+          )
         ),
     [courses, courseToEdit]
   );
@@ -62,11 +68,16 @@ export const CreateCourseScreen = ({ navigation, route }) => {
     setTitle(courseToEdit?.courseTitle ?? "");
     setSelectedCategory(matchedCategory ?? null);
     setOriginalPrice(
-      normalizePriceInput(courseToEdit?.priceNumber ?? courseToEdit?.priceValue ?? "")
+      normalizePriceInput(
+        courseToEdit?.priceNumber ?? courseToEdit?.priceValue ?? ""
+      )
     );
     setCoursePhoto(
       courseToEdit?.photoUrl
-        ? { uri: courseToEdit.photoUrl, name: courseToEdit.photoName || "Course photo" }
+        ? {
+            uri: courseToEdit.photoUrl,
+            name: courseToEdit.photoName || "Course photo",
+          }
         : null
     );
     if (courseToEdit?.isFoundationCourse) {
@@ -92,7 +103,6 @@ export const CreateCourseScreen = ({ navigation, route }) => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
       quality: 1,
     });
 
@@ -105,17 +115,13 @@ export const CreateCourseScreen = ({ navigation, route }) => {
       return;
     }
 
-    const resolvedImageUri = asset?.base64
-      ? `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`
-      : asset.uri;
-
     setCoursePhoto({
-      uri: resolvedImageUri,
+      uri: asset.uri,
       name: asset.fileName || asset.name || `course-photo-${Date.now()}.jpg`,
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const normalizedTitle = title.trim();
     const normalizedPrice = originalPrice.trim();
 
@@ -133,21 +139,25 @@ export const CreateCourseScreen = ({ navigation, route }) => {
     }
 
     if (isEditMode) {
-      const updatedCourse = updateCourse(courseToEdit.id, {
+      const updatedCourse = await updateCourse(courseToEdit.id, {
         courseTitle: normalizedTitle,
         categoryId: selectedCategory.id,
         categoryTitle: selectedCategory.categoryTitle,
         priceValue: `$${normalizedPrice}`,
         priceNumber: Number(normalizedPrice),
-        photoUrl: coursePhoto?.uri ?? "",
-        photoName: coursePhoto?.name ?? "",
+        photoUrl: coursePhoto?.uri ?? courseToEdit?.photoUrl ?? "",
+        photoName: coursePhoto?.name ?? courseToEdit?.photoName ?? "",
+        coursePhoto: coursePhoto?.uri ?? courseToEdit?.coursePhoto ?? "",
         isFoundationCourse: courseType === "foundation",
         prerequisiteCourseId:
           courseType === "prerequisite" ? selectedPrerequisiteCourse?.id : null,
       });
 
       if (!updatedCourse) {
-        Alert.alert("Update failed", "Course could not be updated.");
+        Alert.alert(
+          "Update failed",
+          "Course could not be updated. Please check Firestore rules and try again."
+        );
         return;
       }
 

@@ -9,7 +9,7 @@ export const CategoryCard = styled(Card)`
   background-color: ${(props) => props.theme.colors.ui.quaternary};
 `;
 
-export const CategoryCardCover = styled(Card.Cover)`
+export const CategoryCardCover = styled.Image`
   position: absolute;
   left: 0;
   right: 0;

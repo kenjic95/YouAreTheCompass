@@ -95,8 +95,14 @@ export const ManageCoursesScreen = ({ navigation }) => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            deleteCourse(course.id);
+          onPress: async () => {
+            const didDelete = await deleteCourse(course.id);
+            if (!didDelete) {
+              Alert.alert(
+                "Delete failed",
+                "Unable to delete this course right now."
+              );
+            }
           },
         },
       ]
@@ -134,8 +140,14 @@ export const ManageCoursesScreen = ({ navigation }) => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            deleteCategory(category.id);
+          onPress: async () => {
+            const didDelete = await deleteCategory(category.id);
+            if (!didDelete) {
+              Alert.alert(
+                "Delete failed",
+                "Unable to delete this category right now."
+              );
+            }
           },
         },
       ]
@@ -150,7 +162,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
       visibleCourses={visibleCourses}
       categoryGroups={categoryGroups}
       onUploadPress={handleUploadPress}
-      onAddCategory={(title, photoUri) => {
+      onAddCategory={async (title, photoUri) => {
         if (!canManageCategories) {
           Alert.alert(
             "Access denied",
@@ -158,11 +170,11 @@ export const ManageCoursesScreen = ({ navigation }) => {
           );
           return false;
         }
-        const createdCategory = addCategory(title, photoUri);
+        const createdCategory = await addCategory(title, photoUri);
         if (!createdCategory) {
           Alert.alert(
             "Category not added",
-            "Please use a unique category title."
+            "Unable to create category. It may already exist or your Firestore rules blocked this action."
           );
           return false;
         }
