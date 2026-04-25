@@ -31,6 +31,7 @@ import {
 
 export const ManageCoursesContent = ({
   canAccessCreator,
+  canManageCategories,
   emptyMessage,
   visibleCourses,
   categoryGroups,
@@ -137,12 +138,14 @@ export const ManageCoursesContent = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryListContent}
         >
-          <AddCategoryChip
-            activeOpacity={0.85}
-            onPress={() => setIsAddingCategory((previous) => !previous)}
-          >
-            <AddCategoryChipText>+</AddCategoryChipText>
-          </AddCategoryChip>
+          {canManageCategories ? (
+            <AddCategoryChip
+              activeOpacity={0.85}
+              onPress={() => setIsAddingCategory((previous) => !previous)}
+            >
+              <AddCategoryChipText>+</AddCategoryChipText>
+            </AddCategoryChip>
+          ) : null}
           <CategoryChip
             activeOpacity={0.85}
             isActive={selectedCategoryId === "all"}
@@ -164,9 +167,14 @@ export const ManageCoursesContent = ({
               <CategoryChip
                 key={String(category.id)}
                 activeOpacity={0.85}
-                disabled={isDeleteArmed}
+                disabled={canManageCategories && isDeleteArmed}
                 isActive={isActive}
-                onLongPress={() => setDeleteArmedCategoryId(category.id)}
+                onLongPress={() => {
+                  if (!canManageCategories) {
+                    return;
+                  }
+                  setDeleteArmedCategoryId(category.id);
+                }}
                 onPress={() => {
                   setDeleteArmedCategoryId(null);
                   setSelectedCategoryId(category.id);
@@ -175,7 +183,7 @@ export const ManageCoursesContent = ({
                 <CategoryChipText isActive={isActive}>
                   {category.title} ({category.count})
                 </CategoryChipText>
-                {isDeleteArmed ? (
+                {canManageCategories && isDeleteArmed ? (
                   <CategoryDeleteButton
                     activeOpacity={0.85}
                     isActive={isActive}
@@ -194,7 +202,7 @@ export const ManageCoursesContent = ({
           })}
         </ScrollView>
 
-        {isAddingCategory ? (
+        {canManageCategories && isAddingCategory ? (
           <>
             <AddCategoryPhotoButton
               activeOpacity={0.85}

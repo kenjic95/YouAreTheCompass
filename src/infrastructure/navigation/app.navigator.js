@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -28,18 +28,57 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.bg.primary,
   },
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.bg.primary,
+    paddingHorizontal: 24,
+  },
+  errorTitle: {
+    color: colors.text.primary,
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  errorMessage: {
+    color: colors.text.primary,
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
+  },
 });
 
 export const AppNavigator = () => {
-  const { hasAuthenticatedUser, isCreator, isLoading } = useUserProfile();
+  const { hasAuthenticatedUser, isCreator, isLoading, role, profileError } =
+    useUserProfile();
   const shouldTreatAsAuthenticated =
     DEV_FORCE_AUTH_USER || hasAuthenticatedUser;
-  const shouldShowCreatorUI = DEV_FORCE_CREATOR_UI || isCreator;
+  const normalizedRole = String(role ?? "").toLowerCase();
+  const shouldShowCreatorUI =
+    DEV_FORCE_CREATOR_UI ||
+    isCreator ||
+    normalizedRole === "admin" ||
+    normalizedRole === "teacher";
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.brand.primary} />
+      </View>
+    );
+  }
+
+  if (shouldTreatAsAuthenticated && profileError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Unable to Load Account Role</Text>
+        <Text style={styles.errorMessage}>
+          Firestore blocked reading your user profile. Check Firestore rules for
+          `users/{"{uid}"}` and allow authenticated users to read their own
+          document.
+        </Text>
       </View>
     );
   }

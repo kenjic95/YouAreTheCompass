@@ -35,6 +35,7 @@ const UserProfileContext = createContext({
   profile: DEFAULT_PROFILE,
   hasAuthenticatedUser: false,
   isLoading: true,
+  profileError: null,
   role: DEFAULT_PROFILE.role,
   plan: DEFAULT_PROFILE.plan,
   discountPercent: DEFAULT_PROFILE.discountPercent,
@@ -46,12 +47,14 @@ export const UserProfileProvider = ({ children }) => {
   const [authUser, setAuthUser] = useState(null);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [isLoading, setIsLoading] = useState(true);
+  const [profileError, setProfileError] = useState(null);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth || !db) {
       setAuthUser(null);
       setProfile(DEFAULT_PROFILE);
       setIsLoading(false);
+      setProfileError(null);
       return undefined;
     }
 
@@ -68,6 +71,7 @@ export const UserProfileProvider = ({ children }) => {
       if (!user?.uid) {
         setProfile(DEFAULT_PROFILE);
         setIsLoading(false);
+        setProfileError(null);
         return;
       }
 
@@ -79,6 +83,7 @@ export const UserProfileProvider = ({ children }) => {
         photoURL: getPhotoURL(user),
       });
       setIsLoading(false);
+      setProfileError(null);
 
       unsubscribeProfile = onSnapshot(
         doc(db, "users", user.uid),
@@ -93,8 +98,14 @@ export const UserProfileProvider = ({ children }) => {
             photoURL: getPhotoURL(user, data),
           });
           setIsLoading(false);
+          setProfileError(null);
         },
-        () => {
+        (error) => {
+          setProfileError(error?.code || "profile-read-failed");
+          console.warn("Unable to read user profile from Firestore.", {
+            code: error?.code,
+            message: error?.message,
+          });
           setProfile({
             ...DEFAULT_PROFILE,
             uid: user.uid,
@@ -134,13 +145,14 @@ export const UserProfileProvider = ({ children }) => {
       profile,
       hasAuthenticatedUser,
       isLoading,
+      profileError,
       role: normalizedRole,
       plan: normalizedPlan,
       discountPercent,
       isCreator,
       isPremium,
     };
-  }, [authUser, profile, isLoading]);
+  }, [authUser, profile, isLoading, profileError]);
 
   return (
     <UserProfileContext.Provider value={value}>

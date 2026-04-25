@@ -16,6 +16,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
   const { authUser, role, isCreator } = useUserProfile();
   const currentUserId = authUser?.uid;
   const canAccessCreator = DEV_FORCE_CREATOR_UI || isCreator;
+  const canManageCategories = DEV_FORCE_CREATOR_UI || role === "admin";
 
   const visibleCourses = useMemo(() => {
     if (DEV_FORCE_CREATOR_UI) {
@@ -58,7 +59,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
     if (!canAccessCreator) {
       Alert.alert(
         "Access denied",
-        "Only admin or teacher accounts can upload.",
+        "Only admin or teacher accounts can upload."
       );
       return;
     }
@@ -98,7 +99,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
             deleteCourse(course.id);
           },
         },
-      ],
+      ]
     );
   };
 
@@ -120,7 +121,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
     if (Number(category?.count) > 0) {
       Alert.alert(
         "Category in use",
-        `You can't delete "${category.title}" while it has ${category.count} course(s).`,
+        `You can't delete "${category.title}" while it has ${category.count} course(s).`
       );
       return;
     }
@@ -137,23 +138,31 @@ export const ManageCoursesScreen = ({ navigation }) => {
             deleteCategory(category.id);
           },
         },
-      ],
+      ]
     );
   };
 
   return (
     <ManageCoursesContent
       canAccessCreator={canAccessCreator}
+      canManageCategories={canManageCategories}
       emptyMessage={emptyMessage}
       visibleCourses={visibleCourses}
       categoryGroups={categoryGroups}
       onUploadPress={handleUploadPress}
       onAddCategory={(title, photoUri) => {
+        if (!canManageCategories) {
+          Alert.alert(
+            "Access denied",
+            "Only admin accounts can add categories."
+          );
+          return false;
+        }
         const createdCategory = addCategory(title, photoUri);
         if (!createdCategory) {
           Alert.alert(
             "Category not added",
-            "Please use a unique category title.",
+            "Please use a unique category title."
           );
           return false;
         }
@@ -162,7 +171,16 @@ export const ManageCoursesScreen = ({ navigation }) => {
       onEditPress={handleEditCourse}
       onEditContentPress={handleEditCourseContent}
       onDeletePress={handleDeleteCourse}
-      onDeleteCategory={handleDeleteCategory}
+      onDeleteCategory={(category) => {
+        if (!canManageCategories) {
+          Alert.alert(
+            "Access denied",
+            "Only admin accounts can delete categories."
+          );
+          return;
+        }
+        handleDeleteCategory(category);
+      }}
     />
   );
 };
