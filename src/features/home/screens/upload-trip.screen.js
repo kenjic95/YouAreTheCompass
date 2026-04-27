@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Alert, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import styled from "styled-components/native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 
@@ -25,15 +26,16 @@ const Header = styled.View`
 
 const BackButton = styled.TouchableOpacity`
   position: absolute;
-  left: 14px;
+  left: 2px;
   padding-vertical: 14px;
-  padding-horizontal: 16px;
+  padding-horizontal: 10px;
 `;
 
-const BackText = styled.Text`
-  font-size: 28px;
+const BackIcon = styled(MaterialIcons).attrs({
+  name: "chevron-left",
+  size: 42,
+})`
   color: #2b4f73;
-  font-weight: 600;
 `;
 
 const HeaderTitle = styled.Text`
@@ -227,7 +229,7 @@ export const UploadTripScreen = ({ navigation, route }) => {
     <Screen>
       <Header>
         <BackButton onPress={() => navigation.goBack()}>
-          <BackText>{"<"}</BackText>
+          <BackIcon />
         </BackButton>
         <HeaderTitle>
           {editingTrip?.id ? "Edit Trip" : "Upload New Trip"}

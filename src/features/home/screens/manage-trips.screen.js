@@ -1,6 +1,7 @@
 import React from "react";
 import { Alert, FlatList } from "react-native";
 import styled from "styled-components/native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 
@@ -24,15 +25,16 @@ const Header = styled.View`
 
 const BackButton = styled.TouchableOpacity`
   position: absolute;
-  left: 14px;
+  left: 2px;
   padding-vertical: 14px;
-  padding-horizontal: 16px;
+  padding-horizontal: 10px;
 `;
 
-const BackText = styled.Text`
-  font-size: 28px;
+const BackIcon = styled(MaterialIcons).attrs({
+  name: "chevron-left",
+  size: 42,
+})`
   color: #2b4f73;
-  font-weight: 600;
 `;
 
 const HeaderTitle = styled.Text`
@@ -157,7 +159,7 @@ export const ManageTripsScreen = ({ navigation }) => {
     <Screen>
       <Header>
         <BackButton onPress={() => navigation.goBack()}>
-          <BackText>{"<"}</BackText>
+          <BackIcon />
         </BackButton>
         <HeaderTitle>Manage Trips</HeaderTitle>
       </Header>
