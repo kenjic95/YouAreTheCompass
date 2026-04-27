@@ -52,12 +52,12 @@ export const HomeListHeader = () => (
   </WelcomeContainer>
 );
 
-export const HomeInfoCard = ({ home, navigation }) => {
+export const HomeInfoCard = ({ home, navigation, canManageTrips = false }) => {
   const { id, name, photos, link, appLink } = home;
 
   const handlePress = async () => {
     if (id === "connect") {
-      navigation.navigate("ConnectTrips");
+      navigation.navigate(canManageTrips ? "ManageTrips" : "ConnectTrips");
       return;
     }
 
