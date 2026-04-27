@@ -10,35 +10,37 @@ const Screen = styled.SafeAreaView`
 `;
 
 const Header = styled.View`
-  min-height: 62px;
+  min-height: 88px;
   border-bottom-width: 1px;
   border-bottom-color: #cfe3f4;
   background-color: #ffffff;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding-top: 14px;
-  padding-bottom: 8px;
+  padding-top: 28px;
+  padding-bottom: 0px;
   padding-horizontal: 14px;
 `;
 
 const BackButton = styled.TouchableOpacity`
   position: absolute;
   left: 14px;
-  padding-vertical: 8px;
-  padding-horizontal: 6px;
+  padding-vertical: 14px;
+  padding-horizontal: 16px;
 `;
 
 const BackText = styled.Text`
-  font-size: 16px;
+  font-size: 28px;
   color: #2b4f73;
   font-weight: 600;
 `;
 
 const HeaderTitle = styled.Text`
-  font-size: 30px;
+  font-size: 26px;
+  line-height: 26px;
   color: #163f60;
   font-weight: 700;
+  text-align: center;
 `;
 
 const UploadAction = styled.TouchableOpacity`
