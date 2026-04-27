@@ -90,13 +90,6 @@ const UploadPhotoText = styled.Text`
   font-weight: 600;
 `;
 
-const PhotoPreview = styled.Image`
-  margin-top: 10px;
-  width: 100%;
-  height: 170px;
-  border-radius: 12px;
-`;
-
 const DateRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
@@ -244,7 +237,6 @@ export const UploadTripScreen = ({ navigation, route }) => {
         <UploadPhotoButton onPress={pickImage}>
           <UploadPhotoText>Upload Trip Photo</UploadPhotoText>
         </UploadPhotoButton>
-        <PhotoPreview source={{ uri: image || defaultImage }} />
 
         <Label>Short Description</Label>
         <MultilineInput
