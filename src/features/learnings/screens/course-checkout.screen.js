@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import { Alert } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useTheme } from "styled-components/native";
 import { CourseCheckoutContent } from "../components/course-checkout.components";
@@ -34,8 +35,16 @@ export const CourseCheckoutScreen = ({ route }) => {
     ? `Premium discount (${discountPercent}%)`
     : null;
 
-  const handlePlaceOrder = () => {
-    addPurchasedCourse(course);
+  const handlePlaceOrder = async () => {
+    const didPurchase = await addPurchasedCourse(course);
+    if (!didPurchase) {
+      Alert.alert(
+        "Purchase failed",
+        "Unable to create enrollment right now. Please try again."
+      );
+      return;
+    }
+
     navigation.navigate("Courses", {
       category: selectedCategory,
     });

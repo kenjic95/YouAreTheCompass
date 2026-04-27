@@ -33,9 +33,17 @@ const toBooleanFlag = (value) =>
   String(value ?? "")
     .trim()
     .toLowerCase() === "true";
-const DEV_USE_MOCK_COURSES_DEFAULT =
-  toBooleanFlag(expoExtra.devUseMockCourses) ||
-  toBooleanFlag(process.env.EXPO_PUBLIC_DEV_USE_MOCK_COURSES);
+const envMockCoursesValue = String(
+  process.env.EXPO_PUBLIC_DEV_USE_MOCK_COURSES ?? ""
+)
+  .trim()
+  .toLowerCase();
+const hasExplicitEnvMockCoursesFlag =
+  envMockCoursesValue === "true" || envMockCoursesValue === "false";
+const DEV_USE_MOCK_COURSES_DEFAULT = hasExplicitEnvMockCoursesFlag
+  ? envMockCoursesValue === "true"
+  : toBooleanFlag(expoExtra.devUseMockCourses) ||
+    toBooleanFlag(process.env.EXPO_PUBLIC_DEV_USE_MOCK_COURSES);
 const DEV_USE_MOCK_COURSES_KEY = "dev-use-mock-courses";
 
 const normalizeIdPart = (value) =>
@@ -51,15 +59,25 @@ const DEFAULT_COURSE_PHOTO =
 const normalizeCourse = (course = {}) => ({
   ...course,
   id: String(course?.id ?? ""),
-  categoryId: String(course?.categoryId ?? ""),
-  categoryTitle: String(course?.categoryTitle ?? "").trim(),
-  courseTitle: String(course?.courseTitle ?? "").trim(),
+  categoryId: String(
+    course?.categoryId ??
+      course?.categoryID ??
+      course?.category?.id ??
+      course?.category ??
+      ""
+  ).trim(),
+  categoryTitle: String(
+    course?.categoryTitle ?? course?.categoryName ?? ""
+  ).trim(),
+  courseTitle: String(course?.courseTitle ?? course?.title ?? "").trim(),
   author: String(course?.author ?? "Course Creator").trim(),
-  priceValue: String(course?.priceValue ?? "$0").trim(),
+  priceValue: String(course?.priceValue ?? course?.price ?? "$0").trim(),
   coursePhoto: course?.coursePhoto || course?.photoUrl || DEFAULT_COURSE_PHOTO,
-  ownerId: String(course?.ownerId ?? ""),
+  ownerId: String(course?.ownerId ?? course?.createdBy ?? "").trim(),
   courseContent: Array.isArray(course?.courseContent)
     ? course.courseContent
+    : Array.isArray(course?.contentParts)
+    ? course.contentParts
     : [],
 });
 
@@ -86,6 +104,10 @@ export const CourseCatalogProvider = ({ children }) => {
   );
 
   useEffect(() => {
+    if (hasExplicitEnvMockCoursesFlag) {
+      return undefined;
+    }
+
     let isMounted = true;
 
     const loadMockCoursesOverride = async () => {
@@ -141,9 +163,7 @@ export const CourseCatalogProvider = ({ children }) => {
               ...document.data(),
             })
           )
-          .filter(
-            (course) => course.id && course.courseTitle && course.categoryId
-          );
+          .filter((course) => course.id && course.courseTitle);
 
         setCourses(sortCourses(mappedCourses));
       },
@@ -166,10 +186,14 @@ export const CourseCatalogProvider = ({ children }) => {
 
       const idBase = normalizeIdPart(courseDraft.courseTitle) || "new-course";
       const nextId = `${idBase}-${Date.now()}`;
+      const ownerId = String(
+        courseDraft?.ownerId ?? auth?.currentUser?.uid ?? ""
+      ).trim();
       const newCourse = normalizeCourse({
         ...courseDraft,
         id: nextId,
         categoryId: String(courseDraft?.categoryId ?? ""),
+        ownerId,
       });
 
       if (useMockCourses || !isFirebaseConfigured || !db) {
