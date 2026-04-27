@@ -3,6 +3,7 @@ import { Alert, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import styled from "styled-components/native";
 import { MaterialIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 
@@ -90,13 +91,23 @@ const UploadPhotoText = styled.Text`
   font-weight: 600;
 `;
 
-const DateRow = styled.View`
+const DateRangeRow = styled.View`
   flex-direction: row;
   justify-content: space-between;
 `;
 
-const DateInput = styled(Input)`
-  width: 31.5%;
+const DatePickerButton = styled.TouchableOpacity`
+  width: 48.5%;
+  border-width: 1px;
+  border-color: #d2e3f2;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 11px 12px;
+`;
+
+const DatePickerText = styled.Text`
+  font-size: 14px;
+  color: #20394f;
 `;
 
 const SubmitButton = styled.TouchableOpacity`
@@ -116,16 +127,25 @@ const SubmitButtonText = styled.Text`
 const defaultImage =
   "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=900&q=80";
 
-const getDateParts = (trip) => {
-  if (!trip?.travelDate) {
-    return { day: "", month: "", year: "" };
+const parseStoredDate = (value) => {
+  if (!value) {
+    return null;
   }
 
-  return {
-    day: String(trip.travelDate.day || ""),
-    month: String(trip.travelDate.month || ""),
-    year: String(trip.travelDate.year || ""),
-  };
+  const parsedDate = new Date(value);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
+
+const formatDateLabel = (value) => {
+  if (!value) {
+    return "Select date";
+  }
+
+  return value.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 export const UploadTripScreen = ({ navigation, route }) => {
@@ -136,15 +156,17 @@ export const UploadTripScreen = ({ navigation, route }) => {
     [trips, editTripId]
   );
 
-  const dateParts = getDateParts(editingTrip);
+  const initialStartDate = parseStoredDate(editingTrip?.startDate);
+  const initialEndDate = parseStoredDate(editingTrip?.endDate);
   const [title, setTitle] = useState(editingTrip?.title || "");
   const [image, setImage] = useState(editingTrip?.image || "");
   const [description, setDescription] = useState(editingTrip?.description || "");
   const [location, setLocation] = useState(editingTrip?.location || "");
   const [price, setPrice] = useState(editingTrip?.price || "");
-  const [day, setDay] = useState(dateParts.day);
-  const [month, setMonth] = useState(dateParts.month);
-  const [year, setYear] = useState(dateParts.year);
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(initialEndDate);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [url, setUrl] = useState(editingTrip?.link || "");
 
   const pickImage = async () => {
@@ -188,10 +210,23 @@ export const UploadTripScreen = ({ navigation, route }) => {
       return;
     }
 
-    const hasDate = day.trim() && month.trim() && year.trim();
-    const duration =
-      editingTrip?.duration ||
-      (hasDate ? `${day.trim()}/${month.trim()}/${year.trim()}` : "TBD");
+    if (!startDate || !endDate) {
+      Alert.alert(
+        "Missing trip dates",
+        "Please select both start and end dates for this trip."
+      );
+      return;
+    }
+
+    if (endDate.getTime() < startDate.getTime()) {
+      Alert.alert(
+        "Invalid date range",
+        "End date cannot be earlier than start date."
+      );
+      return;
+    }
+
+    const duration = `${formatDateLabel(startDate)} - ${formatDateLabel(endDate)}`;
 
     const payload = {
       title: cleanedTitle,
@@ -201,10 +236,12 @@ export const UploadTripScreen = ({ navigation, route }) => {
       price: cleanedPrice || "$0",
       link: cleanedUrl || "https://www.youarethecompass.com/",
       duration,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
       travelDate: {
-        day: day.trim(),
-        month: month.trim(),
-        year: year.trim(),
+        day: String(startDate.getDate()).padStart(2, "0"),
+        month: String(startDate.getMonth() + 1).padStart(2, "0"),
+        year: String(startDate.getFullYear()),
       },
     };
 
@@ -252,27 +289,43 @@ export const UploadTripScreen = ({ navigation, route }) => {
         <Label>Price</Label>
         <Input value={price} onChangeText={setPrice} placeholder="$2,900" />
 
-        <Label>Date</Label>
-        <DateRow>
-          <DateInput
-            value={day}
-            onChangeText={setDay}
-            placeholder="Day"
-            keyboardType="number-pad"
+        <Label>Trip Dates</Label>
+        <DateRangeRow>
+          <DatePickerButton onPress={() => setShowStartDatePicker(true)}>
+            <DatePickerText>Start: {formatDateLabel(startDate)}</DatePickerText>
+          </DatePickerButton>
+          <DatePickerButton onPress={() => setShowEndDatePicker(true)}>
+            <DatePickerText>End: {formatDateLabel(endDate)}</DatePickerText>
+          </DatePickerButton>
+        </DateRangeRow>
+
+        {showStartDatePicker ? (
+          <DateTimePicker
+            value={startDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={(_event, selectedDate) => {
+              setShowStartDatePicker(false);
+              if (selectedDate) {
+                setStartDate(selectedDate);
+              }
+            }}
           />
-          <DateInput
-            value={month}
-            onChangeText={setMonth}
-            placeholder="Month"
-            keyboardType="number-pad"
+        ) : null}
+
+        {showEndDatePicker ? (
+          <DateTimePicker
+            value={endDate || startDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={(_event, selectedDate) => {
+              setShowEndDatePicker(false);
+              if (selectedDate) {
+                setEndDate(selectedDate);
+              }
+            }}
           />
-          <DateInput
-            value={year}
-            onChangeText={setYear}
-            placeholder="Year"
-            keyboardType="number-pad"
-          />
-        </DateRow>
+        ) : null}
 
         <Label>URL</Label>
         <Input
