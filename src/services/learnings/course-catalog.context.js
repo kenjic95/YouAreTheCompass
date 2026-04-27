@@ -6,6 +6,8 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import Constants from "expo-constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   collection,
   deleteDoc,
@@ -23,7 +25,18 @@ const CourseCatalogContext = createContext({
   addCourse: async () => null,
   updateCourse: async () => null,
   deleteCourse: async () => false,
+  useMockCourses: false,
+  setUseMockCourses: () => {},
 });
+const expoExtra = Constants.expoConfig?.extra || {};
+const toBooleanFlag = (value) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase() === "true";
+const DEV_USE_MOCK_COURSES_DEFAULT =
+  toBooleanFlag(expoExtra.devUseMockCourses) ||
+  toBooleanFlag(process.env.EXPO_PUBLIC_DEV_USE_MOCK_COURSES);
+const DEV_USE_MOCK_COURSES_KEY = "dev-use-mock-courses";
 
 const normalizeIdPart = (value) =>
   String(value ?? "")
@@ -68,9 +81,52 @@ const sortCourses = (courseList = []) =>
 
 export const CourseCatalogProvider = ({ children }) => {
   const [courses, setCourses] = useState(getSeedCourses());
+  const [useMockCourses, setUseMockCourses] = useState(
+    DEV_USE_MOCK_COURSES_DEFAULT
+  );
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
+    let isMounted = true;
+
+    const loadMockCoursesOverride = async () => {
+      try {
+        const storedValue = await AsyncStorage.getItem(
+          DEV_USE_MOCK_COURSES_KEY
+        );
+        if (!isMounted || storedValue == null) {
+          return;
+        }
+        setUseMockCourses(toBooleanFlag(storedValue));
+      } catch (error) {
+        console.warn("Unable to load mock courses preference.", {
+          message: error?.message,
+        });
+      }
+    };
+
+    loadMockCoursesOverride();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const persistUseMockCourses = useCallback(async (nextValue) => {
+    setUseMockCourses(Boolean(nextValue));
+    try {
+      await AsyncStorage.setItem(
+        DEV_USE_MOCK_COURSES_KEY,
+        String(Boolean(nextValue))
+      );
+    } catch (error) {
+      console.warn("Unable to save mock courses preference.", {
+        message: error?.message,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (useMockCourses || !isFirebaseConfigured || !db) {
       setCourses(getSeedCourses());
       return undefined;
     }
@@ -100,46 +156,49 @@ export const CourseCatalogProvider = ({ children }) => {
     );
 
     return unsubscribe;
-  }, []);
+  }, [useMockCourses]);
 
-  const addCourse = useCallback(async (courseDraft) => {
-    if (!courseDraft?.courseTitle || !courseDraft?.categoryId) {
-      return null;
-    }
+  const addCourse = useCallback(
+    async (courseDraft) => {
+      if (!courseDraft?.courseTitle || !courseDraft?.categoryId) {
+        return null;
+      }
 
-    const idBase = normalizeIdPart(courseDraft.courseTitle) || "new-course";
-    const nextId = `${idBase}-${Date.now()}`;
-    const newCourse = normalizeCourse({
-      ...courseDraft,
-      id: nextId,
-      categoryId: String(courseDraft?.categoryId ?? ""),
-    });
-
-    if (!isFirebaseConfigured || !db) {
-      setCourses((previous) => sortCourses([newCourse, ...previous]));
-      return newCourse;
-    }
-
-    if (!auth?.currentUser?.uid) {
-      return null;
-    }
-
-    try {
-      await setDoc(doc(db, "courses", nextId), {
-        ...newCourse,
-        createdBy: auth.currentUser.uid,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+      const idBase = normalizeIdPart(courseDraft.courseTitle) || "new-course";
+      const nextId = `${idBase}-${Date.now()}`;
+      const newCourse = normalizeCourse({
+        ...courseDraft,
+        id: nextId,
+        categoryId: String(courseDraft?.categoryId ?? ""),
       });
-      return newCourse;
-    } catch (error) {
-      console.warn("Unable to create Firestore course.", {
-        code: error?.code,
-        message: error?.message,
-      });
-      return null;
-    }
-  }, []);
+
+      if (useMockCourses || !isFirebaseConfigured || !db) {
+        setCourses((previous) => sortCourses([newCourse, ...previous]));
+        return newCourse;
+      }
+
+      if (!auth?.currentUser?.uid) {
+        return null;
+      }
+
+      try {
+        await setDoc(doc(db, "courses", nextId), {
+          ...newCourse,
+          createdBy: auth.currentUser.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        return newCourse;
+      } catch (error) {
+        console.warn("Unable to create Firestore course.", {
+          code: error?.code,
+          message: error?.message,
+        });
+        return null;
+      }
+    },
+    [useMockCourses]
+  );
 
   const updateCourse = useCallback(
     async (courseId, updates, options = {}) => {
@@ -176,7 +235,7 @@ export const CourseCatalogProvider = ({ children }) => {
         return updatedCourse;
       }
 
-      if (!isFirebaseConfigured || !db) {
+      if (useMockCourses || !isFirebaseConfigured || !db) {
         return updatedCourse;
       }
 
@@ -202,7 +261,7 @@ export const CourseCatalogProvider = ({ children }) => {
         return null;
       }
     },
-    [courses]
+    [courses, useMockCourses]
   );
 
   const deleteCourse = useCallback(
@@ -220,7 +279,7 @@ export const CourseCatalogProvider = ({ children }) => {
         return false;
       }
 
-      if (!isFirebaseConfigured || !db) {
+      if (useMockCourses || !isFirebaseConfigured || !db) {
         setCourses((previous) =>
           previous.filter((course) => String(course?.id) !== normalizedCourseId)
         );
@@ -242,7 +301,7 @@ export const CourseCatalogProvider = ({ children }) => {
         return false;
       }
     },
-    [courses]
+    [courses, useMockCourses]
   );
 
   const value = useMemo(
@@ -251,8 +310,17 @@ export const CourseCatalogProvider = ({ children }) => {
       addCourse,
       updateCourse,
       deleteCourse,
+      useMockCourses,
+      setUseMockCourses: persistUseMockCourses,
     }),
-    [addCourse, courses, deleteCourse, updateCourse]
+    [
+      addCourse,
+      courses,
+      deleteCourse,
+      persistUseMockCourses,
+      updateCourse,
+      useMockCourses,
+    ]
   );
 
   return (
