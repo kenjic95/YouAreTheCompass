@@ -110,6 +110,29 @@ const DatePickerText = styled.Text`
   color: #20394f;
 `;
 
+const CurrencyRow = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+`;
+
+const CurrencyButton = styled.TouchableOpacity`
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-width: 1px;
+  border-color: ${(props) => (props.isActive ? "#3d98de" : "#d2e3f2")};
+  background-color: ${(props) => (props.isActive ? "#e7f4ff" : "#ffffff")};
+  border-radius: 10px;
+  padding-vertical: 8px;
+  padding-horizontal: 12px;
+`;
+
+const CurrencyButtonText = styled.Text`
+  color: ${(props) => (props.isActive ? "#1f6da8" : "#20394f")};
+  font-size: 14px;
+  font-weight: 600;
+`;
+
 const SubmitButton = styled.TouchableOpacity`
   margin-top: 18px;
   border-radius: 10px;
@@ -136,6 +159,34 @@ const parseStoredDate = (value) => {
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 };
 
+const currencyOptions = ["$", "€", "£", "₹", "AED", "AUD"];
+
+const parseStoredPrice = (value) => {
+  const rawValue = String(value ?? "").trim();
+  if (!rawValue) {
+    return {
+      symbol: "$",
+      amount: "",
+    };
+  }
+
+  const knownSymbol = currencyOptions.find((option) =>
+    rawValue.startsWith(option)
+  );
+
+  if (knownSymbol) {
+    return {
+      symbol: knownSymbol,
+      amount: rawValue.slice(knownSymbol.length).trim(),
+    };
+  }
+
+  return {
+    symbol: "$",
+    amount: rawValue,
+  };
+};
+
 const formatDateLabel = (value) => {
   if (!value) {
     return "Select date";
@@ -148,6 +199,25 @@ const formatDateLabel = (value) => {
   });
 };
 
+const getTotalTripDays = (start, end) => {
+  if (!start || !end) {
+    return null;
+  }
+
+  const startOfDay = new Date(start);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(end);
+  endOfDay.setHours(0, 0, 0, 0);
+
+  const diffMs = endOfDay.getTime() - startOfDay.getTime();
+  if (diffMs < 0) {
+    return null;
+  }
+
+  // Inclusive day count so same-day start/end equals 1 day.
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+};
+
 export const UploadTripScreen = ({ navigation, route }) => {
   const { trips, addTrip, updateTrip } = useTripCatalog();
   const editTripId = route?.params?.tripId;
@@ -156,13 +226,15 @@ export const UploadTripScreen = ({ navigation, route }) => {
     [trips, editTripId]
   );
 
+  const initialPrice = parseStoredPrice(editingTrip?.price);
   const initialStartDate = parseStoredDate(editingTrip?.startDate);
   const initialEndDate = parseStoredDate(editingTrip?.endDate);
   const [title, setTitle] = useState(editingTrip?.title || "");
   const [image, setImage] = useState(editingTrip?.image || "");
   const [description, setDescription] = useState(editingTrip?.description || "");
   const [location, setLocation] = useState(editingTrip?.location || "");
-  const [price, setPrice] = useState(editingTrip?.price || "");
+  const [currencySymbol, setCurrencySymbol] = useState(initialPrice.symbol);
+  const [priceAmount, setPriceAmount] = useState(initialPrice.amount);
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -199,7 +271,7 @@ export const UploadTripScreen = ({ navigation, route }) => {
     const cleanedTitle = title.trim();
     const cleanedDescription = description.trim();
     const cleanedLocation = location.trim();
-    const cleanedPrice = price.trim();
+    const cleanedPrice = priceAmount.trim();
     const cleanedUrl = url.trim();
 
     if (!cleanedTitle || !cleanedDescription || !cleanedLocation) {
@@ -226,14 +298,15 @@ export const UploadTripScreen = ({ navigation, route }) => {
       return;
     }
 
-    const duration = `${formatDateLabel(startDate)} - ${formatDateLabel(endDate)}`;
+    const totalDays = getTotalTripDays(startDate, endDate) || 0;
+    const duration = `${formatDateLabel(startDate)} - ${formatDateLabel(endDate)} (${totalDays} ${totalDays === 1 ? "day" : "days"})`;
 
     const payload = {
       title: cleanedTitle,
       image: image || defaultImage,
       description: cleanedDescription,
       location: cleanedLocation,
-      price: cleanedPrice || "$0",
+      price: cleanedPrice ? `${currencySymbol}${cleanedPrice}` : `${currencySymbol}0`,
       link: cleanedUrl || "https://www.youarethecompass.com/",
       duration,
       startDate: startDate.toISOString(),
@@ -287,17 +360,50 @@ export const UploadTripScreen = ({ navigation, route }) => {
         <Input value={location} onChangeText={setLocation} />
 
         <Label>Price</Label>
-        <Input value={price} onChangeText={setPrice} placeholder="$2,900" />
+        <CurrencyRow>
+          {currencyOptions.map((option) => {
+            const isActive = option === currencySymbol;
+            return (
+              <CurrencyButton
+                key={option}
+                isActive={isActive}
+                onPress={() => setCurrencySymbol(option)}
+              >
+                <CurrencyButtonText isActive={isActive}>
+                  {option}
+                </CurrencyButtonText>
+              </CurrencyButton>
+            );
+          })}
+        </CurrencyRow>
+        <Input
+          value={priceAmount}
+          onChangeText={setPriceAmount}
+          placeholder="2,900"
+          keyboardType="numeric"
+        />
 
         <Label>Trip Dates</Label>
+        {(() => {
+          const totalDays = getTotalTripDays(startDate, endDate);
+          const daysLabel =
+            totalDays == null
+              ? ""
+              : ` (${totalDays} ${totalDays === 1 ? "day" : "days"})`;
+
+          return (
         <DateRangeRow>
           <DatePickerButton onPress={() => setShowStartDatePicker(true)}>
             <DatePickerText>Start: {formatDateLabel(startDate)}</DatePickerText>
           </DatePickerButton>
           <DatePickerButton onPress={() => setShowEndDatePicker(true)}>
-            <DatePickerText>End: {formatDateLabel(endDate)}</DatePickerText>
+            <DatePickerText>
+              End: {formatDateLabel(endDate)}{daysLabel}
+            </DatePickerText>
           </DatePickerButton>
         </DateRangeRow>
+          );
+        })()}
 
         {showStartDatePicker ? (
           <DateTimePicker
