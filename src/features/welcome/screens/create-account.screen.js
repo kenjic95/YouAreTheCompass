@@ -4,12 +4,11 @@ import {
   Alert,
   ScrollView,
   TouchableOpacity,
-  View,
-  Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
@@ -87,18 +86,6 @@ const Input = styled.TextInput.attrs({
   elevation: 5;
 `;
 
-const BirthRow = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 2px;
-`;
-
-const BirthInputWrap = styled.View`
-  flex: ${(props) => props.flexValue || 1};
-  z-index: 10;
-`;
-
 const BirthInput = styled.View`
   background-color: #eef7ff;
   border-radius: 999px;
@@ -168,14 +155,8 @@ export const CreateAccountScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [selectedDay, setSelectedDay] = useState("Day");
-  const [showDay, setShowDay] = useState(false);
-
-  const [selectedMonth, setSelectedMonth] = useState("Month");
-  const [showMonth, setShowMonth] = useState(false);
-
-  const [selectedYear, setSelectedYear] = useState("Year");
-  const [showYear, setShowYear] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getCreateAccountErrorMessage = (code) => {
@@ -214,18 +195,10 @@ export const CreateAccountScreen = ({ navigation }) => {
       return;
     }
 
-    if (
-      selectedDay === "Day" ||
-      selectedMonth === "Month" ||
-      selectedYear === "Year"
-    ) {
-      Alert.alert(
-        "Missing date of birth",
-        "Please select your full date of birth."
-      );
+    if (!dateOfBirth) {
+      Alert.alert("Missing date of birth", "Please select your date of birth.");
       return;
     }
-
     setIsSubmitting(true);
 
     try {
@@ -245,11 +218,7 @@ export const CreateAccountScreen = ({ navigation }) => {
           firstName: trimmedFirstName,
           lastName: trimmedLastName,
           email: normalizedEmail,
-          dateOfBirth: {
-            day: selectedDay,
-            month: selectedMonth,
-            year: selectedYear,
-          },
+          dateOfBirth: dateOfBirth.toISOString(),
           role: "student",
           plan: "free",
           discountPercent: 0,
@@ -314,128 +283,33 @@ export const CreateAccountScreen = ({ navigation }) => {
 
         <FieldGroup>
           <Label>Date of Birth</Label>
-          <BirthRow>
-            <BirthInputWrap>
-              <TouchableOpacity onPress={() => setShowDay(!showDay)}>
-                <BirthInput>
-                  <BirthText>{selectedDay}</BirthText>
-                  <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
-                </BirthInput>
-              </TouchableOpacity>
-              {showDay && (
-                <ScrollView
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 10,
-                    marginTop: 5,
-                    zIndex: 999,
-                    elevation: 10,
-                    maxHeight: 180,
-                  }}
-                  nestedScrollEnabled
-                >
-                  {[...Array(31)].map((_, i) => (
-                    <Text
-                      key={i}
-                      style={{ padding: 10 }}
-                      onPress={() => {
-                        setSelectedDay(`${i + 1}`);
-                        setShowDay(false);
-                      }}
-                    >
-                      {i + 1}
-                    </Text>
-                  ))}
-                </ScrollView>
-              )}
-            </BirthInputWrap>
 
-            <BirthInputWrap>
-              <TouchableOpacity onPress={() => setShowMonth(!showMonth)}>
-                <BirthInput>
-                  <BirthText>{selectedMonth}</BirthText>
-                  <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
-                </BirthInput>
-              </TouchableOpacity>
-              {showMonth && (
-                <ScrollView
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 10,
-                    marginTop: 5,
-                    zIndex: 999,
-                    elevation: 10,
-                    maxHeight: 180,
-                  }}
-                  nestedScrollEnabled
-                >
-                  {[
-                    "Jan",
-                    "Feb",
-                    "Mar",
-                    "Apr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Aug",
-                    "Sep",
-                    "Oct",
-                    "Nov",
-                    "Dec",
-                  ].map((m, i) => (
-                    <Text
-                      key={i}
-                      style={{ padding: 10 }}
-                      onPress={() => {
-                        setSelectedMonth(m);
-                        setShowMonth(false);
-                      }}
-                    >
-                      {m}
-                    </Text>
-                  ))}
-                </ScrollView>
-              )}
-            </BirthInputWrap>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+            <BirthInput>
+              <BirthText>
+                {dateOfBirth
+                  ? dateOfBirth.toDateString()
+                  : "Select Date of Birth"}
+              </BirthText>
+              <Ionicons name="calendar-outline" size={20} color="#b4bdc8" />
+            </BirthInput>
+          </TouchableOpacity>
 
-            <BirthInputWrap flexValue={1.3}>
-              <TouchableOpacity onPress={() => setShowYear(!showYear)}>
-                <BirthInput>
-                  <BirthText>{selectedYear}</BirthText>
-                  <Ionicons name="chevron-down" size={18} color="#b4bdc8" />
-                </BirthInput>
-              </TouchableOpacity>
-              {showYear && (
-                <ScrollView
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 10,
-                    marginTop: 5,
-                    zIndex: 999,
-                    elevation: 10,
-                    maxHeight: 180,
-                  }}
-                  nestedScrollEnabled
-                >
-                  {[...Array(50)].map((_, i) => {
-                    const y = new Date().getFullYear() - i;
-                    return (
-                      <Text
-                        key={i}
-                        style={{ padding: 10 }}
-                        onPress={() => {
-                          setSelectedYear(`${y}`);
-                          setShowYear(false);
-                        }}
-                      >
-                        {y}
-                      </Text>
-                    );
-                  })}
-                </ScrollView>
-              )}
-            </BirthInputWrap>
-          </BirthRow>
+          {showDatePicker && (
+            <DateTimePicker
+              value={dateOfBirth || new Date()}
+              mode="date"
+              display="spinner"
+              maximumDate={new Date()}
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+
+                if (selectedDate) {
+                  setDateOfBirth(selectedDate);
+                }
+              }}
+            />
+          )}
         </FieldGroup>
 
         <SubmitButton
