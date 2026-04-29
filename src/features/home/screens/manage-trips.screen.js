@@ -183,6 +183,9 @@ export const ManageTripsScreen = ({ navigation }) => {
                 {item.location}
                 {item.duration ? ` • ${item.duration}` : ""}
               </TripMeta>
+              <TripMeta>
+  Travel Date: {item.travelDate?.day}/{item.travelDate?.month}/{item.travelDate?.year}
+</TripMeta>
               <TripDescription numberOfLines={4}>
                 {item.description}
               </TripDescription>
