@@ -102,6 +102,9 @@ export const ConnectTripsScreen = () => {
         <TripDetails>
           {item.location} • {item.duration}
         </TripDetails>
+        <TripDetails>
+  Travel Date: {item.travelDate?.day}/{item.travelDate?.month}/{item.travelDate?.year}
+</TripDetails>
         <TripDescription>{item.description}</TripDescription>
         <ActionRow>
           <TripLinkLabel>Price: {item.price}</TripLinkLabel>

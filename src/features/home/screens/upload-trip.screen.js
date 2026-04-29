@@ -409,7 +409,7 @@ export const UploadTripScreen = ({ navigation, route }) => {
           <DateTimePicker
             value={startDate || new Date()}
             mode="date"
-            display="default"
+            display="spinner"
             onChange={(_event, selectedDate) => {
               setShowStartDatePicker(false);
               if (selectedDate) {
@@ -423,7 +423,7 @@ export const UploadTripScreen = ({ navigation, route }) => {
           <DateTimePicker
             value={endDate || startDate || new Date()}
             mode="date"
-            display="default"
+            display="spinner"
             onChange={(_event, selectedDate) => {
               setShowEndDatePicker(false);
               if (selectedDate) {
