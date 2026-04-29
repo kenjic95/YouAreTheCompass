@@ -9,7 +9,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import {
@@ -210,8 +215,9 @@ export const CreateAccountScreen = ({ navigation }) => {
       const displayName = `${trimmedFirstName} ${trimmedLastName}`.trim();
 
       await updateProfile(credential.user, { displayName });
+      await sendEmailVerification(credential.user);
 
-      setDoc(
+      await setDoc(
         doc(db, "users", credential.user.uid),
         {
           uid: credential.user.uid,
@@ -222,7 +228,9 @@ export const CreateAccountScreen = ({ navigation }) => {
           role: "student",
           plan: "free",
           discountPercent: 0,
+          emailVerified: credential.user.emailVerified,
           createdAt: serverTimestamp(),
+          verificationEmailSentAt: serverTimestamp(),
         },
         { merge: true }
       ).catch((persistError) => {
@@ -231,6 +239,18 @@ export const CreateAccountScreen = ({ navigation }) => {
           persistError
         );
       });
+
+      await signOut(auth);
+      Alert.alert(
+        "Verification email sent",
+        "Please check your email and open the verification link before signing in.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("SignIn"),
+          },
+        ]
+      );
     } catch (error) {
       Alert.alert(
         "Create account failed",

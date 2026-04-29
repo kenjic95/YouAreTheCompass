@@ -4,7 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
+  sendEmailVerification,
   sendPasswordResetEmail,
+  signOut,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 
@@ -192,7 +194,48 @@ export const SignInScreen = ({ navigation }) => {
     setIsSubmitting(true);
 
     try {
-      await signInWithEmailAndPassword(auth, normalizedEmail, password);
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        normalizedEmail,
+        password
+      );
+
+      await credential.user.reload();
+
+      if (!credential.user.emailVerified) {
+        await signOut(auth);
+        Alert.alert(
+          "Email not verified",
+          "Please open the verification link we sent to your email before signing in.",
+          [
+            {
+              text: "Resend email",
+              onPress: async () => {
+                try {
+                  const resendCredential = await signInWithEmailAndPassword(
+                    auth,
+                    normalizedEmail,
+                    password
+                  );
+                  await sendEmailVerification(resendCredential.user);
+                  await signOut(auth);
+                  Alert.alert(
+                    "Verification email sent",
+                    "Check your inbox and open the link before signing in."
+                  );
+                } catch {
+                  await signOut(auth).catch(() => undefined);
+                  Alert.alert(
+                    "Resend failed",
+                    "Unable to resend the verification email right now. Please try again."
+                  );
+                }
+              },
+            },
+            { text: "OK", style: "cancel" },
+          ]
+        );
+      }
     } catch (error) {
       Alert.alert("Sign in failed", getSignInErrorMessage(error?.code));
     } finally {
@@ -319,7 +362,9 @@ export const SignInScreen = ({ navigation }) => {
           <ButtonsSection>
             <SubmitButton
               activeOpacity={0.9}
-              onPress={isForgotPasswordMode ? handlePasswordReset : handleSignIn}
+              onPress={
+                isForgotPasswordMode ? handlePasswordReset : handleSignIn
+              }
               disabled={isSubmitting}
             >
               {isSubmitting ? (
