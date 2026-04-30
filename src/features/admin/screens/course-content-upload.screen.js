@@ -6,7 +6,11 @@ import { CourseContentUploadForm } from "../components/course-content-upload-for
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
-import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
+import {
+  formatDurationFromSeconds,
+  parseDurationLabelToSeconds,
+  sumCourseVideoDurationSeconds,
+} from "../../../services/learnings/course-duration.utils";
 
 const getAssetName = (asset, fallbackName) =>
   asset?.name || asset?.fileName || fallbackName;
@@ -355,11 +359,13 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
         localFileName: part?.asset?.name,
       };
     });
+    const totalDurationSeconds = sumCourseVideoDurationSeconds(mappedCourseContent);
+    const totalDurationLabel = formatDurationFromSeconds(totalDurationSeconds);
 
     if (isEditMode) {
       const updatedCourse = await updateCourse(courseToEdit.id, {
         courseContent: mappedCourseContent,
-        courseDuration: `${mappedCourseContent.length} parts`,
+        courseDuration: totalDurationLabel,
       });
 
       if (!updatedCourse) {
@@ -380,7 +386,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
         profile?.displayName?.trim() ||
         authUser?.displayName?.trim() ||
         "Course Creator",
-      courseDuration: `${mappedCourseContent.length} parts`,
+      courseDuration: totalDurationLabel,
       priceValue: toPriceLabel(courseDraft?.originalPrice),
       watchers: "0",
       rating: "New",
