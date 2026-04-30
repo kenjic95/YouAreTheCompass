@@ -13,6 +13,10 @@ import {
 import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
 const logoImage = require("../../../../assets/logo.jpeg");
+const SKIP_EMAIL_VERIFICATION_FOR_TESTING =
+  String(process.env.EXPO_PUBLIC_SKIP_EMAIL_VERIFICATION ?? "")
+    .trim()
+    .toLowerCase() === "true";
 
 const Screen = styled(SafeAreaView)`
   flex: 1;
@@ -202,7 +206,10 @@ export const SignInScreen = ({ navigation }) => {
 
       await credential.user.reload();
 
-      if (!credential.user.emailVerified) {
+      if (
+        !SKIP_EMAIL_VERIFICATION_FOR_TESTING &&
+        !credential.user.emailVerified
+      ) {
         await signOut(auth);
         Alert.alert(
           "Email not verified",

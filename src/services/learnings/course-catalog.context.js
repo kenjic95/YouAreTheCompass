@@ -67,7 +67,10 @@ const normalizeCourse = (course = {}) => ({
       ""
   ).trim(),
   categoryTitle: String(
-    course?.categoryTitle ?? course?.categoryName ?? ""
+    course?.categoryTitle ??
+      course?.categoryName ??
+      course?.category?.categoryTitle ??
+      ""
   ).trim(),
   courseTitle: String(course?.courseTitle ?? course?.title ?? "").trim(),
   author: String(course?.author ?? "Course Creator").trim(),

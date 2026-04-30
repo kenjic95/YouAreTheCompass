@@ -325,6 +325,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
 
     const normalizedCourseTitle = String(courseDraft?.title ?? "").trim();
     const categoryId = courseDraft?.category?.id;
+    const categoryTitle = String(
+      courseDraft?.category?.categoryTitle ?? ""
+    ).trim();
 
     if (!isEditMode && (!normalizedCourseTitle || !categoryId)) {
       Alert.alert(
@@ -371,6 +374,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
 
     const createdCourse = await addCourse({
       categoryId: String(categoryId),
+      categoryTitle,
       courseTitle: normalizedCourseTitle,
       author:
         profile?.displayName?.trim() ||
