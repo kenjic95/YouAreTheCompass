@@ -68,7 +68,7 @@ export default function HelpSupportScreen({ navigation }) {
       <ActionCard
         icon={<MaterialIcons name="report-problem" size={24} color="#222" />}
         label="Report a Problem"
-        onPress={() => console.log("Report")}
+        onPress={() => navigation.navigate("ReportProblem")}
       />
 
       {/* Section Title */}
