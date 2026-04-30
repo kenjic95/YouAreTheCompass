@@ -79,7 +79,7 @@ export const LanguagePreferenceProvider = ({ children }) => {
       setLanguage,
       isLoadingLanguage,
     }),
-    [isLoadingLanguage, selectedLanguageCode]
+    [isLoadingLanguage, selectedLanguageCode, setLanguage]
   );
 
   return (
@@ -89,4 +89,5 @@ export const LanguagePreferenceProvider = ({ children }) => {
   );
 };
 
-export const useLanguagePreference = () => useContext(LanguagePreferenceContext);
+export const useLanguagePreference = () =>
+  useContext(LanguagePreferenceContext);

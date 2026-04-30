@@ -54,7 +54,7 @@ export default function HelpSupportScreen({ navigation }) {
       <ActionCard
         icon={<Feather name="help-circle" size={24} color="#222" />}
         label="FAQs"
-        onPress={() => console.log("FAQs")}
+        onPress={() => navigation.navigate("FAQs")}
       />
 
       {/* Contact */}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 
 import {
@@ -46,7 +46,10 @@ export default function LanguageScreen({ navigation }) {
         Language
       </Text>
 
-      <View style={{ marginTop: 40 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: 40, paddingBottom: 28 }}
+        showsVerticalScrollIndicator={false}
+      >
         {LANGUAGES.map((language) => {
           const isSelected = language.code === selectedLanguage.code;
 
@@ -100,7 +103,7 @@ export default function LanguageScreen({ navigation }) {
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }
