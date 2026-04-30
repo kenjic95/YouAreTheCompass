@@ -9,6 +9,7 @@ import LanguageScreen from "../../features/settings/screens/language.screen.js";
 import AboutScreen from "../../features/settings/screens/about.screen.js";
 import HelpSupportScreen from "../../features/settings/screens/help-support.screen.js";
 import FAQsScreen from "../../features/settings/screens/faqs.screen.js";
+import ContactSupportScreen from "../../features/settings/screens/contact-support.screen.js";
 import FeedbackScreen from "../../features/settings/screens/feedback.screen.js";
 import LogoutScreen from "../../features/settings/screens/logout.screen.js";
 
@@ -28,6 +29,10 @@ export const SettingsNavigator = () => {
       <SettingsStack.Screen name="About" component={AboutScreen} />
       <SettingsStack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <SettingsStack.Screen name="FAQs" component={FAQsScreen} />
+      <SettingsStack.Screen
+        name="ContactSupport"
+        component={ContactSupportScreen}
+      />
       <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
       <SettingsStack.Screen name="Logout" component={LogoutScreen} />
     </SettingsStack.Navigator>

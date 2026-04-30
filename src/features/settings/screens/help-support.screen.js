@@ -61,7 +61,7 @@ export default function HelpSupportScreen({ navigation }) {
       <ActionCard
         icon={<Feather name="mail" size={24} color="#222" />}
         label="Contact Support"
-        onPress={() => console.log("Contact")}
+        onPress={() => navigation.navigate("ContactSupport")}
       />
 
       {/* Report Problem */}
