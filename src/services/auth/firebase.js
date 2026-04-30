@@ -41,5 +41,16 @@ const app = isFirebaseConfigured
 const auth = app ? getAuth(app) : null;
 const db = app ? getFirestore(app) : null;
 const storage = app ? getStorage(app) : null;
+const authActionUrl =
+  extra.firebaseAuthActionUrl ||
+  process.env.EXPO_PUBLIC_FIREBASE_AUTH_ACTION_URL ||
+  (firebaseConfig.authDomain ? `https://${firebaseConfig.authDomain}` : "");
 
-export { auth, db, storage, isFirebaseConfigured };
+const authActionCodeSettings = authActionUrl
+  ? {
+      url: authActionUrl,
+      handleCodeInApp: true,
+    }
+  : undefined;
+
+export { auth, db, storage, isFirebaseConfigured, authActionCodeSettings };

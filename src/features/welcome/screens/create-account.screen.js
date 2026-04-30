@@ -18,6 +18,7 @@ import {
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import {
+  authActionCodeSettings,
   auth,
   db,
   isFirebaseConfigured,
@@ -215,7 +216,7 @@ export const CreateAccountScreen = ({ navigation }) => {
       const displayName = `${trimmedFirstName} ${trimmedLastName}`.trim();
 
       await updateProfile(credential.user, { displayName });
-      await sendEmailVerification(credential.user);
+      await sendEmailVerification(credential.user, authActionCodeSettings);
 
       await setDoc(
         doc(db, "users", credential.user.uid),

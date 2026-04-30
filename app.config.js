@@ -19,6 +19,8 @@ module.exports = () => {
       firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET || "",
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "",
       firebaseAppId: process.env.FIREBASE_APP_ID || "",
+      firebaseAuthActionUrl:
+        process.env.EXPO_PUBLIC_FIREBASE_AUTH_ACTION_URL || "",
       devUseMockCourses: process.env.EXPO_PUBLIC_DEV_USE_MOCK_COURSES || "",
     },
   };

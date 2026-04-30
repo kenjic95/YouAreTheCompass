@@ -10,7 +10,11 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 
-import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
+import {
+  auth,
+  authActionCodeSettings,
+  isFirebaseConfigured,
+} from "../../../services/auth/firebase";
 
 const logoImage = require("../../../../assets/logo.jpeg");
 const SKIP_EMAIL_VERIFICATION_FOR_TESTING =
@@ -224,7 +228,10 @@ export const SignInScreen = ({ navigation }) => {
                     normalizedEmail,
                     password
                   );
-                  await sendEmailVerification(resendCredential.user);
+                  await sendEmailVerification(
+                    resendCredential.user,
+                    authActionCodeSettings
+                  );
                   await signOut(auth);
                   Alert.alert(
                     "Verification email sent",
@@ -272,7 +279,11 @@ export const SignInScreen = ({ navigation }) => {
     setIsSubmitting(true);
 
     try {
-      await sendPasswordResetEmail(auth, normalizedEmail);
+      await sendPasswordResetEmail(
+        auth,
+        normalizedEmail,
+        authActionCodeSettings
+      );
       setHasSentResetEmail(true);
       Alert.alert(
         "Reset email sent",
