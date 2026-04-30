@@ -11,6 +11,8 @@ import HelpSupportScreen from "../../features/settings/screens/help-support.scre
 import FAQsScreen from "../../features/settings/screens/faqs.screen.js";
 import ContactSupportScreen from "../../features/settings/screens/contact-support.screen.js";
 import ReportProblemScreen from "../../features/settings/screens/report-problem.screen.js";
+import PrivacyPolicyScreen from "../../features/settings/screens/privacy-policy.screen.js";
+import TermsConditionsScreen from "../../features/settings/screens/terms-conditions.screen.js";
 import FeedbackScreen from "../../features/settings/screens/feedback.screen.js";
 import LogoutScreen from "../../features/settings/screens/logout.screen.js";
 
@@ -37,6 +39,14 @@ export const SettingsNavigator = () => {
       <SettingsStack.Screen
         name="ReportProblem"
         component={ReportProblemScreen}
+      />
+      <SettingsStack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+      />
+      <SettingsStack.Screen
+        name="TermsConditions"
+        component={TermsConditionsScreen}
       />
       <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
       <SettingsStack.Screen name="Logout" component={LogoutScreen} />

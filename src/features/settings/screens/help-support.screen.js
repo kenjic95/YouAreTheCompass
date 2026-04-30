@@ -88,14 +88,14 @@ export default function HelpSupportScreen({ navigation }) {
       <ActionCard
         icon={<Feather name="lock" size={24} color="#222" />}
         label="Privacy Policy"
-        onPress={() => console.log("Privacy")}
+        onPress={() => navigation.navigate("PrivacyPolicy")}
       />
 
       {/* Terms */}
       <ActionCard
         icon={<Feather name="file-text" size={24} color="#222" />}
         label="Terms & Conditions"
-        onPress={() => console.log("Terms")}
+        onPress={() => navigation.navigate("TermsConditions")}
       />
 
       {/* Footer */}
