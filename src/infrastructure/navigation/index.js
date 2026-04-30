@@ -6,6 +6,7 @@ import { UserProfileProvider } from "../../services/auth/user-profile.context";
 import { CourseCatalogProvider } from "../../services/learnings/course-catalog.context";
 import { CategoryCatalogProvider } from "../../services/learnings/category-catalog.context";
 import { TripCatalogProvider } from "../../services/connect-trips/trip-catalog.context";
+import { LanguagePreferenceProvider } from "../../services/settings/language.context";
 
 export const Navigation = () => (
   <SafeAreaProvider>
@@ -13,7 +14,9 @@ export const Navigation = () => (
       <CategoryCatalogProvider>
         <CourseCatalogProvider>
           <UserProfileProvider>
-            <AppNavigator />
+            <LanguagePreferenceProvider>
+              <AppNavigator />
+            </LanguagePreferenceProvider>
           </UserProfileProvider>
         </CourseCatalogProvider>
       </CategoryCatalogProvider>

@@ -2,7 +2,11 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 
+import { useLanguagePreference } from "../../../services/settings/language.context";
+
 export default function SettingsDetailScreen({ navigation }) {
+  const { selectedLanguage } = useLanguagePreference();
+
   return (
     <View
       style={{
@@ -47,7 +51,7 @@ export default function SettingsDetailScreen({ navigation }) {
       </Text>
 
       <TouchableOpacity
-        onPress={() => console.log("Language pressed")}
+        onPress={() => navigation.navigate("Language")}
         style={{
           marginTop: 24,
           marginHorizontal: 20,
@@ -69,19 +73,30 @@ export default function SettingsDetailScreen({ navigation }) {
           style={{
             flexDirection: "row",
             alignItems: "center",
+            flex: 1,
           }}
         >
           <Feather name="globe" size={24} color="#222222" />
-          <Text
-            style={{
-              marginLeft: 18,
-              fontSize: 16,
-              fontWeight: "700",
-              color: "#111111",
-            }}
-          >
-            Language
-          </Text>
+          <View style={{ marginLeft: 18, flex: 1 }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#111111",
+              }}
+            >
+              Language
+            </Text>
+            <Text
+              style={{
+                marginTop: 2,
+                fontSize: 13,
+                color: "#4A4A4A",
+              }}
+            >
+              {selectedLanguage.name}
+            </Text>
+          </View>
         </View>
 
         <Ionicons name="chevron-forward" size={22} color="#222222" />
