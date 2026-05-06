@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   EmailAuthProvider,
@@ -20,16 +21,48 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 import {
   auth,
   db,
   isFirebaseConfigured,
+  storage,
 } from "../../../services/auth/firebase";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 
 const FALLBACK_NAME = "User Full Name";
 const FALLBACK_EMAIL = "user@email.com";
+const isRemoteHttpUrl = (value) => /^https?:\/\//i.test(String(value ?? ""));
+const getImageExtensionFromUri = (uri) => {
+  const normalized = String(uri ?? "").split("?")[0];
+  const extension = normalized.split(".").pop()?.toLowerCase();
+
+  if (!extension || extension === normalized.toLowerCase()) {
+    return "jpg";
+  }
+
+  if (extension === "jpeg") {
+    return "jpg";
+  }
+
+  return extension;
+};
+
+const getContentTypeFromExtension = (extension) => {
+  switch (extension) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "heic":
+      return "image/heic";
+    case "heif":
+      return "image/heif";
+    default:
+      return "image/jpeg";
+  }
+};
 
 const buildDisplayProfile = (profile) => {
   const fullName = [profile?.firstName, profile?.lastName]
@@ -139,6 +172,34 @@ export default function AccountScreen({ navigation }) {
     setIsSaving(true);
 
     try {
+      let persistedPhotoURL = trimmedPhotoURL;
+
+      if (
+        persistedPhotoURL &&
+        !isRemoteHttpUrl(persistedPhotoURL) &&
+        (!storage || !auth.currentUser?.uid)
+      ) {
+        throw new Error("profile-photo-upload-unavailable");
+      }
+
+      if (
+        persistedPhotoURL &&
+        !isRemoteHttpUrl(persistedPhotoURL) &&
+        storage &&
+        auth.currentUser?.uid
+      ) {
+        const extension = getImageExtensionFromUri(persistedPhotoURL);
+        const filePath = `profile-photos/${auth.currentUser.uid}/avatar.${extension}`;
+        const storageRef = ref(storage, filePath);
+        const response = await fetch(persistedPhotoURL);
+        const blob = await response.blob();
+
+        await uploadBytes(storageRef, blob, {
+          contentType: getContentTypeFromExtension(extension),
+        });
+        persistedPhotoURL = await getDownloadURL(storageRef);
+      }
+
       if (trimmedNewPassword) {
         const email = auth.currentUser.email?.trim();
 
@@ -157,7 +218,7 @@ export default function AccountScreen({ navigation }) {
 
       await updateProfile(auth.currentUser, {
         displayName,
-        photoURL: trimmedPhotoURL || null,
+        photoURL: persistedPhotoURL || null,
       });
 
       await setDoc(
@@ -168,7 +229,7 @@ export default function AccountScreen({ navigation }) {
           lastName: trimmedLastName,
           displayName,
           email: auth.currentUser.email ?? profile.email,
-          photoURL: trimmedPhotoURL,
+          photoURL: persistedPhotoURL,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -176,6 +237,7 @@ export default function AccountScreen({ navigation }) {
 
       setForm((current) => ({
         ...current,
+        photoURL: persistedPhotoURL,
         currentPassword: "",
         newPassword: "",
       }));
@@ -194,6 +256,9 @@ export default function AccountScreen({ navigation }) {
       } else if (error?.message === "missing-email") {
         message =
           "This account is missing an email address, so the password could not be updated.";
+      } else if (error?.message === "profile-photo-upload-unavailable") {
+        message =
+          "Profile photo upload is unavailable right now. Please check Firebase Storage configuration and try again.";
       }
 
       Alert.alert("Update failed", message);
@@ -211,6 +276,35 @@ export default function AccountScreen({ navigation }) {
 
   const previewPhoto = isEditing ? form.photoURL.trim() : profile.photoURL;
   const shouldShowAvatarImage = previewPhoto && !avatarError;
+
+  const handlePickProfilePhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission?.granted) {
+      Alert.alert(
+        "Permission needed",
+        "Allow photo library permission to choose a profile photo."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (result.canceled) {
+      return;
+    }
+
+    const asset = result.assets?.[0];
+    if (!asset?.uri) {
+      return;
+    }
+
+    setAvatarError(false);
+    updateFormValue("photoURL", asset.uri);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -321,7 +415,7 @@ export default function AccountScreen({ navigation }) {
                 paddingHorizontal: 16,
               }}
             >
-              Add or replace your profile photo by pasting an image URL below.
+              Add or replace your profile photo from gallery or by URL below.
             </Text>
           ) : null}
 
@@ -404,17 +498,40 @@ export default function AccountScreen({ navigation }) {
                 placeholder="Enter your surname"
               />
 
-              <EditField
-                label="Profile Photo URL"
-                value={form.photoURL}
-                onChangeText={(value) => {
-                  setAvatarError(false);
-                  updateFormValue("photoURL", value);
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "700",
+                  color: "#4C6D87",
+                  marginBottom: 8,
+                  marginLeft: 6,
                 }}
-                autoCapitalize="none"
-                keyboardType="url"
-                placeholder="https://example.com/profile-photo.jpg"
-              />
+              >
+                Change Profile Photo
+              </Text>
+              <TouchableOpacity
+                onPress={handlePickProfilePhoto}
+                disabled={isSaving}
+                style={{
+                  backgroundColor: "#7CB8E7",
+                  borderRadius: 20,
+                  minHeight: 48,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 14,
+                  opacity: isSaving ? 0.6 : 1,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: 15,
+                    fontWeight: "700",
+                  }}
+                >
+                  Choose Photo From Gallery
+                </Text>
+              </TouchableOpacity>
 
               <EditField
                 label="Current Password"
