@@ -23,6 +23,17 @@ export const styles = StyleSheet.create({
   loadingText: {
     color: "#DDE8F3",
   },
+  bufferingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    gap: 10,
+  },
+  bufferingText: {
+    color: "#E7F0F9",
+    fontSize: 14,
+  },
   errorContainer: {
     position: "absolute",
     left: 12,

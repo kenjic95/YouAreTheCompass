@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { Animated, Easing, Pressable, View } from "react-native";
+import { ActivityIndicator, Animated, Easing, Pressable, View } from "react-native";
 import { Audio, Video } from "expo-av";
 import { Asset } from "expo-asset";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -82,6 +82,8 @@ export const CourseVideoPlayerScreen = ({ route }) => {
       : fallbackDurationSeconds;
   const isPlaying = Boolean(playbackStatus?.isPlaying);
   const isLoaded = Boolean(playbackStatus?.isLoaded);
+  const isBuffering = Boolean(playbackStatus?.isBuffering);
+  const isActivelyStalled = isBuffering && !isPlaying;
   const displayedTimeSeconds =
     isScrubbing && scrubPositionSeconds !== null
       ? scrubPositionSeconds
@@ -513,6 +515,14 @@ export const CourseVideoPlayerScreen = ({ route }) => {
           <View style={styles.errorContainer}>
             <Text variant="label" style={styles.errorText}>
               Video error: {videoErrorMessage}
+            </Text>
+          </View>
+        ) : null}
+        {videoSource && isLoaded && isActivelyStalled && !videoErrorMessage ? (
+          <View style={styles.bufferingContainer}>
+            <ActivityIndicator size="large" color="#D9E9F8" />
+            <Text variant="label" style={styles.bufferingText}>
+              Buffering video...
             </Text>
           </View>
         ) : null}
