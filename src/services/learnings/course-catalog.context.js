@@ -16,9 +16,14 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
+import {
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
 
 import { coursesMock } from "./course-content.mock";
-import { auth, db, isFirebaseConfigured } from "../auth/firebase";
+import { auth, db, isFirebaseConfigured, storage } from "../auth/firebase";
 
 const CourseCatalogContext = createContext({
   courses: [],
@@ -55,6 +60,187 @@ const normalizeIdPart = (value) =>
 
 const DEFAULT_COURSE_PHOTO =
   "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80";
+
+const isRemoteHttpUrl = (value) => /^https?:\/\//i.test(String(value ?? ""));
+
+const getImageExtensionFromUri = (uri) => {
+  const normalized = String(uri ?? "").split("?")[0];
+  const extension = normalized.split(".").pop()?.toLowerCase();
+
+  if (!extension || extension === normalized.toLowerCase()) {
+    return "jpg";
+  }
+
+  if (extension === "jpeg") {
+    return "jpg";
+  }
+
+  return extension;
+};
+
+const getContentTypeFromExtension = (extension) => {
+  switch (extension) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "heic":
+      return "image/heic";
+    case "heif":
+      return "image/heif";
+    default:
+      return "image/jpeg";
+  }
+};
+
+const getFileExtensionFromUri = (uri, fallback = "bin") => {
+  const normalized = String(uri ?? "").split("?")[0];
+  const extension = normalized.split(".").pop()?.toLowerCase();
+
+  if (!extension || extension === normalized.toLowerCase()) {
+    return fallback;
+  }
+
+  return extension;
+};
+
+const getStorageContentTypeForCoursePart = (part = {}, extension = "bin") => {
+  const normalizedExtension = String(extension ?? "").toLowerCase();
+  const normalizedType = String(part?.contentType ?? "").toLowerCase();
+  const normalizedKind = String(part?.asset?.kind ?? "").toLowerCase();
+
+  if (
+    normalizedType === "pdf" ||
+    normalizedKind === "pdf" ||
+    normalizedExtension === "pdf"
+  ) {
+    return "application/pdf";
+  }
+
+  if (
+    normalizedType === "video" ||
+    normalizedKind === "video" ||
+    ["mp4", "mov", "m4v", "webm"].includes(normalizedExtension)
+  ) {
+    switch (normalizedExtension) {
+      case "mov":
+        return "video/quicktime";
+      case "webm":
+        return "video/webm";
+      default:
+        return "video/mp4";
+    }
+  }
+
+  return getContentTypeFromExtension(normalizedExtension);
+};
+
+const uploadBlobWithProgress = (storageRef, blob, metadata, onProgress) =>
+  new Promise((resolve, reject) => {
+    const task = uploadBytesResumable(storageRef, blob, metadata);
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        const totalBytes = Number(snapshot.totalBytes) || 0;
+        const transferredBytes = Number(snapshot.bytesTransferred) || 0;
+        const fileProgress =
+          totalBytes > 0
+            ? Math.min(1, Math.max(0, transferredBytes / totalBytes))
+            : 0;
+        onProgress?.(fileProgress);
+      },
+      (error) => reject(error),
+      () => resolve(task.snapshot)
+    );
+  });
+
+const buildProgressEmitter = (onUploadProgress, totalUnits) => {
+  let completedUnits = 0;
+
+  const emit = (message, inFlightUnitProgress = 0) => {
+    const safeTotal = Math.max(1, Number(totalUnits) || 0);
+    const normalizedInFlight = Math.min(
+      1,
+      Math.max(0, Number(inFlightUnitProgress) || 0)
+    );
+    const percent = Math.round(
+      ((completedUnits + normalizedInFlight) / safeTotal) * 100
+    );
+
+    onUploadProgress?.({
+      message,
+      completedUnits,
+      totalUnits: safeTotal,
+      percent: Math.min(100, Math.max(0, percent)),
+    });
+  };
+
+  const completeOne = (message) => {
+    completedUnits += 1;
+    emit(message, 0);
+  };
+
+  emit("Preparing upload...", 0);
+
+  return {
+    emit,
+    completeOne,
+  };
+};
+
+const uploadCourseContentAssets = async (
+  courseId,
+  courseContent = [],
+  progressEmitter
+) => {
+  if (!Array.isArray(courseContent) || courseContent.length === 0) {
+    return courseContent;
+  }
+
+  if (!storage || !auth?.currentUser?.uid) {
+    return courseContent;
+  }
+
+  const uploadedParts = await Promise.all(
+    courseContent.map(async (part, index) => {
+      const sourceUri = String(part?.localUri ?? "").trim();
+      if (!sourceUri || isRemoteHttpUrl(sourceUri)) {
+        return part;
+      }
+
+      const partId = Number(part?.contentId) || index + 1;
+      const extension = getFileExtensionFromUri(sourceUri, "bin");
+      const filePath = `course-content/${auth.currentUser.uid}/${courseId}/part-${partId}.${extension}`;
+      const storageRef = ref(storage, filePath);
+      const response = await fetch(sourceUri);
+      const blob = await response.blob();
+      const contentType = getStorageContentTypeForCoursePart(part, extension);
+
+      progressEmitter?.emit(`Uploading content part ${partId}...`, 0);
+      await uploadBlobWithProgress(
+        storageRef,
+        blob,
+        { contentType },
+        (fileProgress) =>
+          progressEmitter?.emit(
+            `Uploading content part ${partId}...`,
+            fileProgress
+          )
+      );
+      progressEmitter?.completeOne(`Uploaded content part ${partId}.`);
+      const downloadUrl = await getDownloadURL(storageRef);
+
+      return {
+        ...part,
+        localUri: downloadUrl,
+        uri: downloadUrl,
+        url: downloadUrl,
+      };
+    })
+  );
+
+  return uploadedParts;
+};
 
 const normalizeCourse = (course = {}) => ({
   ...course,
@@ -182,7 +368,7 @@ export const CourseCatalogProvider = ({ children }) => {
   }, [useMockCourses]);
 
   const addCourse = useCallback(
-    async (courseDraft) => {
+    async (courseDraft, options = {}) => {
       if (!courseDraft?.courseTitle || !courseDraft?.categoryId) {
         return null;
       }
@@ -209,13 +395,72 @@ export const CourseCatalogProvider = ({ children }) => {
       }
 
       try {
-        await setDoc(doc(db, "courses", nextId), {
+        const needsCoursePhotoUpload =
+          Boolean(newCourse.coursePhoto) && !isRemoteHttpUrl(newCourse.coursePhoto);
+        const uploadableCourseParts = (newCourse.courseContent ?? []).filter(
+          (part) => {
+            const sourceUri = String(part?.localUri ?? "").trim();
+            return sourceUri && !isRemoteHttpUrl(sourceUri);
+          }
+        );
+        const totalUploadUnits =
+          uploadableCourseParts.length + (needsCoursePhotoUpload ? 1 : 0);
+        const progressEmitter =
+          totalUploadUnits > 0
+            ? buildProgressEmitter(options?.onUploadProgress, totalUploadUnits)
+            : null;
+
+        let persistedCoursePhoto = newCourse.coursePhoto;
+
+        if (
+          persistedCoursePhoto &&
+          !isRemoteHttpUrl(persistedCoursePhoto) &&
+          storage
+        ) {
+          const extension = getImageExtensionFromUri(persistedCoursePhoto);
+          const filePath = `courses/${auth.currentUser.uid}/${nextId}/cover.${extension}`;
+          const storageRef = ref(storage, filePath);
+          const response = await fetch(persistedCoursePhoto);
+          const blob = await response.blob();
+
+          progressEmitter?.emit("Uploading course cover...", 0);
+          await uploadBlobWithProgress(
+            storageRef,
+            blob,
+            { contentType: getContentTypeFromExtension(extension) },
+            (fileProgress) =>
+              progressEmitter?.emit("Uploading course cover...", fileProgress)
+          );
+          progressEmitter?.completeOne("Uploaded course cover.");
+          persistedCoursePhoto = await getDownloadURL(storageRef);
+        }
+
+        const persistedCourseContent = await uploadCourseContentAssets(
+          nextId,
+          newCourse.courseContent,
+          progressEmitter
+        );
+
+        const persistedCourse = {
           ...newCourse,
+          coursePhoto: persistedCoursePhoto,
+          photoUrl: persistedCoursePhoto,
+          courseContent: persistedCourseContent,
+        };
+        options?.onUploadProgress?.({
+          message: "Saving course...",
+          percent: 100,
+          completedUnits: totalUploadUnits,
+          totalUnits: Math.max(1, totalUploadUnits),
+        });
+
+        await setDoc(doc(db, "courses", nextId), {
+          ...persistedCourse,
           createdBy: auth.currentUser.uid,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        return newCourse;
+        return persistedCourse;
       } catch (error) {
         console.warn("Unable to create Firestore course.", {
           code: error?.code,
@@ -271,15 +516,75 @@ export const CourseCatalogProvider = ({ children }) => {
       }
 
       try {
+        const needsCoursePhotoUpload =
+          Boolean(updatedCourse.coursePhoto) &&
+          !isRemoteHttpUrl(updatedCourse.coursePhoto);
+        const uploadableCourseParts = (updatedCourse.courseContent ?? []).filter(
+          (part) => {
+            const sourceUri = String(part?.localUri ?? "").trim();
+            return sourceUri && !isRemoteHttpUrl(sourceUri);
+          }
+        );
+        const totalUploadUnits =
+          uploadableCourseParts.length + (needsCoursePhotoUpload ? 1 : 0);
+        const progressEmitter =
+          totalUploadUnits > 0
+            ? buildProgressEmitter(options?.onUploadProgress, totalUploadUnits)
+            : null;
+
+        let persistedCoursePhoto = updatedCourse.coursePhoto;
+
+        if (
+          persistedCoursePhoto &&
+          !isRemoteHttpUrl(persistedCoursePhoto) &&
+          storage
+        ) {
+          const extension = getImageExtensionFromUri(persistedCoursePhoto);
+          const filePath = `courses/${auth.currentUser.uid}/${normalizedCourseId}/cover.${extension}`;
+          const storageRef = ref(storage, filePath);
+          const response = await fetch(persistedCoursePhoto);
+          const blob = await response.blob();
+
+          progressEmitter?.emit("Uploading course cover...", 0);
+          await uploadBlobWithProgress(
+            storageRef,
+            blob,
+            { contentType: getContentTypeFromExtension(extension) },
+            (fileProgress) =>
+              progressEmitter?.emit("Uploading course cover...", fileProgress)
+          );
+          progressEmitter?.completeOne("Uploaded course cover.");
+          persistedCoursePhoto = await getDownloadURL(storageRef);
+        }
+
+        const persistedCourseContent = await uploadCourseContentAssets(
+          normalizedCourseId,
+          updatedCourse.courseContent,
+          progressEmitter
+        );
+
+        const persistedCourse = {
+          ...updatedCourse,
+          coursePhoto: persistedCoursePhoto,
+          photoUrl: persistedCoursePhoto,
+          courseContent: persistedCourseContent,
+        };
+        options?.onUploadProgress?.({
+          message: "Saving course...",
+          percent: 100,
+          completedUnits: totalUploadUnits,
+          totalUnits: Math.max(1, totalUploadUnits),
+        });
+
         await setDoc(
           doc(db, "courses", normalizedCourseId),
           {
-            ...updatedCourse,
+            ...persistedCourse,
             updatedAt: serverTimestamp(),
           },
           { merge: true }
         );
-        return updatedCourse;
+        return persistedCourse;
       } catch (error) {
         console.warn("Unable to update Firestore course.", {
           code: error?.code,

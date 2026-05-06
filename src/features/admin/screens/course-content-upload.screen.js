@@ -98,6 +98,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
   const [contentTitle, setContentTitle] = useState("");
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [editingPartId, setEditingPartId] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgressPercent, setUploadProgressPercent] = useState(0);
+  const [uploadProgressMessage, setUploadProgressMessage] = useState("");
   const [contentParts, setContentParts] = useState(() => {
     if (!isEditMode) {
       return [];
@@ -319,6 +322,10 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
   };
 
   const handleUploadCourse = async () => {
+    if (isUploading) {
+      return;
+    }
+
     if (isEditMode && !courseToEdit?.id) {
       Alert.alert(
         "Course not found",
@@ -361,60 +368,79 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
     });
     const totalDurationSeconds = sumCourseVideoDurationSeconds(mappedCourseContent);
     const totalDurationLabel = formatDurationFromSeconds(totalDurationSeconds);
+    const handleUploadProgress = ({ percent, message }) => {
+      setUploadProgressPercent(Math.max(0, Math.min(100, Number(percent) || 0)));
+      setUploadProgressMessage(String(message ?? ""));
+    };
 
-    if (isEditMode) {
-      const updatedCourse = await updateCourse(courseToEdit.id, {
-        courseContent: mappedCourseContent,
-        courseDuration: totalDurationLabel,
-      });
+    setIsUploading(true);
+    setUploadProgressPercent(0);
+    setUploadProgressMessage("Preparing upload...");
 
-      if (!updatedCourse) {
-        Alert.alert("Update failed", "Unable to update content right now.");
+    try {
+      if (isEditMode) {
+        const updatedCourse = await updateCourse(
+          courseToEdit.id,
+          {
+            courseContent: mappedCourseContent,
+            courseDuration: totalDurationLabel,
+          },
+          { onUploadProgress: handleUploadProgress }
+        );
+
+        if (!updatedCourse) {
+          Alert.alert("Update failed", "Unable to update content right now.");
+          return;
+        }
+
+        Alert.alert("Content saved", "Course content has been updated.");
+        navigation.navigate("ManageCoursesHome");
         return;
       }
 
-      Alert.alert("Content saved", "Course content has been updated.");
-      navigation.navigate("ManageCoursesHome");
-      return;
-    }
-
-    const createdCourse = await addCourse({
-      categoryId: String(categoryId),
-      categoryTitle,
-      courseTitle: normalizedCourseTitle,
-      author:
-        profile?.displayName?.trim() ||
-        authUser?.displayName?.trim() ||
-        "Course Creator",
-      courseDuration: totalDurationLabel,
-      priceValue: toPriceLabel(courseDraft?.originalPrice),
-      watchers: "0",
-      rating: "New",
-      coursePhoto:
-        courseDraft?.coursePhotoUri ||
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80",
-      courseContent: mappedCourseContent,
-      ownerId: authUser?.uid ?? "creator-local",
-      isFoundationCourse: courseDraft?.courseType === "foundation",
-      prerequisiteCourseId:
-        courseDraft?.courseType === "prerequisite"
-          ? courseDraft?.prerequisiteCourseId
-          : null,
-    });
-
-    if (!createdCourse) {
-      Alert.alert(
-        "Upload failed",
-        "Unable to create course right now. Please check Firestore rules and try again."
+      const createdCourse = await addCourse(
+        {
+          categoryId: String(categoryId),
+          categoryTitle,
+          courseTitle: normalizedCourseTitle,
+          author:
+            profile?.displayName?.trim() ||
+            authUser?.displayName?.trim() ||
+            "Course Creator",
+          courseDuration: totalDurationLabel,
+          priceValue: toPriceLabel(courseDraft?.originalPrice),
+          watchers: "0",
+          rating: "New",
+          coursePhoto:
+            courseDraft?.coursePhotoUri ||
+            "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80",
+          courseContent: mappedCourseContent,
+          ownerId: authUser?.uid ?? "creator-local",
+          isFoundationCourse: courseDraft?.courseType === "foundation",
+          prerequisiteCourseId:
+            courseDraft?.courseType === "prerequisite"
+              ? courseDraft?.prerequisiteCourseId
+              : null,
+        },
+        { onUploadProgress: handleUploadProgress }
       );
-      return;
-    }
 
-    Alert.alert(
-      "Course uploaded",
-      "Your new course is now available in the student course list."
-    );
-    navigation.navigate("ManageCoursesHome");
+      if (!createdCourse) {
+        Alert.alert(
+          "Upload failed",
+          "Unable to create course right now. Please check Firestore rules and try again."
+        );
+        return;
+      }
+
+      Alert.alert(
+        "Course uploaded",
+        "Your new course is now available in the student course list."
+      );
+      navigation.navigate("ManageCoursesHome");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const courseInfo = isEditMode
@@ -453,6 +479,9 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
       onStartEditContentPart={handleStartEditContentPart}
       onCancelEditPart={handleCancelEditPart}
       editingPartId={editingPartId}
+      isUploading={isUploading}
+      uploadProgressPercent={uploadProgressPercent}
+      uploadProgressMessage={uploadProgressMessage}
       heading={isEditMode ? "Edit Course Content" : "Upload Course Content"}
       subtitle={
         isEditMode

@@ -12,18 +12,23 @@ export const CoursePdfViewerScreen = ({ route }) => {
     contentItem?.uri ||
     contentItem?.url ||
     "";
+  const encodedPdfUri = pdfUri ? encodeURIComponent(pdfUri) : "";
+  const embeddedPdfViewerUri = encodedPdfUri
+    ? `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodedPdfUri}`
+    : "";
 
   return (
     <SafeArea style={styles.safeArea}>
       <View style={styles.container}>
         <Text variant="label">{contentItem?.contentTitle ?? "Course PDF"}</Text>
-        {pdfUri ? (
+        {embeddedPdfViewerUri ? (
           <WebView
-            source={{ uri: pdfUri }}
+            source={{ uri: embeddedPdfViewerUri }}
             style={styles.webview}
             originWhitelist={["*"]}
             allowFileAccess={true}
             allowUniversalAccessFromFileURLs={true}
+            startInLoadingState={true}
           />
         ) : (
           <View style={styles.emptyState}>

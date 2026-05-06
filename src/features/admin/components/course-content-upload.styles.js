@@ -197,3 +197,59 @@ export const EditButtonText = styled.Text`
   font-family: ${(props) => props.theme.fonts.heading};
   font-size: 13px;
 `;
+
+export const UploadingOverlay = styled.View`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(15, 23, 32, 0.52);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+`;
+
+export const UploadingCard = styled.View`
+  width: 100%;
+  max-width: 340px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  border-width: 1px;
+  border-color: #d7e6f3;
+  padding: 16px;
+`;
+
+export const UploadingTitle = styled.Text`
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 16px;
+  color: #173851;
+`;
+
+export const UploadingMessage = styled.Text`
+  margin-top: 8px;
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 13px;
+  color: #355971;
+`;
+
+export const ProgressTrack = styled.View`
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  background-color: #e6eef5;
+  overflow: hidden;
+`;
+
+export const ProgressFill = styled.View`
+  height: 100%;
+  border-radius: 999px;
+  background-color: #2f7fc2;
+`;
+
+export const ProgressPercent = styled.Text`
+  margin-top: 8px;
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 13px;
+  color: #244e6d;
+`;

@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import {
   Content,
   ContentIdBadge,
@@ -30,6 +30,13 @@ import {
   UploadButton,
   UploadButtonText,
   UploadButtonsRow,
+  UploadingCard,
+  UploadingMessage,
+  UploadingOverlay,
+  UploadingTitle,
+  ProgressTrack,
+  ProgressFill,
+  ProgressPercent,
 } from "./course-content-upload.styles";
 
 export const CourseContentUploadForm = ({
@@ -47,6 +54,9 @@ export const CourseContentUploadForm = ({
   onStartEditContentPart,
   onCancelEditPart,
   editingPartId,
+  isUploading = false,
+  uploadProgressPercent = 0,
+  uploadProgressMessage = "",
   heading = "Upload Course Content",
   subtitle = "Add each part one by one with a title and one file (video/pdf/image).",
   uploadCourseLabel = "Upload Course",
@@ -75,13 +85,13 @@ export const CourseContentUploadForm = ({
 
         <Label>Upload File</Label>
         <UploadButtonsRow>
-          <UploadButton onPress={onPickVideo}>
+          <UploadButton onPress={onPickVideo} disabled={isUploading}>
             <UploadButtonText>Upload Video</UploadButtonText>
           </UploadButton>
-          <UploadButton onPress={onPickPdf}>
+          <UploadButton onPress={onPickPdf} disabled={isUploading}>
             <UploadButtonText>Upload PDF</UploadButtonText>
           </UploadButton>
-          <UploadButton onPress={onPickImage}>
+          <UploadButton onPress={onPickImage} disabled={isUploading}>
             <UploadButtonText>Upload Image</UploadButtonText>
           </UploadButton>
         </UploadButtonsRow>
@@ -95,13 +105,13 @@ export const CourseContentUploadForm = ({
           </SelectedFileCard>
         ) : null}
 
-        <PrimaryButton onPress={onAddContentPart}>
+        <PrimaryButton onPress={onAddContentPart} disabled={isUploading}>
           <PrimaryButtonText>
             {editingPartId ? "Save Content Part" : "Add Content Part"}
           </PrimaryButtonText>
         </PrimaryButton>
         {editingPartId ? (
-          <UploadButton onPress={onCancelEditPart}>
+          <UploadButton onPress={onCancelEditPart} disabled={isUploading}>
             <UploadButtonText>Cancel Edit</UploadButtonText>
           </UploadButton>
         ) : null}
@@ -116,10 +126,16 @@ export const CourseContentUploadForm = ({
                 </ContentIdBadgeText>
               </ContentIdBadge>
               <View style={{ flexDirection: "row" }}>
-                <EditButton onPress={() => onStartEditContentPart?.(part)}>
+                <EditButton
+                  onPress={() => onStartEditContentPart?.(part)}
+                  disabled={isUploading}
+                >
                   <EditButtonText>Edit</EditButtonText>
                 </EditButton>
-                <DeleteButton onPress={() => onDeleteContentPart?.(part.id)}>
+                <DeleteButton
+                  onPress={() => onDeleteContentPart?.(part.id)}
+                  disabled={isUploading}
+                >
                   <DeleteButtonText>Delete</DeleteButtonText>
                 </DeleteButton>
               </View>
@@ -132,11 +148,28 @@ export const CourseContentUploadForm = ({
 
         <UploadCourseButton
           onPress={onUploadCourse}
-          disabled={contentParts.length === 0}
+          disabled={contentParts.length === 0 || isUploading}
         >
           <UploadCourseButtonText>{uploadCourseLabel}</UploadCourseButtonText>
         </UploadCourseButton>
       </Inner>
     </Content>
+    {isUploading ? (
+      <UploadingOverlay>
+        <UploadingCard>
+          <UploadingTitle>Uploading Course...</UploadingTitle>
+          <UploadingMessage>
+            {uploadProgressMessage || "Preparing upload..."}
+          </UploadingMessage>
+          <ProgressTrack>
+            <ProgressFill style={{ width: `${uploadProgressPercent}%` }} />
+          </ProgressTrack>
+          <ProgressPercent>{uploadProgressPercent}%</ProgressPercent>
+          <View style={{ marginTop: 10 }}>
+            <ActivityIndicator size="small" color="#2f7fc2" />
+          </View>
+        </UploadingCard>
+      </UploadingOverlay>
+    ) : null}
   </Screen>
 );
