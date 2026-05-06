@@ -136,7 +136,7 @@ const CurrencyButtonText = styled.Text`
 const SubmitButton = styled.TouchableOpacity`
   margin-top: 18px;
   border-radius: 10px;
-  background-color: #3d98de;
+  background-color: ${(props) => (props.disabled ? "#8dbde1" : "#3d98de")};
   padding: 12px;
   align-items: center;
 `;
@@ -231,7 +231,9 @@ export const UploadTripScreen = ({ navigation, route }) => {
   const initialEndDate = parseStoredDate(editingTrip?.endDate);
   const [title, setTitle] = useState(editingTrip?.title || "");
   const [image, setImage] = useState(editingTrip?.image || "");
-  const [description, setDescription] = useState(editingTrip?.description || "");
+  const [description, setDescription] = useState(
+    editingTrip?.description || ""
+  );
   const [location, setLocation] = useState(editingTrip?.location || "");
   const [currencySymbol, setCurrencySymbol] = useState(initialPrice.symbol);
   const [priceAmount, setPriceAmount] = useState(initialPrice.amount);
@@ -240,6 +242,7 @@ export const UploadTripScreen = ({ navigation, route }) => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [url, setUrl] = useState(editingTrip?.link || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -267,7 +270,11 @@ export const UploadTripScreen = ({ navigation, route }) => {
     }
   };
 
-  const saveTrip = () => {
+  const saveTrip = async () => {
+    if (isSaving) {
+      return;
+    }
+
     const cleanedTitle = title.trim();
     const cleanedDescription = description.trim();
     const cleanedLocation = location.trim();
@@ -299,14 +306,18 @@ export const UploadTripScreen = ({ navigation, route }) => {
     }
 
     const totalDays = getTotalTripDays(startDate, endDate) || 0;
-    const duration = `${formatDateLabel(startDate)} - ${formatDateLabel(endDate)} (${totalDays} ${totalDays === 1 ? "day" : "days"})`;
+    const duration = `${formatDateLabel(startDate)} - ${formatDateLabel(
+      endDate
+    )} (${totalDays} ${totalDays === 1 ? "day" : "days"})`;
 
     const payload = {
       title: cleanedTitle,
       image: image || defaultImage,
       description: cleanedDescription,
       location: cleanedLocation,
-      price: cleanedPrice ? `${currencySymbol}${cleanedPrice}` : `${currencySymbol}0`,
+      price: cleanedPrice
+        ? `${currencySymbol}${cleanedPrice}`
+        : `${currencySymbol}0`,
       link: cleanedUrl || "https://www.youarethecompass.com/",
       duration,
       startDate: startDate.toISOString(),
@@ -318,14 +329,36 @@ export const UploadTripScreen = ({ navigation, route }) => {
       },
     };
 
+    setIsSaving(true);
+
     if (editingTrip?.id) {
-      updateTrip(editingTrip.id, payload);
+      const updatedTrip = await updateTrip(editingTrip.id, payload);
+      setIsSaving(false);
+
+      if (updatedTrip) {
+        navigation.goBack();
+        return;
+      }
+
+      Alert.alert(
+        "Unable to save trip",
+        "Check your Firebase setup and try again."
+      );
+      return;
+    }
+
+    const newTrip = await addTrip(payload);
+    setIsSaving(false);
+
+    if (newTrip) {
       navigation.goBack();
       return;
     }
 
-    addTrip(payload);
-    navigation.goBack();
+    Alert.alert(
+      "Unable to upload trip",
+      "Check your Firebase setup and try again."
+    );
   };
 
   return (
@@ -392,16 +425,19 @@ export const UploadTripScreen = ({ navigation, route }) => {
               : ` (${totalDays} ${totalDays === 1 ? "day" : "days"})`;
 
           return (
-        <DateRangeRow>
-          <DatePickerButton onPress={() => setShowStartDatePicker(true)}>
-            <DatePickerText>Start: {formatDateLabel(startDate)}</DatePickerText>
-          </DatePickerButton>
-          <DatePickerButton onPress={() => setShowEndDatePicker(true)}>
-            <DatePickerText>
-              End: {formatDateLabel(endDate)}{daysLabel}
-            </DatePickerText>
-          </DatePickerButton>
-        </DateRangeRow>
+            <DateRangeRow>
+              <DatePickerButton onPress={() => setShowStartDatePicker(true)}>
+                <DatePickerText>
+                  Start: {formatDateLabel(startDate)}
+                </DatePickerText>
+              </DatePickerButton>
+              <DatePickerButton onPress={() => setShowEndDatePicker(true)}>
+                <DatePickerText>
+                  End: {formatDateLabel(endDate)}
+                  {daysLabel}
+                </DatePickerText>
+              </DatePickerButton>
+            </DateRangeRow>
           );
         })()}
 
@@ -441,9 +477,13 @@ export const UploadTripScreen = ({ navigation, route }) => {
           autoCapitalize="none"
         />
 
-        <SubmitButton onPress={saveTrip}>
+        <SubmitButton disabled={isSaving} onPress={saveTrip}>
           <SubmitButtonText>
-            {editingTrip?.id ? "Save Trip Changes" : "Upload Trip Photo"}
+            {isSaving
+              ? "Saving..."
+              : editingTrip?.id
+              ? "Save Trip Changes"
+              : "Upload Trip Photo"}
           </SubmitButtonText>
         </SubmitButton>
       </Content>
