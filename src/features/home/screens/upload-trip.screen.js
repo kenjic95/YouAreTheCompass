@@ -6,6 +6,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
+import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -218,6 +219,24 @@ const getTotalTripDays = (start, end) => {
   return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
 };
 
+const getUploadErrorMessage = (error) => {
+  const code = error?.code || "unknown";
+
+  switch (code) {
+    case "permission-denied":
+    case "firestore/permission-denied":
+      return "Firestore rejected the write. Check that your published rules allow authenticated users to write to /trips.";
+    case "storage/unauthorized":
+      return "Firebase Storage rejected the image upload. Check your Storage rules for the connect-trips path.";
+    case "auth/no-current-user":
+      return "Firebase Auth has no current user on this screen. Sign out, sign back in, then try again.";
+    case "unavailable":
+      return "Firebase is temporarily unavailable. Check your connection and try again.";
+    default:
+      return `${error?.message || "Unknown Firebase error"}\n\nCode: ${code}`;
+  }
+};
+
 export const UploadTripScreen = ({ navigation, route }) => {
   const { trips, addTrip, updateTrip } = useTripCatalog();
   const editTripId = route?.params?.tripId;
@@ -272,6 +291,14 @@ export const UploadTripScreen = ({ navigation, route }) => {
 
   const saveTrip = async () => {
     if (isSaving) {
+      return;
+    }
+
+    if (isFirebaseConfigured && !auth?.currentUser?.uid) {
+      Alert.alert(
+        "Sign in required",
+        "Please sign in with a Firebase account before uploading trips."
+      );
       return;
     }
 
@@ -331,34 +358,39 @@ export const UploadTripScreen = ({ navigation, route }) => {
 
     setIsSaving(true);
 
-    if (editingTrip?.id) {
-      const updatedTrip = await updateTrip(editingTrip.id, payload);
+    try {
+      if (editingTrip?.id) {
+        const updatedTrip = await updateTrip(editingTrip.id, payload);
+        setIsSaving(false);
+
+        if (updatedTrip) {
+          navigation.goBack();
+          return;
+        }
+
+        Alert.alert(
+          "Unable to save trip",
+          "The trip was not saved. Please try again."
+        );
+        return;
+      }
+
+      const newTrip = await addTrip(payload);
       setIsSaving(false);
 
-      if (updatedTrip) {
+      if (newTrip) {
         navigation.goBack();
         return;
       }
 
       Alert.alert(
-        "Unable to save trip",
-        "Check your Firebase setup and try again."
+        "Unable to upload trip",
+        "The trip was not uploaded. Please try again."
       );
-      return;
+    } catch (error) {
+      setIsSaving(false);
+      Alert.alert("Unable to upload trip", getUploadErrorMessage(error));
     }
-
-    const newTrip = await addTrip(payload);
-    setIsSaving(false);
-
-    if (newTrip) {
-      navigation.goBack();
-      return;
-    }
-
-    Alert.alert(
-      "Unable to upload trip",
-      "Check your Firebase setup and try again."
-    );
   };
 
   return (

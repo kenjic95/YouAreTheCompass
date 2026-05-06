@@ -106,6 +106,12 @@ const sortTrips = (tripList = []) =>
 const getSeedTrips = () =>
   (tripsMock ?? []).map((trip) => normalizeTrip({ ...trip }));
 
+const createTripCatalogError = (code, message) => {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+};
+
 export const TripCatalogProvider = ({ children }) => {
   const [trips, setTrips] = useState(getSeedTrips());
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -236,7 +242,10 @@ export const TripCatalogProvider = ({ children }) => {
       }
 
       if (!auth?.currentUser?.uid) {
-        return null;
+        throw createTripCatalogError(
+          "auth/no-current-user",
+          "Firebase Auth has no current user."
+        );
       }
 
       try {
@@ -260,7 +269,7 @@ export const TripCatalogProvider = ({ children }) => {
           code: error?.code,
           message: error?.message,
         });
-        return null;
+        throw error;
       }
     },
     [shouldUseFirebase]
@@ -300,7 +309,10 @@ export const TripCatalogProvider = ({ children }) => {
       }
 
       if (!auth?.currentUser?.uid) {
-        return null;
+        throw createTripCatalogError(
+          "auth/no-current-user",
+          "Firebase Auth has no current user."
+        );
       }
 
       try {
@@ -328,7 +340,7 @@ export const TripCatalogProvider = ({ children }) => {
           code: error?.code,
           message: error?.message,
         });
-        return null;
+        throw error;
       }
     },
     [shouldUseFirebase, trips]
@@ -360,7 +372,10 @@ export const TripCatalogProvider = ({ children }) => {
       }
 
       if (!auth?.currentUser?.uid) {
-        return false;
+        throw createTripCatalogError(
+          "auth/no-current-user",
+          "Firebase Auth has no current user."
+        );
       }
 
       try {
@@ -371,7 +386,7 @@ export const TripCatalogProvider = ({ children }) => {
           code: error?.code,
           message: error?.message,
         });
-        return false;
+        throw error;
       }
     },
     [shouldUseFirebase, trips]
