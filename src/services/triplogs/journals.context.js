@@ -2,9 +2,22 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
+
+import { db, isFirebaseConfigured } from "../auth/firebase";
+import { useUserProfile } from "../auth/user-profile.context";
 
 const initialJournals = [
   {
@@ -43,51 +56,171 @@ const initialJournals = [
 
 const TripLogsContext = createContext({
   journals: [],
-  saveJournal: () => null,
+  saveJournal: async () => null,
   getJournalById: () => null,
+  isLoading: false,
 });
 
 const normalizeChecklistItems = (items = []) =>
   items.map((item) => item.trim()).filter(Boolean);
 
+const normalizeJournal = (journal = {}) => ({
+  ...journal,
+  id: String(journal?.id ?? "").trim(),
+  title: journal?.title?.trim() || "Untitled Journal",
+  date: journal?.date?.trim() || "No date added",
+  checklistItems: normalizeChecklistItems(journal?.checklistItems),
+  beforeTripNotes: journal?.beforeTripNotes?.trim() || "",
+  afterTripNotes: journal?.afterTripNotes?.trim() || "",
+});
+
+const getTimestampMillis = (value) => {
+  if (typeof value?.toMillis === "function") {
+    return value.toMillis();
+  }
+
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  return Number(value) || 0;
+};
+
+const sortJournals = (journalsToSort = []) =>
+  [...journalsToSort].sort((firstJournal, secondJournal) => {
+    const secondTime = getTimestampMillis(
+      secondJournal.updatedAt ?? secondJournal.createdAt
+    );
+    const firstTime = getTimestampMillis(
+      firstJournal.updatedAt ?? firstJournal.createdAt
+    );
+
+    return secondTime - firstTime;
+  });
+
 export const TripLogsProvider = ({ children }) => {
+  const { authUser } = useUserProfile();
   const [journals, setJournals] = useState(initialJournals);
+  const [isLoading, setIsLoading] = useState(false);
+  const userId = authUser?.uid ? String(authUser.uid) : "";
 
-  const saveJournal = useCallback((journal) => {
-    const normalizedJournal = {
-      ...journal,
-      title: journal?.title?.trim() || "Untitled Journal",
-      date: journal?.date?.trim() || "No date added",
-      checklistItems: normalizeChecklistItems(journal?.checklistItems),
-      beforeTripNotes: journal?.beforeTripNotes?.trim() || "",
-      afterTripNotes: journal?.afterTripNotes?.trim() || "",
-    };
+  useEffect(() => {
+    if (!isFirebaseConfigured || !db || !userId) {
+      setJournals(initialJournals);
+      setIsLoading(false);
+      return undefined;
+    }
 
-    const journalId = normalizedJournal?.id || Date.now().toString();
-    const completeJournal = {
-      ...normalizedJournal,
-      id: journalId,
-    };
+    setIsLoading(true);
 
-    setJournals((currentJournals) => {
-      const journalIndex = currentJournals.findIndex(
-        (existingJournal) => existingJournal.id === journalId
-      );
+    const journalsQuery = query(
+      collection(db, "tripJournals"),
+      where("userId", "==", userId)
+    );
 
-      if (journalIndex === -1) {
-        return [completeJournal, ...currentJournals];
+    const unsubscribe = onSnapshot(
+      journalsQuery,
+      (snapshot) => {
+        const mappedJournals = snapshot.docs
+          .map((document) =>
+            normalizeJournal({
+              id: document.id,
+              ...document.data(),
+            })
+          )
+          .filter((journal) => journal.id);
+
+        setJournals(sortJournals(mappedJournals));
+        setIsLoading(false);
+      },
+      (error) => {
+        console.warn("Unable to subscribe to Firestore trip journals.", {
+          code: error?.code,
+          message: error?.message,
+        });
+        setIsLoading(false);
+      }
+    );
+
+    return unsubscribe;
+  }, [userId]);
+
+  const saveJournal = useCallback(
+    async (journal) => {
+      const normalizedJournal = normalizeJournal(journal);
+
+      const journalId = normalizedJournal?.id || Date.now().toString();
+      const completeJournal = {
+        ...normalizedJournal,
+        id: journalId,
+      };
+
+      setJournals((currentJournals) => {
+        const journalIndex = currentJournals.findIndex(
+          (existingJournal) => existingJournal.id === journalId
+        );
+
+        if (journalIndex === -1) {
+          return sortJournals([
+            {
+              ...completeJournal,
+              updatedAt: Date.now(),
+            },
+            ...currentJournals,
+          ]);
+        }
+
+        return sortJournals(
+          currentJournals.map((existingJournal) =>
+            existingJournal.id === journalId
+              ? {
+                  ...existingJournal,
+                  ...completeJournal,
+                  updatedAt: Date.now(),
+                }
+              : existingJournal
+          )
+        );
+      });
+
+      if (!isFirebaseConfigured || !db || !userId) {
+        return journalId;
       }
 
-      return currentJournals.map((existingJournal) =>
-        existingJournal.id === journalId ? completeJournal : existingJournal
-      );
-    });
+      try {
+        const isExistingJournal = journals.some(
+          (existingJournal) => String(existingJournal.id) === String(journalId)
+        );
+        const journalPayload = {
+          ...completeJournal,
+          userId,
+          updatedAt: serverTimestamp(),
+        };
 
-    return journalId;
-  }, []);
+        if (!isExistingJournal) {
+          journalPayload.createdAt = serverTimestamp();
+        }
+
+        await setDoc(doc(db, "tripJournals", journalId), journalPayload, {
+          merge: true,
+        });
+      } catch (error) {
+        console.warn("Unable to save Firestore trip journal.", {
+          code: error?.code,
+          message: error?.message,
+        });
+        return null;
+      }
+
+      return journalId;
+    },
+    [journals, userId]
+  );
 
   const getJournalById = useCallback(
-    (journalId) => journals.find((journal) => journal.id === journalId) || null,
+    (journalId) =>
+      journals.find((journal) => String(journal.id) === String(journalId)) ||
+      null,
     [journals]
   );
 
@@ -96,8 +229,9 @@ export const TripLogsProvider = ({ children }) => {
       journals,
       saveJournal,
       getJournalById,
+      isLoading,
     }),
-    [getJournalById, journals, saveJournal]
+    [getJournalById, isLoading, journals, saveJournal]
   );
 
   return (

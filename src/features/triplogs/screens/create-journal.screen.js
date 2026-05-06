@@ -165,7 +165,7 @@ const ReflectionInput = styled.TextInput.attrs({
 `;
 
 const SaveButton = styled.TouchableOpacity`
-  background-color: #d7e6f1;
+  background-color: ${(props) => (props.disabled ? "#b9ccda" : "#d7e6f1")};
   padding: 18px 20px;
   border-radius: 28px;
   align-items: center;
@@ -333,6 +333,7 @@ export const CreateJournalScreen = ({ navigation, route }) => {
   const [beforeTripNotes, setBeforeTripNotes] = useState("");
   const [afterTripNotes, setAfterTripNotes] = useState("");
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [visibleMonthDate, setVisibleMonthDate] = useState(new Date());
 
@@ -387,8 +388,14 @@ export const CreateJournalScreen = ({ navigation, route }) => {
     );
   };
 
-  const handleSaveJournal = () => {
-    const savedJournalId = saveJournal({
+  const handleSaveJournal = async () => {
+    if (isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    const savedJournalId = await saveJournal({
       id: journalId,
       title,
       date,
@@ -396,6 +403,16 @@ export const CreateJournalScreen = ({ navigation, route }) => {
       beforeTripNotes,
       afterTripNotes,
     });
+
+    setIsSaving(false);
+
+    if (!savedJournalId) {
+      Alert.alert(
+        "Journal not saved",
+        "Unable to save this trip journal. Please check your Firebase connection and Firestore rules."
+      );
+      return;
+    }
 
     Alert.alert(
       "Journal saved",
@@ -472,8 +489,10 @@ export const CreateJournalScreen = ({ navigation, route }) => {
         />
       </ReflectionBox>
 
-      <SaveButton onPress={handleSaveJournal}>
-        <SaveButtonText>Save Journal</SaveButtonText>
+      <SaveButton disabled={isSaving} onPress={handleSaveJournal}>
+        <SaveButtonText>
+          {isSaving ? "Saving..." : "Save Journal"}
+        </SaveButtonText>
       </SaveButton>
 
       <Modal
