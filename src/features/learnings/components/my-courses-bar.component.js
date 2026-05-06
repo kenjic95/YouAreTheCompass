@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import styled from "styled-components/native";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { Text } from "../../../components/typography/text.component";
@@ -77,55 +78,67 @@ export const AddToCartToggleButton = ({ isActive, onPress }) => {
 export const MyCoursesBar = ({ courses, onNavigateCourse }) => {
   const [completedByCourseId, setCompletedByCourseId] = useState({});
 
-  useEffect(() => {
-    let isActive = true;
+  const loadCompletionMap = async (isActiveRef) => {
+    const entries = await Promise.all(
+      (courses ?? []).map(async (course) => {
+        const courseId = course?.id;
+        const contentIds = (course?.courseContent ?? [])
+          .map((item) => String(item?.contentId ?? "").trim())
+          .filter(Boolean);
 
-    const loadCompletionMap = async () => {
-      const entries = await Promise.all(
-        (courses ?? []).map(async (course) => {
-          const courseId = course?.id;
-          const contentIds = (course?.courseContent ?? [])
-            .map((item) => item?.contentId)
-            .filter(Boolean);
-
-          if (!courseId || contentIds.length === 0) {
-            return [courseId, false];
-          }
-
-          const progressKey = `${COURSE_PROGRESS_KEY_PREFIX}:${courseId}`;
-          try {
-            const storedValue = await AsyncStorage.getItem(progressKey);
-            const parsedIds = storedValue ? JSON.parse(storedValue) : [];
-            const viewedIds = new Set(
-              Array.isArray(parsedIds) ? parsedIds : []
-            );
-            const isCompleted = contentIds.every((id) => viewedIds.has(id));
-            return [courseId, isCompleted];
-          } catch {
-            return [courseId, false];
-          }
-        })
-      );
-
-      if (!isActive) {
-        return;
-      }
-
-      const nextMap = {};
-      entries.forEach(([courseId, isCompleted]) => {
-        if (courseId) {
-          nextMap[courseId] = isCompleted;
+        if (!courseId || contentIds.length === 0) {
+          return [courseId, false];
         }
-      });
-      setCompletedByCourseId(nextMap);
-    };
 
-    loadCompletionMap();
+        const progressKey = `${COURSE_PROGRESS_KEY_PREFIX}:${courseId}`;
+        try {
+          const storedValue = await AsyncStorage.getItem(progressKey);
+          const parsedIds = storedValue ? JSON.parse(storedValue) : [];
+          const viewedIds = new Set(
+            (Array.isArray(parsedIds) ? parsedIds : [])
+              .map((id) => String(id ?? "").trim())
+              .filter(Boolean)
+          );
+          const isCompleted = contentIds.every((id) => viewedIds.has(id));
+          return [courseId, isCompleted];
+        } catch {
+          return [courseId, false];
+        }
+      })
+    );
+
+    if (!isActiveRef.current) {
+      return;
+    }
+
+    const nextMap = {};
+    entries.forEach(([courseId, isCompleted]) => {
+      if (courseId) {
+        nextMap[courseId] = isCompleted;
+      }
+    });
+    setCompletedByCourseId(nextMap);
+  };
+
+  useEffect(() => {
+    const isActiveRef = { current: true };
+
+    loadCompletionMap(isActiveRef);
 
     return () => {
-      isActive = false;
+      isActiveRef.current = false;
     };
   }, [courses]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const isActiveRef = { current: true };
+      loadCompletionMap(isActiveRef);
+      return () => {
+        isActiveRef.current = false;
+      };
+    }, [courses])
+  );
 
   return (
     <MyCoursesWrapper>
