@@ -35,7 +35,7 @@ const normalizeIdPart = (value) =>
     .replace(/^-+|-+$/g, "");
 
 const TRIP_CATALOG_STORAGE_KEY = "home-connect-trip-catalog-v1";
-const CONNECT_TRIPS_COLLECTION = "connectTrips";
+const CONNECT_TRIPS_COLLECTION = "trips";
 const DEFAULT_TRIP_IMAGE =
   "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=900&q=80";
 
