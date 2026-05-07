@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -7,8 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, query, where } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../../../services/auth/firebase";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
@@ -40,6 +39,7 @@ export const StudentProgressScreen = () => {
   const [loadError, setLoadError] = useState("");
   const [selectedCourseId, setSelectedCourseId] = useState("all");
   const [completionFilter, setCompletionFilter] = useState("all");
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const roleLabel = String(role ?? "").toLowerCase();
   const currentUserId = String(authUser?.uid ?? "");
@@ -63,96 +63,152 @@ export const StudentProgressScreen = () => {
       .filter(Boolean);
   }, [courses, currentUserId, roleLabel]);
 
-  const loadProgress = useCallback(async () => {
+  useEffect(() => {
     if (!isFirebaseConfigured || !db || !authUser?.uid) {
       setLoadError("Firebase is not configured.");
       setProgressRows([]);
       setStudentNamesById({});
       setIsLoading(false);
       setIsRefreshing(false);
-      return;
+      return undefined;
     }
 
+    setIsLoading(true);
     setLoadError("");
-    const nextRows = [];
+    const unsubscribers = [];
+    let hasEmitted = false;
 
-    try {
-      if (roleLabel === "admin") {
-        const snapshot = await getDocs(collection(db, "enrollments"));
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() ?? {};
-          nextRows.push({ id: docSnap.id, ...data });
-        });
-      } else if (roleLabel === "teacher") {
-        if (teacherCourseIds.length === 0) {
-          setProgressRows([]);
-          setStudentNamesById({});
-          setIsLoading(false);
-          setIsRefreshing(false);
-          return;
-        }
-
-        const idChunks = chunk(teacherCourseIds, 10);
-        for (const courseIds of idChunks) {
-          const enrollmentsQuery = query(
-            collection(db, "enrollments"),
-            where("courseId", "in", courseIds)
-          );
-          const snapshot = await getDocs(enrollmentsQuery);
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data() ?? {};
-            nextRows.push({ id: docSnap.id, ...data });
-          });
-        }
-      } else {
-        setProgressRows([]);
-        setStudentNamesById({});
-        setIsLoading(false);
-        setIsRefreshing(false);
-        return;
-      }
-
-      const sortedRows = nextRows.sort((a, b) => {
+    const pushRows = (rows = []) => {
+      const sortedRows = [...rows].sort((a, b) => {
         const aUpdatedAt = a?.updatedAt?.seconds ?? 0;
         const bUpdatedAt = b?.updatedAt?.seconds ?? 0;
         return bUpdatedAt - aUpdatedAt;
       });
       setProgressRows(sortedRows);
-
-      const studentIds = Array.from(
-        new Set(sortedRows.map((row) => String(row?.userId ?? "")).filter(Boolean))
-      );
-      const nextStudentMap = {};
-      for (const studentId of studentIds) {
-        const userSnapshot = await getDoc(doc(db, "users", studentId));
-        const userData = userSnapshot.exists() ? userSnapshot.data() : {};
-        const fullName = [userData?.firstName, userData?.lastName]
-          .filter(Boolean)
-          .join(" ")
-          .trim();
-        nextStudentMap[studentId] =
-          String(userData?.displayName ?? "").trim() || fullName || studentId;
+      if (!hasEmitted) {
+        hasEmitted = true;
+        setIsLoading(false);
       }
-      setStudentNamesById(nextStudentMap);
-    } catch (error) {
-      setLoadError(error?.message || "Unable to load student progress.");
-    } finally {
+      setIsRefreshing(false);
+    };
+
+    if (roleLabel === "admin") {
+      const unsubscribe = onSnapshot(
+        collection(db, "enrollments"),
+        (snapshot) => {
+          const rows = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...(docSnap.data() ?? {}),
+          }));
+          pushRows(rows);
+        },
+        (error) => {
+          setLoadError(error?.message || "Unable to load student progress.");
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
+      );
+      unsubscribers.push(unsubscribe);
+    } else if (roleLabel === "teacher") {
+      if (teacherCourseIds.length === 0) {
+        setProgressRows([]);
+        setIsLoading(false);
+        setIsRefreshing(false);
+        return undefined;
+      }
+
+      const idChunks = chunk(teacherCourseIds, 10);
+      const rowsById = new Map();
+      const recompute = () => pushRows(Array.from(rowsById.values()));
+
+      idChunks.forEach((courseIds) => {
+        const enrollmentsQuery = query(
+          collection(db, "enrollments"),
+          where("courseId", "in", courseIds)
+        );
+        const unsubscribe = onSnapshot(
+          enrollmentsQuery,
+          (snapshot) => {
+            const currentChunkCourseIds = new Set(courseIds);
+            Array.from(rowsById.entries()).forEach(([rowId, row]) => {
+              const rowCourseId = String(row?.courseId ?? "");
+              if (currentChunkCourseIds.has(rowCourseId)) {
+                rowsById.delete(rowId);
+              }
+            });
+
+            snapshot.docs.forEach((docSnap) => {
+              rowsById.set(docSnap.id, {
+                id: docSnap.id,
+                ...(docSnap.data() ?? {}),
+              });
+            });
+            recompute();
+          },
+          (error) => {
+            setLoadError(error?.message || "Unable to load student progress.");
+            setIsLoading(false);
+            setIsRefreshing(false);
+          }
+        );
+        unsubscribers.push(unsubscribe);
+      });
+    } else {
+      setProgressRows([]);
       setIsLoading(false);
       setIsRefreshing(false);
+      return undefined;
     }
-  }, [authUser?.uid, roleLabel, teacherCourseIds]);
 
-  useFocusEffect(
-    useCallback(() => {
-      setIsLoading(true);
-      loadProgress();
-    }, [loadProgress])
-  );
+    return () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe?.());
+    };
+  }, [authUser?.uid, refreshTick, roleLabel, teacherCourseIds]);
+
+  useEffect(() => {
+    let isActive = true;
+    const loadStudentNames = async () => {
+      const studentIds = Array.from(
+        new Set(
+          (progressRows ?? [])
+            .map((row) => String(row?.userId ?? "").trim())
+            .filter(Boolean)
+        )
+      );
+
+      const nextStudentMap = {};
+      for (const studentId of studentIds) {
+        try {
+          const userSnapshot = await getDoc(doc(db, "users", studentId));
+          const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+          const fullName = [userData?.firstName, userData?.lastName]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+          nextStudentMap[studentId] =
+            String(userData?.displayName ?? "").trim() || fullName || studentId;
+        } catch {
+          nextStudentMap[studentId] = studentId;
+        }
+      }
+
+      if (!isActive) {
+        return;
+      }
+      setStudentNamesById(nextStudentMap);
+    };
+
+    loadStudentNames();
+    return () => {
+      isActive = false;
+    };
+  }, [progressRows]);
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
-    loadProgress();
-  }, [loadProgress]);
+    setIsLoading(true);
+    setRefreshTick((previous) => previous + 1);
+  }, []);
 
   const selectableCourseIds = useMemo(() => {
     if (roleLabel === "admin") {
