@@ -29,6 +29,7 @@ export const CourseCheckoutContent = ({
   discountLabel,
   buyButtonColor,
   onPlaceOrder,
+  isProcessingPayment = false,
 }) => {
   const theme = useTheme();
 
@@ -72,8 +73,15 @@ export const CourseCheckoutContent = ({
         <InfoText>price in mock data</InfoText>
       </InfoBox>
 
-      <PlaceOrderButton bgColor={buyButtonColor} onPress={onPlaceOrder}>
-        <PlaceOrderText>PLACE ORDER</PlaceOrderText>
+      <PlaceOrderButton
+        bgColor={buyButtonColor}
+        onPress={onPlaceOrder}
+        disabled={isProcessingPayment}
+        style={{ opacity: isProcessingPayment ? 0.7 : 1 }}
+      >
+        <PlaceOrderText>
+          {isProcessingPayment ? "PROCESSING..." : "PLACE ORDER"}
+        </PlaceOrderText>
       </PlaceOrderButton>
     </Container>
   );

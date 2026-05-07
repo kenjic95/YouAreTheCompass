@@ -1,21 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { Alert, View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, setDoc } from "firebase/firestore";
 
 import { db, isFirebaseConfigured } from "../../../services/auth/firebase";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
+import { startMockPremiumCheckout } from "../../../services/payments/payments.service";
 
 export default function PremiumScreen({ navigation }) {
   const { authUser, isPremium } = useUserProfile();
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const handleActivatePremium = async () => {
+    if (isProcessingPayment || isPremium) {
+      return;
+    }
+
     if (!isFirebaseConfigured || !db || !authUser?.uid) {
       Alert.alert("Not available", "Please sign in with Firebase to continue.");
       return;
     }
 
     try {
+      setIsProcessingPayment(true);
+      await startMockPremiumCheckout({
+        userId: authUser.uid,
+        amount: 9.99,
+      });
+
       await setDoc(
         doc(db, "users", authUser.uid),
         { plan: "premium", discountPercent: 20 },
@@ -27,6 +39,8 @@ export default function PremiumScreen({ navigation }) {
       );
     } catch (error) {
       Alert.alert("Update failed", "Unable to activate premium right now.");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -128,6 +142,7 @@ export default function PremiumScreen({ navigation }) {
       {/* Button */}
       <TouchableOpacity
         onPress={handleActivatePremium}
+        disabled={isPremium || isProcessingPayment}
         style={{
           backgroundColor: isPremium ? "#6f9fc6" : "#69B0E5",
           paddingVertical: 18,
@@ -138,6 +153,7 @@ export default function PremiumScreen({ navigation }) {
           shadowOpacity: 0.18,
           shadowRadius: 5,
           elevation: 4,
+          opacity: isProcessingPayment ? 0.7 : 1,
         }}
       >
         <Text
@@ -147,7 +163,11 @@ export default function PremiumScreen({ navigation }) {
             fontWeight: "700",
           }}
         >
-          {isPremium ? "Premium Active" : "Unlock Premium"}
+          {isPremium
+            ? "Premium Active"
+            : isProcessingPayment
+            ? "Processing..."
+            : "Unlock Premium"}
         </Text>
       </TouchableOpacity>
     </View>
