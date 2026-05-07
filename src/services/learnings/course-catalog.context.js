@@ -104,7 +104,75 @@ const getFileExtensionFromUri = (uri, fallback = "bin") => {
   return extension;
 };
 
+const getFileExtensionFromName = (name, fallback = "bin") => {
+  const normalized = String(name ?? "").trim();
+  if (!normalized.includes(".")) {
+    return fallback;
+  }
+
+  const extension = normalized.split(".").pop()?.toLowerCase();
+  if (!extension) {
+    return fallback;
+  }
+
+  if (extension === "jpeg") {
+    return "jpg";
+  }
+
+  return extension;
+};
+
+const getFileExtensionFromMimeType = (mimeType, fallback = "bin") => {
+  const normalizedMime = String(mimeType ?? "").toLowerCase().trim();
+  switch (normalizedMime) {
+    case "video/mp4":
+      return "mp4";
+    case "video/quicktime":
+      return "mov";
+    case "video/webm":
+      return "webm";
+    case "application/pdf":
+      return "pdf";
+    case "image/png":
+      return "png";
+    case "image/webp":
+      return "webp";
+    case "image/heic":
+      return "heic";
+    case "image/heif":
+      return "heif";
+    case "image/jpeg":
+    case "image/jpg":
+      return "jpg";
+    default:
+      return fallback;
+  }
+};
+
+const getFileExtensionForCoursePart = (part = {}) => {
+  const uri = String(part?.localUri ?? "").trim();
+  const localFileName = String(part?.localFileName ?? "").trim();
+  const localMimeType = String(part?.localMimeType ?? "").trim();
+
+  const fromName = getFileExtensionFromName(localFileName, "");
+  if (fromName) {
+    return fromName;
+  }
+
+  const fromMime = getFileExtensionFromMimeType(localMimeType, "");
+  if (fromMime) {
+    return fromMime;
+  }
+
+  return getFileExtensionFromUri(uri, "bin");
+};
+
 const getStorageContentTypeForCoursePart = (part = {}, extension = "bin") => {
+  const explicitMimeType = String(part?.localMimeType ?? "").trim();
+  if (explicitMimeType) {
+    return explicitMimeType;
+  }
+
   const normalizedExtension = String(extension ?? "").toLowerCase();
   const normalizedType = String(part?.contentType ?? "").toLowerCase();
   const normalizedKind = String(part?.asset?.kind ?? "").toLowerCase();
@@ -209,7 +277,7 @@ const uploadCourseContentAssets = async (
       }
 
       const partId = Number(part?.contentId) || index + 1;
-      const extension = getFileExtensionFromUri(sourceUri, "bin");
+      const extension = getFileExtensionForCoursePart(part);
       const filePath = `course-content/${auth.currentUser.uid}/${courseId}/part-${partId}.${extension}`;
       const storageRef = ref(storage, filePath);
       const response = await fetch(sourceUri);

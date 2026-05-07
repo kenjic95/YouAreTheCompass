@@ -364,6 +364,7 @@ export const CourseContentUploadScreen = ({ route, navigation }) => {
         ...typeConfig,
         localUri: part?.asset?.uri,
         localFileName: part?.asset?.name,
+        localMimeType: part?.asset?.mimeType || "",
       };
     });
     const totalDurationSeconds = sumCourseVideoDurationSeconds(mappedCourseContent);

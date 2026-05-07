@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   RefreshControl,
+  ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -38,8 +38,7 @@ export const StudentProgressScreen = () => {
   const [progressRows, setProgressRows] = useState([]);
   const [studentNamesById, setStudentNamesById] = useState({});
   const [loadError, setLoadError] = useState("");
-  const [courseQuery, setCourseQuery] = useState("");
-  const [studentQuery, setStudentQuery] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState("all");
   const [completionFilter, setCompletionFilter] = useState("all");
 
   const roleLabel = String(role ?? "").toLowerCase();
@@ -155,26 +154,42 @@ export const StudentProgressScreen = () => {
     loadProgress();
   }, [loadProgress]);
 
+  const selectableCourseIds = useMemo(() => {
+    if (roleLabel === "admin") {
+      return Array.from(
+        new Set(
+          (progressRows ?? [])
+            .map((row) => String(row?.courseId ?? "").trim())
+            .filter(Boolean)
+        )
+      );
+    }
+
+    return teacherCourseIds;
+  }, [progressRows, roleLabel, teacherCourseIds]);
+
+  const selectableCourses = useMemo(
+    () =>
+      selectableCourseIds
+        .map((courseId) => ({
+          id: courseId,
+          title: courseById?.[courseId]?.courseTitle || courseId,
+        }))
+        .sort((a, b) => String(a.title).localeCompare(String(b.title))),
+    [courseById, selectableCourseIds]
+  );
+
   const filteredRows = useMemo(() => {
-    const normalizedCourseQuery = courseQuery.trim().toLowerCase();
-    const normalizedStudentQuery = studentQuery.trim().toLowerCase();
+    const scopedRows = (progressRows ?? []).filter((item) => {
+      if (selectedCourseId === "all") {
+        return true;
+      }
 
-    return (progressRows ?? []).filter((item) => {
-      const courseId = String(item?.courseId ?? "");
-      const course = courseById?.[courseId];
-      const courseTitle = String(course?.courseTitle ?? "").toLowerCase();
-      const studentId = String(item?.userId ?? "");
-      const studentName = String(
-        studentNamesById?.[studentId] || studentId
-      ).toLowerCase();
+      return String(item?.courseId ?? "") === String(selectedCourseId);
+    });
+
+    return scopedRows.filter((item) => {
       const progressPercent = Number(item?.progressPercent ?? 0) || 0;
-
-      const matchesCourse = normalizedCourseQuery
-        ? courseTitle.includes(normalizedCourseQuery)
-        : true;
-      const matchesStudent = normalizedStudentQuery
-        ? studentName.includes(normalizedStudentQuery)
-        : true;
 
       let matchesCompletion = true;
       if (completionFilter === "not-started") {
@@ -185,16 +200,9 @@ export const StudentProgressScreen = () => {
         matchesCompletion = progressPercent >= 100;
       }
 
-      return matchesCourse && matchesStudent && matchesCompletion;
+      return matchesCompletion;
     });
-  }, [
-    completionFilter,
-    courseById,
-    courseQuery,
-    progressRows,
-    studentNamesById,
-    studentQuery,
-  ]);
+  }, [completionFilter, progressRows, selectedCourseId]);
 
   return (
     <View style={styles.screen}>
@@ -214,22 +222,61 @@ export const StudentProgressScreen = () => {
       ) : null}
 
       <View style={styles.filtersWrap}>
-        <TextInput
-          value={courseQuery}
-          onChangeText={setCourseQuery}
-          placeholder="Filter by course title"
-          placeholderTextColor="#8BA0B2"
-          style={styles.filterInput}
-          autoCapitalize="none"
-        />
-        <TextInput
-          value={studentQuery}
-          onChangeText={setStudentQuery}
-          placeholder="Filter by student name"
-          placeholderTextColor="#8BA0B2"
-          style={styles.filterInput}
-          autoCapitalize="none"
-        />
+        <Text variant="label" style={styles.sectionLabel}>
+          Course
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.courseChipRow}
+        >
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setSelectedCourseId("all")}
+            style={[
+              styles.filterChip,
+              selectedCourseId === "all" ? styles.filterChipActive : null,
+            ]}
+          >
+            <Text
+              variant="caption"
+              style={[
+                styles.filterChipText,
+                selectedCourseId === "all" ? styles.filterChipTextActive : null,
+              ]}
+            >
+              All Courses
+            </Text>
+          </TouchableOpacity>
+          {selectableCourses.map((course) => {
+            const isActive = selectedCourseId === course.id;
+            return (
+              <TouchableOpacity
+                key={course.id}
+                activeOpacity={0.85}
+                onPress={() => setSelectedCourseId(course.id)}
+                style={[
+                  styles.filterChip,
+                  isActive ? styles.filterChipActive : null,
+                ]}
+              >
+                <Text
+                  variant="caption"
+                  style={[
+                    styles.filterChipText,
+                    isActive ? styles.filterChipTextActive : null,
+                  ]}
+                >
+                  {course.title}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <Text variant="label" style={styles.sectionLabel}>
+          Completion
+        </Text>
         <View style={styles.completionFilterRow}>
           {COMPLETION_FILTERS.map((filter) => {
             const isActive = completionFilter === filter.id;
@@ -268,32 +315,52 @@ export const StudentProgressScreen = () => {
           <Text variant="caption" style={styles.emptyText}>
             {isLoading
               ? "Loading student progress..."
-              : "No progress records match your filters."}
+              : "No students match this course/completion filter."}
           </Text>
         }
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          filteredRows.length > 0 ? (
+            <View style={styles.tableHeaderRow}>
+              <Text variant="caption" style={[styles.tableHeaderText, styles.studentColumn]}>
+                Student
+              </Text>
+              <Text variant="caption" style={[styles.tableHeaderText, styles.progressColumn]}>
+                Progress
+              </Text>
+              <Text variant="caption" style={[styles.tableHeaderText, styles.statusColumn]}>
+                Status
+              </Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item }) => {
-          const courseId = String(item?.courseId ?? "");
-          const course = courseById?.[courseId];
           const studentId = String(item?.userId ?? "");
           const studentName = studentNamesById?.[studentId] || studentId || "Unknown";
           const completed = Number(item?.completedContentCount ?? 0) || 0;
           const total = Number(item?.totalContentCount ?? 0) || 0;
           const progressPercent = Number(item?.progressPercent ?? 0) || 0;
+          const statusLabel =
+            progressPercent <= 0
+              ? "Not Started"
+              : progressPercent >= 100
+              ? "Completed"
+              : "In Progress";
 
           return (
-            <View style={styles.card}>
-              <Text variant="label" style={styles.courseTitle}>
-                {course?.courseTitle || `Course: ${courseId}`}
+            <View style={styles.tableRow}>
+              <Text
+                variant="caption"
+                numberOfLines={1}
+                style={[styles.tableCellText, styles.studentColumn]}
+              >
+                {studentName}
               </Text>
-              <Text variant="caption" style={styles.metaText}>
-                Student: {studentName}
+              <Text variant="caption" style={[styles.tableCellText, styles.progressColumn]}>
+                {formatPercent(progressPercent)} ({completed}/{total})
               </Text>
-              <Text variant="caption" style={styles.metaText}>
-                Progress: {formatPercent(progressPercent)}
-              </Text>
-              <Text variant="caption" style={styles.metaText}>
-                Completed: {completed}/{total} items
+              <Text variant="caption" style={[styles.tableCellText, styles.statusColumn]}>
+                {statusLabel}
               </Text>
             </View>
           );
@@ -321,16 +388,12 @@ const styles = StyleSheet.create({
   filtersWrap: {
     marginBottom: 10,
   },
-  filterInput: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#D7E6F3",
-    color: "#173851",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+  sectionLabel: {
+    color: "#1f4d72",
     marginBottom: 8,
-    fontSize: 14,
+  },
+  courseChipRow: {
+    paddingBottom: 6,
   },
   completionFilterRow: {
     flexDirection: "row",
@@ -366,20 +429,39 @@ const styles = StyleSheet.create({
     color: "#526f86",
     marginTop: 12,
   },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#D7E6F3",
+  tableHeaderRow: {
+    flexDirection: "row",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#D7E6F3",
+    backgroundColor: "#EDF6FF",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
-  courseTitle: {
-    color: "#173851",
-    marginBottom: 6,
+  tableHeaderText: {
+    color: "#29516f",
   },
-  metaText: {
-    color: "#4b6780",
-    marginTop: 2,
+  tableRow: {
+    flexDirection: "row",
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E3EEF8",
+    backgroundColor: "#FFFFFF",
+  },
+  tableCellText: {
+    color: "#355971",
+  },
+  studentColumn: {
+    flex: 1.4,
+    marginRight: 8,
+  },
+  progressColumn: {
+    flex: 1.2,
+    marginRight: 8,
+  },
+  statusColumn: {
+    flex: 1,
   },
 });
