@@ -356,14 +356,27 @@ export const StudentProgressScreen = () => {
 
   return (
     <View style={styles.screen}>
-      <Text variant="title" style={styles.title}>
-        Student Progress
-      </Text>
-      <Text variant="caption" style={styles.subtitle}>
-        {roleLabel === "admin"
-          ? "Showing all student enrollments and progress."
-          : "Showing student progress for your courses."}
-      </Text>
+      <View style={styles.headerRow}>
+        <View style={styles.headerTextWrap}>
+          <Text variant="title" style={styles.title}>
+            Student Progress
+          </Text>
+          <Text variant="caption" style={styles.subtitle}>
+            {roleLabel === "admin"
+              ? "Showing all student enrollments and progress."
+              : "Showing student progress for your courses."}
+          </Text>
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onRefresh}
+          style={styles.refreshButton}
+        >
+          <Text variant="caption" style={styles.refreshButtonText}>
+            Refresh
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {loadError ? (
         <Text variant="caption" style={styles.errorText}>
@@ -606,13 +619,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  headerTextWrap: {
+    flex: 1,
+    paddingRight: 10,
+  },
   title: {
     color: "#1e4565",
     marginBottom: 6,
   },
   subtitle: {
     color: "#4b6780",
-    marginBottom: 12,
+  },
+  refreshButton: {
+    backgroundColor: "#E5F0FB",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: "#D7E6F3",
+  },
+  refreshButtonText: {
+    color: "#31628A",
   },
   filtersWrap: {
     marginBottom: 10,
