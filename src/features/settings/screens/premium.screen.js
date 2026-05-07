@@ -93,6 +93,7 @@ export default function PremiumScreen({ navigation }) {
         }}
       >
         <Benefit text="Verified Premium Account" />
+        <Benefit text="20% Discount For Courses" />
         <Benefit text="Access To Premium Contents" />
         <Benefit text="Cancel Anytime" noMargin />
       </View>
