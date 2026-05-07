@@ -19,6 +19,7 @@ import {
   CategoryDeleteButtonText,
   CategoryChipText,
   ControlsContainer,
+  TopActionsRow,
   CourseCard,
   CourseListHeading,
   CourseMeta,
@@ -125,12 +126,26 @@ export const ManageCoursesContent = ({
   return (
     <Screen>
       <ControlsContainer>
-        <UploadButton onPress={onUploadPress}>
-          <UploadButtonText>Upload New Course</UploadButtonText>
-        </UploadButton>
-        <UploadButton onPress={onViewStudentProgressPress}>
-          <UploadButtonText>View Student Progress</UploadButtonText>
-        </UploadButton>
+        <TopActionsRow>
+          <UploadButton onPress={onUploadPress}>
+            <UploadButtonText
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              Upload New Course
+            </UploadButtonText>
+          </UploadButton>
+          <UploadButton onPress={onViewStudentProgressPress}>
+            <UploadButtonText
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              View Student Progress
+            </UploadButtonText>
+          </UploadButton>
+        </TopActionsRow>
 
         <ScrollView
           horizontal

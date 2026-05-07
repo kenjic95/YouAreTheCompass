@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
+  Modal,
+  Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -11,6 +12,7 @@ import { collection, doc, getDoc, onSnapshot, query, where } from "firebase/fire
 import { db, isFirebaseConfigured } from "../../../services/auth/firebase";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
+import { useCategoryCatalog } from "../../../services/learnings/category-catalog.context";
 import { Text } from "../../../components/typography/text.component";
 
 const chunk = (items = [], size = 10) => {
@@ -32,12 +34,16 @@ const COMPLETION_FILTERS = [
 export const StudentProgressScreen = () => {
   const { authUser, role } = useUserProfile();
   const { courses } = useCourseCatalog();
+  const { categories } = useCategoryCatalog();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [progressRows, setProgressRows] = useState([]);
   const [studentNamesById, setStudentNamesById] = useState({});
   const [loadError, setLoadError] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [selectedCourseId, setSelectedCourseId] = useState("all");
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isCourseDropdownOpen, setIsCourseDropdownOpen] = useState(false);
   const [completionFilter, setCompletionFilter] = useState("all");
   const [refreshTick, setRefreshTick] = useState(0);
 
@@ -58,7 +64,11 @@ export const StudentProgressScreen = () => {
     }
 
     return (courses ?? [])
-      .filter((course) => String(course?.ownerId ?? "") === currentUserId)
+      .filter((course) => {
+        const ownerId = String(course?.ownerId ?? "").trim();
+        const createdBy = String(course?.createdBy ?? "").trim();
+        return ownerId === currentUserId || createdBy === currentUserId;
+      })
       .map((course) => String(course?.id ?? ""))
       .filter(Boolean);
   }, [courses, currentUserId, roleLabel]);
@@ -214,34 +224,95 @@ export const StudentProgressScreen = () => {
     if (roleLabel === "admin") {
       return Array.from(
         new Set(
-          (progressRows ?? [])
-            .map((row) => String(row?.courseId ?? "").trim())
+          (courses ?? [])
+            .map((course) => String(course?.id ?? "").trim())
             .filter(Boolean)
         )
       );
     }
 
     return teacherCourseIds;
-  }, [progressRows, roleLabel, teacherCourseIds]);
+  }, [courses, roleLabel, teacherCourseIds]);
+
+  const selectableCategoryIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          selectableCourseIds
+            .map((courseId) => String(courseById?.[courseId]?.categoryId ?? "").trim())
+            .filter(Boolean)
+        )
+      ),
+    [courseById, selectableCourseIds]
+  );
+
+  const selectableCategories = useMemo(
+    () =>
+      (categories ?? [])
+        .filter((category) =>
+          selectableCategoryIds.includes(String(category?.id ?? ""))
+        )
+        .map((category) => ({
+          id: String(category?.id ?? ""),
+          title: String(category?.categoryTitle ?? "Untitled Category"),
+        }))
+        .sort((a, b) => String(a.title).localeCompare(String(b.title))),
+    [categories, selectableCategoryIds]
+  );
 
   const selectableCourses = useMemo(
     () =>
       selectableCourseIds
+        .filter((courseId) => {
+          if (selectedCategoryId === "all") {
+            return true;
+          }
+
+          return (
+            String(courseById?.[courseId]?.categoryId ?? "") ===
+            String(selectedCategoryId)
+          );
+        })
         .map((courseId) => ({
           id: courseId,
           title: courseById?.[courseId]?.courseTitle || courseId,
         }))
         .sort((a, b) => String(a.title).localeCompare(String(b.title))),
-    [courseById, selectableCourseIds]
+    [courseById, selectableCourseIds, selectedCategoryId]
   );
+
+  useEffect(() => {
+    if (selectedCourseId === "all") {
+      return;
+    }
+
+    const isSelectedCourseStillVisible = selectableCourses.some(
+      (course) => String(course.id) === String(selectedCourseId)
+    );
+
+    if (!isSelectedCourseStillVisible) {
+      setSelectedCourseId("all");
+    }
+  }, [selectableCourses, selectedCourseId]);
 
   const filteredRows = useMemo(() => {
     const scopedRows = (progressRows ?? []).filter((item) => {
+      const rowCourseId = String(item?.courseId ?? "");
+      const rowCourse = courseById?.[rowCourseId];
+      const rowCategoryId = String(rowCourse?.categoryId ?? "");
+
+      if (
+        selectedCategoryId !== "all" &&
+        rowCategoryId !== String(selectedCategoryId)
+      ) {
+        return false;
+      }
+
       if (selectedCourseId === "all") {
         return true;
       }
 
-      return String(item?.courseId ?? "") === String(selectedCourseId);
+      return rowCourseId === String(selectedCourseId);
     });
 
     return scopedRows.filter((item) => {
@@ -258,7 +329,30 @@ export const StudentProgressScreen = () => {
 
       return matchesCompletion;
     });
-  }, [completionFilter, progressRows, selectedCourseId]);
+  }, [completionFilter, courseById, progressRows, selectedCategoryId, selectedCourseId]);
+
+  const selectedCourseLabel = useMemo(() => {
+    if (selectedCourseId === "all") {
+      return "All Courses";
+    }
+
+    return (
+      selectableCourses.find((course) => String(course.id) === String(selectedCourseId))
+        ?.title || "Select Course"
+    );
+  }, [selectableCourses, selectedCourseId]);
+
+  const selectedCategoryLabel = useMemo(() => {
+    if (selectedCategoryId === "all") {
+      return "All Categories";
+    }
+
+    return (
+      selectableCategories.find(
+        (category) => String(category.id) === String(selectedCategoryId)
+      )?.title || "Select Category"
+    );
+  }, [selectableCategories, selectedCategoryId]);
 
   return (
     <View style={styles.screen}>
@@ -278,57 +372,50 @@ export const StudentProgressScreen = () => {
       ) : null}
 
       <View style={styles.filtersWrap}>
-        <Text variant="label" style={styles.sectionLabel}>
-          Course
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.courseChipRow}
-        >
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => setSelectedCourseId("all")}
-            style={[
-              styles.filterChip,
-              selectedCourseId === "all" ? styles.filterChipActive : null,
-            ]}
-          >
-            <Text
-              variant="caption"
-              style={[
-                styles.filterChipText,
-                selectedCourseId === "all" ? styles.filterChipTextActive : null,
-              ]}
-            >
-              All Courses
+        <View style={styles.inlineDropdownRow}>
+          <View style={styles.inlineDropdownItem}>
+            <Text variant="label" style={styles.sectionLabel}>
+              Category
             </Text>
-          </TouchableOpacity>
-          {selectableCourses.map((course) => {
-            const isActive = selectedCourseId === course.id;
-            return (
-              <TouchableOpacity
-                key={course.id}
-                activeOpacity={0.85}
-                onPress={() => setSelectedCourseId(course.id)}
-                style={[
-                  styles.filterChip,
-                  isActive ? styles.filterChipActive : null,
-                ]}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setIsCategoryDropdownOpen(true)}
+              style={styles.dropdownButton}
+            >
+              <Text
+                variant="caption"
+                style={styles.dropdownButtonText}
+                numberOfLines={1}
               >
-                <Text
-                  variant="caption"
-                  style={[
-                    styles.filterChipText,
-                    isActive ? styles.filterChipTextActive : null,
-                  ]}
-                >
-                  {course.title}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+                {selectedCategoryLabel}
+              </Text>
+              <Text variant="caption" style={styles.dropdownChevron}>
+                ▾
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inlineDropdownItem}>
+            <Text variant="label" style={styles.sectionLabel}>
+              Course
+            </Text>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setIsCourseDropdownOpen(true)}
+              style={styles.dropdownButton}
+            >
+              <Text
+                variant="caption"
+                style={styles.dropdownButtonText}
+                numberOfLines={1}
+              >
+                {selectedCourseLabel}
+              </Text>
+              <Text variant="caption" style={styles.dropdownChevron}>
+                ▾
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <Text variant="label" style={styles.sectionLabel}>
           Completion
@@ -422,6 +509,92 @@ export const StudentProgressScreen = () => {
           );
         }}
       />
+
+      <Modal
+        transparent
+        visible={isCategoryDropdownOpen}
+        animationType="fade"
+        onRequestClose={() => setIsCategoryDropdownOpen(false)}
+      >
+        <Pressable
+          style={styles.dropdownBackdrop}
+          onPress={() => setIsCategoryDropdownOpen(false)}
+        >
+          <Pressable style={styles.dropdownPanel}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                setSelectedCategoryId("all");
+                setSelectedCourseId("all");
+                setIsCategoryDropdownOpen(false);
+              }}
+              style={styles.dropdownOption}
+            >
+              <Text variant="caption" style={styles.dropdownOptionText}>
+                All Categories
+              </Text>
+            </TouchableOpacity>
+            {selectableCategories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setSelectedCategoryId(category.id);
+                  setSelectedCourseId("all");
+                  setIsCategoryDropdownOpen(false);
+                }}
+                style={styles.dropdownOption}
+              >
+                <Text variant="caption" style={styles.dropdownOptionText}>
+                  {category.title}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        transparent
+        visible={isCourseDropdownOpen}
+        animationType="fade"
+        onRequestClose={() => setIsCourseDropdownOpen(false)}
+      >
+        <Pressable
+          style={styles.dropdownBackdrop}
+          onPress={() => setIsCourseDropdownOpen(false)}
+        >
+          <Pressable style={styles.dropdownPanel}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                setSelectedCourseId("all");
+                setIsCourseDropdownOpen(false);
+              }}
+              style={styles.dropdownOption}
+            >
+              <Text variant="caption" style={styles.dropdownOptionText}>
+                All Courses
+              </Text>
+            </TouchableOpacity>
+            {selectableCourses.map((course) => (
+              <TouchableOpacity
+                key={course.id}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setSelectedCourseId(course.id);
+                  setIsCourseDropdownOpen(false);
+                }}
+                style={styles.dropdownOption}
+              >
+                <Text variant="caption" style={styles.dropdownOptionText}>
+                  {course.title}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
@@ -444,12 +617,38 @@ const styles = StyleSheet.create({
   filtersWrap: {
     marginBottom: 10,
   },
+  inlineDropdownRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 2,
+  },
+  inlineDropdownItem: {
+    flex: 1,
+  },
   sectionLabel: {
     color: "#1f4d72",
     marginBottom: 8,
   },
-  courseChipRow: {
-    paddingBottom: 6,
+  dropdownButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D7E6F3",
+    borderRadius: 10,
+    minHeight: 42,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  dropdownButtonText: {
+    color: "#2D5675",
+    flex: 1,
+    marginRight: 10,
+  },
+  dropdownChevron: {
+    color: "#5E7F99",
+    fontSize: 14,
   },
   completionFilterRow: {
     flexDirection: "row",
@@ -519,5 +718,28 @@ const styles = StyleSheet.create({
   },
   statusColumn: {
     flex: 1,
+  },
+  dropdownBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.28)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  dropdownPanel: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    maxHeight: "70%",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#D7E6F3",
+  },
+  dropdownOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EDF3F9",
+  },
+  dropdownOptionText: {
+    color: "#2D5675",
   },
 });

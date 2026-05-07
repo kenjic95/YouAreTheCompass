@@ -30,11 +30,13 @@ export const Subtitle = styled.Text`
 `;
 
 export const UploadButton = styled.TouchableOpacity`
-  margin: 8px 18px 22px;
+  flex: 1;
+  min-height: 50px;
   background-color: #4f9fe2;
   border-radius: 16px;
   padding: 14px;
   align-items: center;
+  justify-content: center;
 `;
 
 export const UploadButtonText = styled.Text`
@@ -45,6 +47,13 @@ export const UploadButtonText = styled.Text`
 
 export const ControlsContainer = styled.View`
   padding-top: 8px;
+`;
+
+export const TopActionsRow = styled.View`
+  margin: 8px 18px 16px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 `;
 
 export const CategoryChip = styled.TouchableOpacity`
