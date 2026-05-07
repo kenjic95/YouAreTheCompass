@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ManageCoursesScreen } from "../../features/admin/screens/manage-courses.screen";
 import { CreateCourseScreen } from "../../features/admin/screens/create-course.screen";
 import { CourseContentUploadScreen } from "../../features/admin/screens/course-content-upload.screen";
+import { StudentProgressScreen } from "../../features/admin/screens/student-progress.screen";
 
 const ManageCoursesStack = createNativeStackNavigator();
 
@@ -24,6 +25,11 @@ export const ManageCoursesNavigator = () => (
       name="CourseContentUpload"
       component={CourseContentUploadScreen}
       options={{ title: "Course Content" }}
+    />
+    <ManageCoursesStack.Screen
+      name="StudentProgress"
+      component={StudentProgressScreen}
+      options={{ title: "Student Progress" }}
     />
   </ManageCoursesStack.Navigator>
 );

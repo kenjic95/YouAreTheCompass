@@ -24,9 +24,10 @@ import {
   formatDurationFromSeconds,
   parseDurationLabelToSeconds,
 } from "../../../services/learnings/course-duration.utils";
+import { syncEnrollmentProgress } from "../../../services/learnings/enrollment-progress.service";
 
 const COURSE_PROGRESS_KEY_PREFIX = "learnings-progress";
-const READ_OR_VIEW_DURATION_SECONDS = 2 * 60;
+const READ_OR_VIEW_DURATION_SECONDS = 0;
 
 export const MyCoursePreviewScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -115,7 +116,9 @@ export const MyCoursePreviewScreen = ({ route }) => {
       progressStorageKey,
       JSON.stringify(viewedContentIds)
     ).catch(() => {});
-  }, [hasLoadedProgress, progressStorageKey, viewedContentIds]);
+
+    syncEnrollmentProgress(course, viewedContentIds).catch(() => {});
+  }, [course, hasLoadedProgress, progressStorageKey, viewedContentIds]);
 
   const progress = useMemo(() => {
     const normalizedContent = courseContent ?? [];
@@ -160,6 +163,10 @@ export const MyCoursePreviewScreen = ({ route }) => {
       },
       0
     );
+    const completedContentCount = normalizedContent.filter((contentItem) =>
+      viewedIdsSet.has(contentItem?.contentId)
+    ).length;
+    const totalContentCount = normalizedContent.length;
     const fallbackDurationSeconds = parseDurationLabelToSeconds(
       course?.courseDuration
     );
@@ -175,8 +182,8 @@ export const MyCoursePreviewScreen = ({ route }) => {
       0,
       totalDurationSeconds - watchedDurationSeconds
     );
-    const percent = totalDurationSeconds
-      ? (watchedDurationSeconds / totalDurationSeconds) * 100
+    const percent = totalContentCount
+      ? (completedContentCount / totalContentCount) * 100
       : 0;
 
     return {

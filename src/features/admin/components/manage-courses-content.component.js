@@ -36,6 +36,7 @@ export const ManageCoursesContent = ({
   visibleCourses,
   categoryGroups,
   onUploadPress,
+  onViewStudentProgressPress,
   onAddCategory,
   onEditPress,
   onEditContentPress,
@@ -126,6 +127,9 @@ export const ManageCoursesContent = ({
       <ControlsContainer>
         <UploadButton onPress={onUploadPress}>
           <UploadButtonText>Upload New Course</UploadButtonText>
+        </UploadButton>
+        <UploadButton onPress={onViewStudentProgressPress}>
+          <UploadButtonText>View Student Progress</UploadButtonText>
         </UploadButton>
 
         <ScrollView

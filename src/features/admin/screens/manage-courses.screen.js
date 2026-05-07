@@ -67,6 +67,18 @@ export const ManageCoursesScreen = ({ navigation }) => {
     navigation.navigate("CreateCourse");
   };
 
+  const handleViewStudentProgressPress = () => {
+    if (!canAccessCreator) {
+      Alert.alert(
+        "Access denied",
+        "Only admin or teacher accounts can view student progress."
+      );
+      return;
+    }
+
+    navigation.navigate("StudentProgress");
+  };
+
   const emptyMessage =
     role === "teacher"
       ? "No courses assigned to this teacher account yet."
@@ -162,6 +174,7 @@ export const ManageCoursesScreen = ({ navigation }) => {
       visibleCourses={visibleCourses}
       categoryGroups={categoryGroups}
       onUploadPress={handleUploadPress}
+      onViewStudentProgressPress={handleViewStudentProgressPress}
       onAddCategory={async (title, photoUri) => {
         if (!canManageCategories) {
           Alert.alert(

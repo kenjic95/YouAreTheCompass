@@ -16,6 +16,7 @@ import { Text } from "../../../components/typography/text.component";
 import { parseDurationLabelToSeconds } from "../../../services/learnings/course-duration.utils";
 import { useCourseCatalog } from "../../../services/learnings/course-catalog.context";
 import { normalizeCoursePreviewType } from "../../../services/learnings/course-preview.mock";
+import { syncEnrollmentProgress } from "../../../services/learnings/enrollment-progress.service";
 import { CourseVideoPlayerControls } from "../components/course-video-player-controls.component";
 import { styles } from "../components/course-video-player.styles";
 import {
@@ -271,6 +272,7 @@ export const CourseVideoPlayerScreen = ({ route }) => {
         progressStorageKey,
         JSON.stringify([...viewedIds, contentId])
       );
+      await syncEnrollmentProgress(course, [...viewedIds, contentId]);
     } catch {
       // Ignore persistence errors in player controls.
     }

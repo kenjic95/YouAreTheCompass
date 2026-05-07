@@ -104,6 +104,9 @@ export const PurchasedCoursesProvider = ({ children }) => {
 
       if (shouldPersistToFirestore) {
         const enrollmentId = `${userId}_${courseId}`;
+        const totalContentCount = Array.isArray(course?.courseContent)
+          ? course.courseContent.length
+          : 0;
 
         try {
           await setDoc(
@@ -112,6 +115,12 @@ export const PurchasedCoursesProvider = ({ children }) => {
               userId,
               courseId,
               status: "active",
+              viewedContentIds: [],
+              completedContentCount: 0,
+              totalContentCount,
+              progressPercent: 0,
+              watchedDurationSeconds: 0,
+              totalDurationSeconds: 0,
               enrolledAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
             },
