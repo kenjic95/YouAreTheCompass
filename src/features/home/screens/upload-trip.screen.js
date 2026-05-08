@@ -160,30 +160,31 @@ const parseStoredDate = (value) => {
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 };
 
-const currencyOptions = ["$", "€", "£", "₹", "AED", "AUD"];
+const currencyOptions = ["AUD"];
+const legacyCurrencyPrefixes = ["$", "€", "£", "₹", "AED", "AUD"];
 
 const parseStoredPrice = (value) => {
   const rawValue = String(value ?? "").trim();
   if (!rawValue) {
     return {
-      symbol: "$",
+      symbol: "AUD",
       amount: "",
     };
   }
 
-  const knownSymbol = currencyOptions.find((option) =>
+  const knownSymbol = legacyCurrencyPrefixes.find((option) =>
     rawValue.startsWith(option)
   );
 
   if (knownSymbol) {
     return {
-      symbol: knownSymbol,
+      symbol: "AUD",
       amount: rawValue.slice(knownSymbol.length).trim(),
     };
   }
 
   return {
-    symbol: "$",
+    symbol: "AUD",
     amount: rawValue,
   };
 };
