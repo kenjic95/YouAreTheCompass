@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Alert, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import styled from "styled-components/native";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -8,46 +9,48 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 import { auth, isFirebaseConfigured } from "../../../services/auth/firebase";
 
-const Screen = styled.SafeAreaView`
+const Screen = styled.View`
   flex: 1;
   background-color: #f5fbff;
 `;
 
+const HeaderSafeArea = styled(SafeAreaView).attrs({
+  edges: ["top"],
+})`
+  background-color: #ffffff;
+`;
+
 const Header = styled.View`
-  min-height: 88px;
+  min-height: 56px;
   border-bottom-width: 1px;
-  border-bottom-color: #dbe8f3;
+  border-bottom-color: #e8edf2;
   background-color: #ffffff;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding-top: 28px;
-  padding-bottom: 0px;
-  padding-horizontal: 14px;
+  padding-horizontal: 20px;
 `;
 
 const BackButton = styled.TouchableOpacity`
   position: absolute;
-  left: 2px;
-  padding-vertical: 14px;
-  padding-horizontal: 10px;
+  left: 8px;
+  padding: 8px;
 `;
 
 const BackIcon = styled(MaterialIcons).attrs({
   name: "chevron-left",
-  size: 42,
+  size: 28,
 })`
-  color: #2b4f73;
+  color: #2f2f2f;
 `;
 
 const HeaderTitle = styled.Text`
-  font-size: 26px;
-  line-height: 26px;
-  color: #163f60;
+  font-size: 17px;
+  line-height: 22px;
+  color: #2f2f2f;
   font-weight: 700;
   text-align: center;
 `;
-
 const Content = styled(ScrollView).attrs({
   contentContainerStyle: {
     padding: 14,
@@ -396,14 +399,16 @@ export const UploadTripScreen = ({ navigation, route }) => {
 
   return (
     <Screen>
-      <Header>
-        <BackButton onPress={() => navigation.goBack()}>
-          <BackIcon />
-        </BackButton>
-        <HeaderTitle>
-          {editingTrip?.id ? "Edit Trip" : "Upload New Trip"}
-        </HeaderTitle>
-      </Header>
+      <HeaderSafeArea>
+        <Header>
+          <BackButton onPress={() => navigation.goBack()}>
+            <BackIcon />
+          </BackButton>
+          <HeaderTitle>
+            {editingTrip?.id ? "Edit Trip" : "Upload New Trip"}
+          </HeaderTitle>
+        </Header>
+      </HeaderSafeArea>
 
       <Content>
         <Label>Title of the Trip</Label>

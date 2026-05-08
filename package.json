@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env EXPO_NO_DOCTOR=1 expo start",
+    "start": "powershell -ExecutionPolicy Bypass -NoProfile -File ./scripts/start-lan.ps1",
     "start:lan": "powershell -ExecutionPolicy Bypass -NoProfile -File ./scripts/start-lan.ps1",
     "android": "cross-env EXPO_NO_DOCTOR=1 expo start --android",
     "ios": "cross-env EXPO_NO_DOCTOR=1 expo start --ios",
