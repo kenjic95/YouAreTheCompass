@@ -2,14 +2,51 @@ import React from "react";
 import { FlatList, Linking, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Text } from "../../../components/typography/text.component";
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 
-const ScreenSafeArea = styled(SafeAreaView).attrs({
-  edges: ["top", "left", "right"],
-})`
+const Screen = styled.View`
   flex: 1;
-  background-color: ${(props) => props.theme.colors.bg.primary};
+  background-color: #72b4e8;
+`;
+
+const HeaderSafeArea = styled(SafeAreaView).attrs({
+  edges: ["top"],
+})`
+  background-color: #ffffff;
+`;
+
+const Header = styled.View`
+  min-height: 56px;
+  border-bottom-width: 1px;
+  border-bottom-color: #e8edf2;
+  background-color: #ffffff;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding-horizontal: 20px;
+`;
+
+const BackButton = styled.TouchableOpacity`
+  position: absolute;
+  left: 8px;
+  padding: 8px;
+`;
+
+const BackIcon = styled(MaterialIcons).attrs({
+  name: "chevron-left",
+  size: 28,
+})`
+  color: #2f2f2f;
+`;
+
+const HeaderTitle = styled.Text`
+  font-size: 17px;
+  line-height: 22px;
+  color: #2f2f2f;
+  font-weight: 700;
+  text-align: center;
 `;
 
 const ScreenContainer = styled.View`
@@ -80,7 +117,7 @@ const TripLinkLabel = styled(Text)`
   font-size: 13px;
 `;
 
-export const ConnectTripsScreen = () => {
+export const ConnectTripsScreen = ({ navigation }) => {
   const { trips } = useTripCatalog();
 
   const openTripLink = async (url) => {
@@ -119,7 +156,15 @@ export const ConnectTripsScreen = () => {
   );
 
   return (
-    <ScreenSafeArea>
+    <Screen>
+      <HeaderSafeArea>
+        <Header>
+          <BackButton onPress={() => navigation.goBack()}>
+            <BackIcon />
+          </BackButton>
+          <HeaderTitle>Trips</HeaderTitle>
+        </Header>
+      </HeaderSafeArea>
       <ScreenContainer>
         <FlatList
           data={trips}
@@ -129,7 +174,7 @@ export const ConnectTripsScreen = () => {
           contentContainerStyle={styles.listContent}
         />
       </ScreenContainer>
-    </ScreenSafeArea>
+    </Screen>
   );
 };
 
