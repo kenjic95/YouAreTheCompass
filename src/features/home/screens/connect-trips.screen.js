@@ -5,14 +5,16 @@ import styled from "styled-components/native";
 import { Text } from "../../../components/typography/text.component";
 import { useTripCatalog } from "../../../services/connect-trips/trip-catalog.context";
 
-const ScreenSafeArea = styled(SafeAreaView)`
+const ScreenSafeArea = styled(SafeAreaView).attrs({
+  edges: ["top", "left", "right"],
+})`
   flex: 1;
   background-color: ${(props) => props.theme.colors.bg.primary};
 `;
 
 const ScreenContainer = styled.View`
   flex: 1;
-  padding: 20px;
+  padding: 20px 20px 0px;
 `;
 
 const TripCard = styled.View`
@@ -133,6 +135,6 @@ export const ConnectTripsScreen = () => {
 
 const styles = StyleSheet.create({
   listContent: {
-    paddingBottom: 30,
+    paddingBottom: 12,
   },
 });

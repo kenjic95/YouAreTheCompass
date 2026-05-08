@@ -14,7 +14,7 @@ import {
 } from "../services/podcast.service";
 
 const ScreenSafeArea = styled(SafeAreaView).attrs({
-  edges: ["left", "right", "bottom"],
+  edges: ["left", "right"],
 })`
   flex: 1;
   background-color: #69aee6;
@@ -22,7 +22,9 @@ const ScreenSafeArea = styled(SafeAreaView).attrs({
 
 const AlbumList = styled(FlatList).attrs({
   contentContainerStyle: {
-    padding: 16,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
 })``;
 
