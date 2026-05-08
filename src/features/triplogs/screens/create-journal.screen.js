@@ -34,7 +34,9 @@ const Row = styled.View`
 const InputBox = styled.View`
   background-color: ${(props) => (props.dark ? "#3f77a1" : "#d7e6f1")};
   width: 48%;
+  min-height: 56px;
   padding: 16px 18px;
+  justify-content: center;
   border-radius: 30px;
   shadow-color: #000;
   shadow-offset: 0px 4px;
@@ -46,7 +48,9 @@ const InputBox = styled.View`
 const DateInputButton = styled.TouchableOpacity`
   background-color: #3f77a1;
   width: 48%;
+  min-height: 56px;
   padding: 16px 18px;
+  justify-content: center;
   border-radius: 30px;
   shadow-color: #000;
   shadow-offset: 0px 4px;
@@ -57,13 +61,20 @@ const DateInputButton = styled.TouchableOpacity`
 
 const InputText = styled.TextInput.attrs((props) => ({
   placeholderTextColor: props.dark ? "rgba(255, 255, 255, 0.75)" : "#5c89ae",
+  textAlignVertical: "center",
+  style: { paddingVertical: 0 },
 }))`
   font-size: 18px;
   color: ${(props) => (props.dark ? "white" : "#3a6e97")};
   text-align: left;
 `;
 
-const DateInputText = styled.Text`
+const DateInputText = styled.Text.attrs({
+  style: {
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+})`
   font-size: 18px;
   color: white;
 `;
