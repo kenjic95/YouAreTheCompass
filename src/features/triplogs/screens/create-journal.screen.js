@@ -13,18 +13,6 @@ const Container = styled(ScrollView).attrs({
   padding: 24px;
 `;
 
-const BackButton = styled.TouchableOpacity`
-  margin-top: 20px;
-  margin-bottom: 20px;
-`;
-
-const Header = styled.Text`
-  font-size: 34px;
-  color: white;
-  text-align: center;
-  margin-bottom: 40px;
-`;
-
 const Row = styled.View`
   flex-direction: row;
   justify-content: space-between;
@@ -439,12 +427,6 @@ export const CreateJournalScreen = ({ navigation, route }) => {
 
   return (
     <Container>
-      <BackButton onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={34} color="#6b6b6b" />
-      </BackButton>
-
-      <Header>{journalId ? "Edit Journal" : "Create Journal"}</Header>
-
       <Row>
         <InputBox>
           <InputText

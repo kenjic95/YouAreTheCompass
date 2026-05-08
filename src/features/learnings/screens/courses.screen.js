@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -44,6 +44,12 @@ export const CoursesScreen = ({ route }) => {
     });
   }, [courses, searchQuery, selectedCategory?.id]);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: headerTitle,
+    });
+  }, [navigation, headerTitle]);
+
   return (
     <SafeAreaProvider>
       <SafeArea>
@@ -75,9 +81,6 @@ export const CoursesScreen = ({ route }) => {
           ListEmptyComponent={
             <Text style={styles.emptyText}>No courses found.</Text>
           }
-          ListHeaderComponent={
-            <Text style={styles.sectionTitle}>{headerTitle}</Text>
-          }
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
               <CourseInfo
@@ -102,12 +105,6 @@ export const CoursesScreen = ({ route }) => {
 const styles = StyleSheet.create({
   list: {
     padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#262626",
-    marginBottom: 12,
   },
   cardWrapper: {
     width: "100%",

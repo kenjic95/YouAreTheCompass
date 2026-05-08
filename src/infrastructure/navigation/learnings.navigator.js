@@ -18,8 +18,18 @@ export const LearningsNavigator = () => {
     <PurchasedCoursesProvider>
       <LearningsStack.Navigator
         screenOptions={{
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: "#ffffff",
+            shadowColor: "transparent",
+            elevation: 0,
+          },
+          headerTintColor: "#2f2f2f",
+          headerBackTitleVisible: false,
           headerTitleStyle: {
             fontSize: 17,
+            fontWeight: "700",
+            color: "#2f2f2f",
           },
         }}
       >

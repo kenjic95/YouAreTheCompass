@@ -12,13 +12,32 @@ export const TripLogsNavigator = () => {
     <TripLogsProvider>
       <TripLogsStack.Navigator
         screenOptions={{
-          headerShown: false,
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: "#ffffff",
+            shadowColor: "transparent",
+            elevation: 0,
+          },
+          headerTintColor: "#2f2f2f",
+          headerBackTitleVisible: false,
+          headerTitleStyle: {
+            fontSize: 17,
+            fontWeight: "700",
+            color: "#2f2f2f",
+          },
         }}
       >
-        <TripLogsStack.Screen name="TripLogsMain" component={TripLogsScreen} />
+        <TripLogsStack.Screen
+          name="TripLogsMain"
+          component={TripLogsScreen}
+          options={{ headerShown: false }}
+        />
         <TripLogsStack.Screen
           name="CreateJournal"
           component={CreateJournalScreen}
+          options={({ route }) => ({
+            title: route?.params?.journalId ? "Edit Journal" : "Create Journal",
+          })}
         />
       </TripLogsStack.Navigator>
     </TripLogsProvider>
