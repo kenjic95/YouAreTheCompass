@@ -80,8 +80,12 @@ export default function SettingsScreen({ navigation }) {
               </AvatarCircle>
 
               <UserInfo>
-                <UserName>{displayProfile.name}</UserName>
-                <UserEmail>{displayProfile.email}</UserEmail>
+                <UserName numberOfLines={1} ellipsizeMode="tail">
+                  {displayProfile.name}
+                </UserName>
+                <UserEmail numberOfLines={1} ellipsizeMode="tail">
+                  {displayProfile.email}
+                </UserEmail>
               </UserInfo>
             </ProfileLeft>
 
@@ -96,7 +100,7 @@ export default function SettingsScreen({ navigation }) {
               </PremiumBadge>
             ) : (
               <PremiumButton onPress={() => navigation.navigate("Premium")}>
-                <PremiumButtonText>Upgrade to{"\n"}Premium</PremiumButtonText>
+                <PremiumButtonText>Upgrade to Premium</PremiumButtonText>
               </PremiumButton>
             )}
           </ProfileSection>

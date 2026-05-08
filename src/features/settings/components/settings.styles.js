@@ -30,10 +30,13 @@ export const ProfileSection = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  column-gap: 12px;
   padding: 24px 20px 12px 20px;
 `;
 
 export const ProfileLeft = styled.View`
+  flex: 1;
+  min-width: 0px;
   flex-direction: row;
   align-items: center;
 `;
@@ -48,7 +51,10 @@ export const AvatarCircle = styled.View`
   margin-right: 14px;
 `;
 
-export const UserInfo = styled.View``;
+export const UserInfo = styled.View`
+  flex: 1;
+  min-width: 0px;
+`;
 
 export const UserName = styled.Text`
   font-size: 16px;
@@ -64,10 +70,11 @@ export const UserEmail = styled.Text`
 
 export const PremiumButton = styled.TouchableOpacity`
   background-color: #3f79a8;
-  padding-vertical: 14px;
-  padding-horizontal: 18px;
+  padding-vertical: 10px;
+  padding-horizontal: 14px;
   border-radius: 22px;
-  min-width: 150px;
+  max-width: 120px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
 `;
@@ -81,10 +88,11 @@ export const PremiumButtonText = styled.Text`
 
 export const PremiumBadge = styled.View`
   background-color: #3f79a8;
-  padding-vertical: 14px;
-  padding-horizontal: 18px;
+  padding-vertical: 10px;
+  padding-horizontal: 14px;
   border-radius: 22px;
-  min-width: 150px;
+  max-width: 150px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   flex-direction: row;
