@@ -5,8 +5,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "powershell -ExecutionPolicy Bypass -NoProfile -File ./scripts/start-lan.ps1",
-    "start:lan": "powershell -ExecutionPolicy Bypass -NoProfile -File ./scripts/start-lan.ps1",
+    "start": "node ./scripts/start-lan.js",
+    "start:lan": "node ./scripts/start-lan.js",
     "android": "cross-env EXPO_NO_DOCTOR=1 expo start --android",
     "ios": "cross-env EXPO_NO_DOCTOR=1 expo start --ios",
     "web": "cross-env EXPO_NO_DOCTOR=1 expo start --web",
