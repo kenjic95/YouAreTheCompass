@@ -1,14 +1,18 @@
 import styled from "styled-components/native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-export const Container = styled(SafeAreaView).attrs({
-  edges: ["left", "right", "bottom"],
-})`
+export const Container = styled.View`
   flex: 1;
-  background-color: #6da8d6;
+  background-color: #69aee6;
 `;
 
-export const ScrollContainer = styled.ScrollView`
+export const ScrollContainer = styled.ScrollView.attrs({
+  overScrollMode: "never",
+  bounces: false,
+  endFillColor: "#69aee6",
+  contentContainerStyle: {
+    paddingBottom: 16,
+  },
+})`
   flex: 1;
 `;
 
@@ -145,8 +149,4 @@ export const LogoutText = styled.Text`
   font-weight: 700;
   color: #111;
   margin-left: 16px;
-`;
-
-export const BottomSpace = styled.View`
-  height: 30px;
 `;

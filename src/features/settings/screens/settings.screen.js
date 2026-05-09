@@ -22,7 +22,6 @@ import {
   MenuLeft,
   MenuText,
   LogoutText,
-  BottomSpace,
 } from "../components/settings.styles";
 import { useUserProfile } from "../../../services/auth/user-profile.context";
 
@@ -31,7 +30,7 @@ const FALLBACK_EMAIL = "user@email.com";
 
 const Screen = styled.View`
   flex: 1;
-  background-color: #6da8d6;
+  background-color: #69aee6;
 `;
 
 const AvatarImage = styled(Image)`
@@ -161,8 +160,6 @@ export default function SettingsScreen({ navigation }) {
               <LogoutText>Logout</LogoutText>
             </MenuLeft>
           </MenuCard>
-
-          <BottomSpace />
         </ScrollContainer>
       </Container>
     </Screen>
