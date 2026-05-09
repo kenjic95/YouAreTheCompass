@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, ScrollView } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,6 +31,10 @@ const SKIP_EMAIL_VERIFICATION_FOR_TESTING =
 const Screen = styled(SafeAreaView)`
   flex: 1;
   background-color: #ffffff;
+`;
+
+const KeyboardContainer = styled(KeyboardAvoidingView)`
+  flex: 1;
 `;
 
 const Content = styled(ScrollView).attrs({
@@ -122,6 +132,22 @@ const Input = styled.TextInput.attrs({
   elevation: 5;
 `;
 
+const PasswordField = styled.View`
+  position: relative;
+`;
+
+const PasswordInput = styled(Input)`
+  padding-right: 54px;
+`;
+
+const PasswordToggle = styled.TouchableOpacity`
+  position: absolute;
+  right: 18px;
+  top: 0px;
+  bottom: 0px;
+  justify-content: center;
+`;
+
 const ReadOnlyInput = styled(Input).attrs({
   editable: false,
 })`
@@ -169,6 +195,7 @@ export const SignInScreen = ({ navigation }) => {
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
   const [hasSentResetEmail, setHasSentResetEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const getSignInErrorMessage = (code) => {
     switch (code) {
@@ -307,116 +334,135 @@ export const SignInScreen = ({ navigation }) => {
     setIsForgotPasswordMode(true);
     setHasSentResetEmail(false);
     setPassword("");
+    setIsPasswordVisible(false);
   };
 
   const handleBackToSignIn = () => {
     setIsForgotPasswordMode(false);
     setHasSentResetEmail(false);
     setPassword("");
+    setIsPasswordVisible(false);
   };
 
   return (
     <Screen edges={["top", "right", "bottom", "left"]}>
-      <Content>
-        <MainSection>
-          <BackButton onPress={() => navigation.goBack()} activeOpacity={0.8}>
-            <Ionicons name="arrow-back" size={34} color="#7a7a7a" />
-          </BackButton>
+      <KeyboardContainer
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
+      >
+        <Content>
+          <MainSection>
+            <BackButton onPress={() => navigation.goBack()} activeOpacity={0.8}>
+              <Ionicons name="arrow-back" size={34} color="#7a7a7a" />
+            </BackButton>
 
-          <Logo source={logoImage} />
-          <Title>{isForgotPasswordMode ? "Forgot Password" : "Sign In"}</Title>
+            <Logo source={logoImage} />
+            <Title>{isForgotPasswordMode ? "Forgot Password" : "Sign In"}</Title>
 
-          <FieldGroup>
-            <Label>Email</Label>
-            {hasSentResetEmail ? (
-              <ReadOnlyInput value={email} />
-            ) : (
-              <Input
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            )}
-          </FieldGroup>
-
-          {isForgotPasswordMode ? (
-            hasSentResetEmail ? (
-              <>
-                <HelperText>
-                  Check your email and open the password reset link we sent to
-                  choose a new password.
-                </HelperText>
-
-                <InlineRow>
-                  <InlineText>Didn&apos;t get the email? </InlineText>
-                  <TextButton
-                    activeOpacity={0.8}
-                    onPress={handlePasswordReset}
-                    disabled={isSubmitting}
-                  >
-                    <InlineLink>Re-send now</InlineLink>
-                  </TextButton>
-                </InlineRow>
-              </>
-            ) : (
-              <HelperText>
-                Enter a valid email address associated with your account to
-                receive a password reset link.
-              </HelperText>
-            )
-          ) : (
             <FieldGroup>
-              <Label>Password</Label>
-              <Input
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
-            </FieldGroup>
-          )}
-
-          <ButtonsSection>
-            <SubmitButton
-              activeOpacity={0.9}
-              onPress={
-                isForgotPasswordMode ? handlePasswordReset : handleSignIn
-              }
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+              <Label>Email</Label>
+              {hasSentResetEmail ? (
+                <ReadOnlyInput value={email} />
               ) : (
-                <SubmitLabel>
-                  {isForgotPasswordMode
-                    ? hasSentResetEmail
-                      ? "Send Again"
-                      : "Send Reset Link"
-                    : "Sign In"}
-                </SubmitLabel>
+                <Input
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
               )}
-            </SubmitButton>
+            </FieldGroup>
 
             {isForgotPasswordMode ? (
+              hasSentResetEmail ? (
+                <>
+                  <HelperText>
+                    Check your email and open the password reset link we sent to
+                    choose a new password.
+                  </HelperText>
+
+                  <InlineRow>
+                    <InlineText>Didn&apos;t get the email? </InlineText>
+                    <TextButton
+                      activeOpacity={0.8}
+                      onPress={handlePasswordReset}
+                      disabled={isSubmitting}
+                    >
+                      <InlineLink>Re-send now</InlineLink>
+                    </TextButton>
+                  </InlineRow>
+                </>
+              ) : (
+                <HelperText>
+                  Enter a valid email address associated with your account to
+                  receive a password reset link.
+                </HelperText>
+              )
+            ) : (
+              <FieldGroup>
+                <Label>Password</Label>
+                <PasswordField>
+                  <PasswordInput
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!isPasswordVisible}
+                    autoCapitalize="none"
+                  />
+                  <PasswordToggle
+                    activeOpacity={0.7}
+                    onPress={() => setIsPasswordVisible((prev) => !prev)}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                      size={22}
+                      color="#5f7f9b"
+                    />
+                  </PasswordToggle>
+                </PasswordField>
+              </FieldGroup>
+            )}
+
+            <ButtonsSection>
               <SubmitButton
                 activeOpacity={0.9}
-                onPress={handleBackToSignIn}
+                onPress={
+                  isForgotPasswordMode ? handlePasswordReset : handleSignIn
+                }
                 disabled={isSubmitting}
               >
-                <SubmitLabel>Back to Log In</SubmitLabel>
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <SubmitLabel>
+                    {isForgotPasswordMode
+                      ? hasSentResetEmail
+                        ? "Send Again"
+                        : "Send Reset Link"
+                      : "Sign In"}
+                  </SubmitLabel>
+                )}
               </SubmitButton>
-            ) : (
-              <TextButton
-                activeOpacity={0.8}
-                onPress={handleToggleForgotPassword}
-              >
-                <ForgotPassword>Forgot Password?</ForgotPassword>
-              </TextButton>
-            )}
-          </ButtonsSection>
-        </MainSection>
-      </Content>
+
+              {isForgotPasswordMode ? (
+                <SubmitButton
+                  activeOpacity={0.9}
+                  onPress={handleBackToSignIn}
+                  disabled={isSubmitting}
+                >
+                  <SubmitLabel>Back to Log In</SubmitLabel>
+                </SubmitButton>
+              ) : (
+                <TextButton
+                  activeOpacity={0.8}
+                  onPress={handleToggleForgotPassword}
+                >
+                  <ForgotPassword>Forgot Password?</ForgotPassword>
+                </TextButton>
+              )}
+            </ButtonsSection>
+          </MainSection>
+        </Content>
+      </KeyboardContainer>
     </Screen>
   );
 };
