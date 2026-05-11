@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, FlatList, ScrollView, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import {
   Action,
@@ -28,6 +34,10 @@ import {
   Screen,
   UploadButton,
   UploadButtonText,
+  UploadingCard,
+  UploadingMessage,
+  UploadingOverlay,
+  UploadingTitle,
 } from "./manage-courses.styles";
 
 export const ManageCoursesContent = ({
@@ -48,6 +58,8 @@ export const ManageCoursesContent = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [deleteArmedCategoryId, setDeleteArmedCategoryId] = useState(null);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isAddingCategorySubmitting, setIsAddingCategorySubmitting] =
+    useState(false);
   const [newCategoryTitle, setNewCategoryTitle] = useState("");
   const [newCategoryPhoto, setNewCategoryPhoto] = useState(null);
 
@@ -155,6 +167,7 @@ export const ManageCoursesContent = ({
           {canManageCategories ? (
             <AddCategoryChip
               activeOpacity={0.85}
+              disabled={isAddingCategorySubmitting}
               onPress={() => setIsAddingCategory((previous) => !previous)}
             >
               <AddCategoryChipText>+</AddCategoryChipText>
@@ -220,6 +233,7 @@ export const ManageCoursesContent = ({
           <>
             <AddCategoryPhotoButton
               activeOpacity={0.85}
+              disabled={isAddingCategorySubmitting}
               onPress={handlePickCategoryPhoto}
             >
               <AddCategoryPhotoButtonText>
@@ -241,18 +255,25 @@ export const ManageCoursesContent = ({
                 onChangeText={setNewCategoryTitle}
                 placeholder="New category title"
                 placeholderTextColor="#8ba0b2"
+                editable={!isAddingCategorySubmitting}
               />
               <AddCategoryAction
                 activeOpacity={0.85}
+                disabled={isAddingCategorySubmitting}
                 onPress={async () => {
-                  const didAdd = await onAddCategory?.(
-                    newCategoryTitle,
-                    newCategoryPhoto?.uri
-                  );
-                  if (didAdd) {
-                    setNewCategoryTitle("");
-                    setNewCategoryPhoto(null);
-                    setIsAddingCategory(false);
+                  setIsAddingCategorySubmitting(true);
+                  try {
+                    const didAdd = await onAddCategory?.(
+                      newCategoryTitle,
+                      newCategoryPhoto?.uri
+                    );
+                    if (didAdd) {
+                      setNewCategoryTitle("");
+                      setNewCategoryPhoto(null);
+                      setIsAddingCategory(false);
+                    }
+                  } finally {
+                    setIsAddingCategorySubmitting(false);
                   }
                 }}
               >
@@ -261,6 +282,7 @@ export const ManageCoursesContent = ({
               <AddCategoryAction
                 variant="cancel"
                 activeOpacity={0.85}
+                disabled={isAddingCategorySubmitting}
                 onPress={() => {
                   setNewCategoryTitle("");
                   setNewCategoryPhoto(null);
@@ -307,6 +329,22 @@ export const ManageCoursesContent = ({
           </CourseCard>
         )}
       />
+
+      {isAddingCategorySubmitting ? (
+        <UploadingOverlay>
+          <UploadingCard>
+            <UploadingTitle>Uploading Category...</UploadingTitle>
+            <UploadingMessage>
+              Please wait while we save your category details.
+            </UploadingMessage>
+            <ActivityIndicator
+              size="large"
+              color="#4f9fe2"
+              style={styles.uploadingSpinner}
+            />
+          </UploadingCard>
+        </UploadingOverlay>
+      ) : null}
     </Screen>
   );
 };
@@ -320,5 +358,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 12,
+  },
+  uploadingSpinner: {
+    marginTop: 14,
   },
 });

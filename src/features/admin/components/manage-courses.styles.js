@@ -218,3 +218,38 @@ export const ActionText = styled.Text`
   font-family: ${(props) => props.theme.fonts.heading};
   font-size: 12px;
 `;
+
+export const UploadingOverlay = styled.View`
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  background-color: rgba(16, 38, 56, 0.34);
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+`;
+
+export const UploadingCard = styled.View`
+  width: 86%;
+  max-width: 340px;
+  border-radius: 18px;
+  padding: 20px 18px;
+  background-color: #ffffff;
+  align-items: center;
+`;
+
+export const UploadingTitle = styled.Text`
+  font-family: ${(props) => props.theme.fonts.heading};
+  font-size: 18px;
+  color: #1f4d72;
+`;
+
+export const UploadingMessage = styled.Text`
+  margin-top: 8px;
+  font-family: ${(props) => props.theme.fonts.body};
+  font-size: 14px;
+  color: #4e6a80;
+  text-align: center;
+`;

@@ -1,8 +1,9 @@
 import Constants from "expo-constants";
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
+import { Platform } from "react-native";
 
 const extra = Constants.expoConfig?.extra || {};
 
@@ -41,6 +42,34 @@ const app = isFirebaseConfigured
 const auth = app ? getAuth(app) : null;
 const db = app ? getFirestore(app) : null;
 const storage = app ? getStorage(app) : null;
+
+const toBooleanFlag = (value) => String(value ?? "").toLowerCase() === "true";
+const shouldUseFirebaseEmulators = toBooleanFlag(
+  process.env.EXPO_PUBLIC_FIREBASE_USE_EMULATORS
+);
+const emulatorHost = Platform.OS === "android" ? "10.0.2.2" : "localhost";
+const authEmulatorPort = Number(
+  process.env.EXPO_PUBLIC_FIREBASE_AUTH_EMULATOR_PORT ?? 9099
+);
+const firestoreEmulatorPort = Number(
+  process.env.EXPO_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_PORT ?? 8080
+);
+const storageEmulatorPort = Number(
+  process.env.EXPO_PUBLIC_FIREBASE_STORAGE_EMULATOR_PORT ?? 9199
+);
+
+if (shouldUseFirebaseEmulators && auth && db && storage) {
+  const emulatorConnectionKey = "__firebaseEmulatorsConnected";
+  if (!globalThis[emulatorConnectionKey]) {
+    connectAuthEmulator(auth, `http://${emulatorHost}:${authEmulatorPort}`, {
+      disableWarnings: true,
+    });
+    connectFirestoreEmulator(db, emulatorHost, firestoreEmulatorPort);
+    connectStorageEmulator(storage, emulatorHost, storageEmulatorPort);
+    globalThis[emulatorConnectionKey] = true;
+  }
+}
+
 const authActionUrl =
   extra.firebaseAuthActionUrl ||
   process.env.EXPO_PUBLIC_FIREBASE_AUTH_ACTION_URL ||
