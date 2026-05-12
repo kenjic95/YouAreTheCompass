@@ -173,7 +173,7 @@ export const AddToCartBar = ({ courses, onNavigateCourse, onRemoveCourse }) => {
 
   return (
     <MyCoursesWrapper>
-      <MyCoursesTitle>Add to Cart</MyCoursesTitle>
+      <MyCoursesTitle>My Cart</MyCoursesTitle>
       <Spacer position="top" size="small">
         {courses?.length ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
